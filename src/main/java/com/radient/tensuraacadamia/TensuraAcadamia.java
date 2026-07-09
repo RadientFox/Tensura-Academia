@@ -1,5 +1,8 @@
 package com.radient.tensuraacadamia;
 
+import com.radient.tensuraacadamia.config.AcadamiaConfigs;
+import com.radient.tensuraacadamia.config.skills.QuirkSkillsConfig;
+import com.radient.tensuraacadamia.regestry.skills.QuirkSkills;
 import org.slf4j.Logger;
 
 import com.mojang.logging.LogUtils;
@@ -39,6 +42,8 @@ public class TensuraAcadamia {
     public TensuraAcadamia(IEventBus modEventBus, ModContainer modContainer) {
         modEventBus.addListener(this::commonSetup);
         NeoForge.EVENT_BUS.register(this);
+        QuirkSkills.init();
+        AcadamiaConfigs.init();
 
     }
 
