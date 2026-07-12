@@ -30,7 +30,7 @@ import org.jetbrains.annotations.Nullable;
 
 public class QuirkBestowal extends Skill {
         private static final QuirkSkillsConfig.QuirkBestowal CONFIG = ConfigRegistry.getConfig(QuirkSkillsConfig.class).QuirkBestowal;
-        public static final ResourceLocation QUIRK_BESTOWAL = ResourceLocation.fromNamespaceAndPath("tensuraacadamia", "quirk_bestowal");
+        public static final ResourceLocation QUIRK_BESTOWAL = ResourceLocation.fromNamespaceAndPath("tracadamia", "quirk_bestowal");
 
     public QuirkBestowal() {
             super(SkillType.UNIQUE);
@@ -50,7 +50,7 @@ public class QuirkBestowal extends Skill {
 
 
         public @Nullable ResourceLocation getSkillIcon() {
-            return ResourceLocation.fromNamespaceAndPath("tensuraacadamia", "textures/skill/unique/quirk_bestowal.png");
+            return ResourceLocation.fromNamespaceAndPath("tracadamia", "textures/skill/unique/quirk_bestowal.png");
         }
 
         public String getModeId(ManasSkillInstance instance, int mode) {
@@ -137,7 +137,7 @@ public class QuirkBestowal extends Skill {
                                     eye.getOrCreateTag().putBoolean("NoMagiculeCost", true);
                                     SkillHelper.learnSkill(entity, eye);
                                     if (entity instanceof ServerPlayer player) {
-                                        player.displayClientMessage(Component.translatable("tensuraacadamia.skill.quirk_bestowal.grant").setStyle(Style.EMPTY.withColor(ChatFormatting.RED)), false);
+                                        player.displayClientMessage(Component.translatable("tracadamia.skill.quirk_bestowal.grant").setStyle(Style.EMPTY.withColor(ChatFormatting.RED)), false);
                                     }
                                 }
                             }
@@ -162,10 +162,10 @@ public class QuirkBestowal extends Skill {
                         SkillHelper.learnSkill(target, eye);
                         SkillAPI.getSkillsFrom(entity).forgetSkill(QuirkSkills.QUIRK_BESTOWAL.get());
                         if (entity instanceof ServerPlayer player) {
-                            player.displayClientMessage(Component.translatable("tensuraacadamia.skill.quirk_bestowal.pass").setStyle(Style.EMPTY.withColor(ChatFormatting.RED)), false);
+                            player.displayClientMessage(Component.translatable("tracadamia.skill.quirk_bestowal.pass").setStyle(Style.EMPTY.withColor(ChatFormatting.RED)), false);
                         }
                         if (target instanceof ServerPlayer player) {
-                            player.displayClientMessage(Component.translatable("tensuraacadamia.skill.quirk_bestowal.passed").setStyle(Style.EMPTY.withColor(ChatFormatting.RED)), false);
+                            player.displayClientMessage(Component.translatable("tracadamia.skill.quirk_bestowal.passed").setStyle(Style.EMPTY.withColor(ChatFormatting.RED)), false);
                         }
                     }
                 }

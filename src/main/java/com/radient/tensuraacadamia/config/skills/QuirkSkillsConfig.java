@@ -14,7 +14,7 @@ public class QuirkSkillsConfig extends ManasConfig {
     }
 
     public String getFileName() {
-        return "tensuraacadamia/ability/skill/quirk_config";
+        return "tracadamia/ability/skill/quirk_config";
     }
 
 

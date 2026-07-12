@@ -73,19 +73,19 @@ Example mod description.
     side="BOTH"
 
 
-[[dependencies.tensuraacadamia]]
+[[dependencies.tracadamia]]
 modId = "tensura"
 type = "required"
 ordering = "AFTER"
 side = "BOTH"
 
-[[dependencies.tensuraacadamia]]
+[[dependencies.tracadamia]]
 modId = "geckolib"
 type = "required"
 ordering = "AFTER"
 side = "BOTH"
 
-[[dependencies.tensuraacadamia]]
+[[dependencies.tracadamia]]
 modId = "curios"
 type = "required"
 ordering = "AFTER"
