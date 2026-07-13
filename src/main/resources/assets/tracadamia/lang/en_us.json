@@ -1,16 +1,17 @@
 {
 
+  "tensuraacadamia.skill.float": "Float",
+  "tensuraacadamia.skill.mode.float.airdash": "§dAir Dash",
 
 
+  "tensuraacadamia.skill.quirk_bestowal": "Quirk Bestowal",
 
-  "tracadamia.skill.quirk_bestowal": "Quirk Bestowal",
+  "tensuraacadamia.skill.quirk_bestowal.description": "Quirk: Quirk Bestowal, A seemingly weak skill with the sole ability to pass itself on...",
+  "tensuraacadamia.skill.mode.quirk_bestowal.bestow": "Space Cutter",
 
-  "tracadamia.skill.quirk_bestowal.description": "Quirk: Quirk Bestowal, A seemingly weak skill with the sole ability to pass itself on...",
-  "tracadamia.skill.mode.quirk_bestowal.bestow": "Space Cutter",
-
-  "tracadamia.skill.quirk_bestowal.passed": "The hope for a miracle has been bestowed upon you, go and take this beyond",
-  "tracadamia.skill.quirk_bestowal.pass": "A flicker of you're will has been bestowed to another...",
-  "tracadamia.skill.quirk_bestowal.pass": "A flicker of you're will has been bestowed to another...",
-  "tracadamia.skill.quirk_bestowal.pass": "A flicker of you're will has been bestowed to another..."
+  "tensuraacadamia.skill.quirk_bestowal.passed": "The hope for a miracle has been bestowed upon you, go and take this beyond",
+  "tensuraacadamia.skill.quirk_bestowal.pass": "A flicker of you're will has been bestowed to another...",
+  "tensuraacadamia.skill.quirk_bestowal.pass": "A flicker of you're will has been bestowed to another...",
+  "tensuraacadamia.skill.quirk_bestowal.pass": "A flicker of you're will has been bestowed to another..."
 
 }
