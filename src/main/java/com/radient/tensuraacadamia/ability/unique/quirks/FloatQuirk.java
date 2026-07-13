@@ -58,10 +58,8 @@ public class FloatQuirk extends Skill {
         if (entity instanceof Player player) {
             player.getAbilities().mayfly = false;
 
-            // Stop flying if currently in the air
             player.getAbilities().flying = false;
 
-            // Restore vanilla flight speed
             player.getAbilities().setFlyingSpeed(DEFAULT_FLY_SPEED);
 
             player.onUpdateAbilities();
