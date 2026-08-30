@@ -1,5 +1,6 @@
 package com.radient.tensuraacadamia.regestry.skills;
 
+import com.radient.tensuraacadamia.ability.ultimate.ofausers.OFA1st;
 import com.radient.tensuraacadamia.ability.unique.quirks.FloatQuirk;
 import com.radient.tensuraacadamia.ability.unique.quirks.Power_Stock;
 import com.radient.tensuraacadamia.ability.unique.quirks.QuirkBestowal;
@@ -11,6 +12,10 @@ import net.minecraft.resources.ResourceLocation;
 import java.util.function.Supplier;
 
 public class QuirkSkills {
+
+
+    public static final RegistrySupplier<OFA1st> OFA_1ST = register("one_for_all_1", OFA1st::new);
+
 
     public static final RegistrySupplier<Power_Stock> POWER_STOCK = register("power_stock", Power_Stock::new);
     public static final RegistrySupplier<QuirkBestowal> QUIRK_BESTOWAL = register("quirk_bestowal", QuirkBestowal::new);

@@ -27,13 +27,11 @@ public class TensuraAcadamia {
         QuirkSkills.init();
         MHAParticles.init(modEventBus);
         AcadamiaConfigs.init();
-
     }
 
     private void commonSetup(FMLCommonSetupEvent event) {
         LOGGER.info("HELLO FROM COMMON SETUP");
     }
-
 
     @SubscribeEvent
     public void onServerStarting(ServerStartingEvent event) {

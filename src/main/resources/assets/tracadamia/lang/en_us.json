@@ -7,11 +7,23 @@
   "tensuraacadamia.skill.quirk_bestowal": "Quirk Bestowal",
 
   "tensuraacadamia.skill.quirk_bestowal.description": "Quirk: Quirk Bestowal, A seemingly weak skill with the sole ability to pass itself on...",
-  "tensuraacadamia.skill.mode.quirk_bestowal.bestow": "Space Cutter",
+  "tensuraacadamia.skill.mode.quirk_bestowal.bestow": "Bestow",
 
   "tensuraacadamia.skill.quirk_bestowal.passed": "The hope for a miracle has been bestowed upon you, go and take this beyond",
   "tensuraacadamia.skill.quirk_bestowal.pass": "A flicker of you're will has been bestowed to another...",
   "tensuraacadamia.skill.quirk_bestowal.pass": "A flicker of you're will has been bestowed to another...",
-  "tensuraacadamia.skill.quirk_bestowal.pass": "A flicker of you're will has been bestowed to another..."
+  "tensuraacadamia.skill.quirk_bestowal.pass": "A flicker of you're will has been bestowed to another...",
+
+
+
+
+
+
+  "tensuraacadamia.skill.power_stock": "Power Stock",
+
+  "tensuraacadamia.skill.power_stock.description": "Quirk: Power Stock, Stockpile power as you grow and release it for a empowered strike",
+  "tensuraacadamia.skill.mode.power_stock.output": "Output",
+  "tensuraacadamia.skill.mode.power_stock.smash": "Smash",
+  "tracadamia.skill.power_stock.ouputamount": "Used Storage: %s"
 
 }

@@ -7,9 +7,7 @@ import io.github.manasmods.manascore.network.api.util.Changeable;
 import io.github.manasmods.manascore.skill.api.ManasSkillInstance;
 import io.github.manasmods.manascore.skill.api.SkillEvents;
 import io.github.manasmods.tensura.ability.skill.Skill;
-import io.github.manasmods.tensura.ability.skill.extra.HakiSkill;
-import io.github.manasmods.tensura.ability.skill.unique.FighterSkill;
-import io.github.manasmods.tensura.config.ability.skill.ExtraSkillConfig;
+import io.github.manasmods.tensura.damage.TensuraDamageHelper;
 import io.github.manasmods.tensura.particle.TensuraParticleHelper;
 import io.github.manasmods.tensura.util.EnergyHelper;
 import net.minecraft.ChatFormatting;
@@ -32,7 +30,7 @@ public class Power_Stock extends Skill {
         public static final ResourceLocation POWER_STOCK = ResourceLocation.fromNamespaceAndPath("tracadamia", "power_stock");
 
     public Power_Stock() {
-            super(Skill.SkillType.UNIQUE);
+            super(SkillType.UNIQUE);
         }
 
 
@@ -65,24 +63,6 @@ public class Power_Stock extends Skill {
         }
 
 
-    public void onLearnSkill(
-            ManasSkillInstance instance,
-            LivingEntity entity,
-            SkillEvents.UnlockSkillEvent event
-    ) {
-        if (!(entity instanceof Player player)) return;
-
-        var data = player.getPersistentData();
-        int currentEP = (int) EnergyHelper.getBaseMaxEP(player);
-
-        data.putBoolean("power_has_skill", true);
-        data.putInt("power_last_ep", currentEP);
-        data.putInt("power_stored_ep", 0);
-        data.putBoolean("power_mode_active", false);
-        data.putInt("power_mode_spent", 0);
-    }
-
-
     private static final DecimalFormat decimalFormat = new DecimalFormat("#.#");
     public static void changeEPUsed(ManasSkillInstance instance, LivingEntity entity, double delta) {
         CompoundTag tag = instance.getOrCreateTag();
@@ -106,38 +86,31 @@ public class Power_Stock extends Skill {
     public void onPressed(ManasSkillInstance instance, LivingEntity entity, int keyNumber, int mode) {
         switch (mode) {
             case 1:
-                var data = entity.getPersistentData();
-                int before = data.getInt("power_stored_ep");
+                if (entity instanceof ServerPlayer player) {
+                    var data = entity.getPersistentData();
+                    int storted = data.getInt("power_stored_ep");
+                    boolean active = data.getBoolean("power_active");
 
 
-                if (before <= 0) {
-                    entity.sendSystemMessage(
-                            Component.literal("No stored EP.")
-                    );
-                    return;
-                }
-
-                if (!data.getBoolean("power_mode_active")) {
 
                     double scale = instance.getTag() == null ? 0.0 : instance.getTag().getDouble("scale");
                     double percent = scale == 0.0 ? 1.0 : Math.min(scale, 1.0);
-                    int spent = consumeStoredEPPercentAndGetSpent((Player) entity, (float) percent);
-                    int after = data.getInt("power_stored_ep");
+                    if (data.getBoolean("power_active") == false){
+                        if (percent > 0) {
 
-                    data.putInt("power_mode_spent", spent);
+                            int epSpent = getCurrentStock((Player) entity, (float) percent);
 
-                    entity.sendSystemMessage(
-                            Component.literal("Stored EP: " + before + " → " + after)
-                    );
+                                player.displayClientMessage(Component.translatable("tracadamia.skill.power_stock.ouputamount", new Object[]{ epSpent}).setStyle(Style.EMPTY.withColor(ChatFormatting.DARK_BLUE)), false);
+                                data.putBoolean("power_active", true);
 
-                    entity.sendSystemMessage(
-                            Component.literal("Spent: " + spent)
-                    );
-                    data.putBoolean("power_mode_active", true);
+
+                        }
+                    }
 
                 }
-            }
         }
+
+    }
 
 
 
@@ -146,72 +119,85 @@ public class Power_Stock extends Skill {
         TensuraParticleHelper.spawnServerParticles(target.level(), (ParticleOptions) MHAParticles.SMASH_PARTICLE.get(), target.getX(), target.getY(), target.getZ(), 1, 0.08, 0.08, 0.08, 0.2, true);
         if (attacker instanceof ServerPlayer player) {
             RandomSource rng = player.getRandom();
-            int tempChance = 15;
+            int tempChance = (int) CONFIG.evolvingMight;
             if (rng.nextInt(100) < tempChance) {
 
-                int total = (int) (data.getInt("power_stored_ep") * 0.25);
-                float bonusDamagecheep = total * 0.05f;
 
-                amount.set(amount.get() + bonusDamagecheep);
-            //    TensuraParticleHelper.spawnServerParticles(target.level(), (ParticleOptions) MHAParticles.SMASH_PARTICLES.get(), target.getX(), target.getY(), target.getZ(), 1, 0.08, 0.08, 0.08, 0.2, true);
 
-                if (data.getBoolean("power_mode_active")) {
+                    float damage = (float) (CONFIG.evolvingMightPower * data.getInt("power_used"));
+                    amount.set((Float)amount.get() + damage);
+                    data.putBoolean("power_active", false);
+                    return true;
 
-                    int spent = data.getInt("power_mode_spent");
 
-                    float bonusDamage = spent * 0.05f;
-                    player.sendSystemMessage(
-                            Component.literal("Spent: " + spent)
-                    );
-              //      TensuraParticleHelper.spawnServerParticles(target.level(), (ParticleOptions) MHAParticles.SMASH_PARTICLES.get(), target.getX(), target.getY(), target.getZ(), 1, 0.08, 0.08, 0.08, 0.2, true);
 
-                    amount.set(amount.get() + bonusDamage);
-                    data.putInt("power_mode_spent", 0);
-                    data.putBoolean("power_mode_active", false);
-                }
+
 
             } else {
 
 
-                if (data.getBoolean("power_mode_active")) {
-
-                    int spent = data.getInt("power_mode_spent");
-                    if (!(spent <= 0)) {
-
-                        float bonusDamage = spent * 0.05f;
-                        player.sendSystemMessage(
-                                Component.literal("Spent: " + spent)
-                        );
-                        //    TensuraParticleHelper.spawnServerParticles(target.level(), (ParticleOptions) MHAParticles.SMASH_PARTICLES.get(), target.getX(), target.getY(), target.getZ(), 1, 0.08, 0.08, 0.08, 0.2, true);
-                        amount.set(amount.get() + bonusDamage);
-                        data.putInt("power_mode_spent", 0);
-                        data.putBoolean("power_mode_active", false);
-                    }
+                if (data.getBoolean("power_active") == false){
+                    return true;
                 }
+                else {
+
+                    float damage = (float) (CONFIG.stockpileConversion * data.getInt("power_used"));
+                    amount.set((Float)amount.get() + damage);
+                    data.putBoolean("power_active", false);
+                    return true;
+                }
+
+
             }
         }
+        data.putBoolean("power_active", false);
         return true;
     }
 
 
 
-    public static int consumeStoredEPPercentAndGetSpent(Player player, float percent) {
-        if (percent <= 0f) return 0;
-        if (percent > 1f) percent = 1f;
+    static int totalStored = 0;
+
+    public static int getCurrentStock(Player player, float percent){
 
         var data = player.getPersistentData();
+        int currentEP = (int) EnergyHelper.getBaseMaxEP(player) + 1;
 
-        int stored = data.getInt("power_stored_ep");
-        if (stored <= 0) return 0;
 
-        int cost = Math.round(stored * percent);
-        if (cost < 1) cost = 1;
 
-        int newValue = stored - cost;
-        if (newValue < 0) newValue = 0;
 
-        data.putInt("power_stored_ep", newValue);
-        return cost;
+        int spentEP = Math.max(0, (int) (data.getInt("power_stored_ep") * percent));
+
+        totalStored += spentEP;
+        data.putInt("power_used", spentEP);
+
+        /*
+
+        current max ep
+        spent ep
+        ep left = max - spent
+
+        on use{
+
+        percent * ep left
+
+        spent = percent * ep left
+
+
+        }
+
+         */
+
+
+
+        int stored = (currentEP - totalStored);
+
+
+        data.putInt("power_stored_ep", stored);
+
+
+
+        return spentEP;
     }
 
 
@@ -221,7 +207,7 @@ public class Power_Stock extends Skill {
 
     public void onScroll(ManasSkillInstance instance, LivingEntity entity, double delta, int mode) {
         switch (mode) {
-            case 1:
+            case 0:
             changeEPUsed(instance, entity, delta);
         }
     }
