@@ -524,12 +524,8 @@ public class GearshiftQuirk extends Skill {
         Level level = player.level();
 
         int gear = getGear(instance);
-        float damageMultiplier = getGearDamageMultiplier(gear);
 
         Projectile projectile = ThrowerSkill.getProjectile(level, player, stack.copy(), instance);
-
-        CompoundTag projectileData = projectile.getPersistentData();
-        projectileData.putFloat("GearshiftDamageMultiplier", damageMultiplier);
 
         Vec3 direction = player.getViewVector(1.0F);
 
