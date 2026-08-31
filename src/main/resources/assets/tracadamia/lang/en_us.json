@@ -3,6 +3,10 @@
   "tensuraacadamia.skill.float": "Float",
   "tensuraacadamia.skill.mode.float.airdash": "§dAir Dash",
 
+  "tensuraacadamia.skill.gearshift": "Gearshift",
+  "tensuraacadamia.skill.mode.gearshift.transmission": "§dTransmission",
+  "tensuraacadamia.skill.mode.gearshift.launch": "§dLaunch",
+
 
   "tensuraacadamia.skill.quirk_bestowal": "Quirk Bestowal",
 

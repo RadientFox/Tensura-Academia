@@ -31,6 +31,8 @@ public class FloatQuirk extends Skill {
         return (int) 2500.0;
     }
 
+
+
     @Override
     public boolean canBeToggled(ManasSkillInstance instance, LivingEntity living) {
         return true;
