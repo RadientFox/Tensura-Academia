@@ -1,5 +1,7 @@
 package com.radient.tensuraacadamia.ability.unique.quirks;
 
+import com.radient.tensuraacadamia.ability.ultimate.ofa.GearshiftTrailPayload;
+import dev.architectury.networking.NetworkManager;
 import io.github.manasmods.manascore.skill.api.ManasSkillInstance;
 import io.github.manasmods.tensura.ability.skill.Skill;
 import io.github.manasmods.tensura.ability.skill.unique.ThrowerSkill;
@@ -146,7 +148,7 @@ public class GearshiftQuirk extends Skill {
         entity.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, GEARSHIFT_PENALTY_DURATION, amplifier, false, true, true));
 
         entity.addEffect(new MobEffectInstance(TensuraMobEffects.getReference(TensuraMobEffects.FRAGILITY), GEARSHIFT_PENALTY_DURATION, amplifier, false, true, true));
-    }
+    }private static final double SEND_RANGE = 128.0D;
 
     private static void applyGear(LivingEntity entity, int gear) {
         removeGearshiftModifiers(entity);
@@ -182,6 +184,7 @@ public class GearshiftQuirk extends Skill {
                 addMovementModifier(entity, TOP_SPEED);
                 addAttackSpeedModifier(entity, TOP_ATTACK_SPEED);
                 addAttackDamageModifier(entity, TOP_DAMAGE_MULT);
+
             }
 
             default -> {

@@ -24,7 +24,7 @@ public class QuirkSkills {
     public static final RegistrySupplier<GearshiftQuirk> GEARSHIFT = register("gearshift", GearshiftQuirk::new);
 
     private static <E extends ManasSkill> RegistrySupplier<E> register(String name, Supplier<E> supplier) {
-        return SkillRegistry.SKILLS.register(ResourceLocation.fromNamespaceAndPath("tensuraacadamia", name), supplier);
+        return SkillRegistry.SKILLS.register(ResourceLocation.fromNamespaceAndPath("tracadamia", name), supplier);
     }
 
     public QuirkSkills() {

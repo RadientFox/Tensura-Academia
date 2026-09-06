@@ -1,33 +1,67 @@
 {
 
-  "tensuraacadamia.skill.float": "Float",
-  "tensuraacadamia.skill.mode.float.airdash": "§dAir Dash",
+  "tracadamia.skill.float": "Float",
+  "tracadamia.skill.mode.float.airdash": "§dAir Dash",
 
-  "tensuraacadamia.skill.gearshift": "Gearshift",
-  "tensuraacadamia.skill.mode.gearshift.transmission": "§dTransmission",
-  "tensuraacadamia.skill.mode.gearshift.launch": "§dLaunch",
-
-
-  "tensuraacadamia.skill.quirk_bestowal": "Quirk Bestowal",
-
-  "tensuraacadamia.skill.quirk_bestowal.description": "Quirk: Quirk Bestowal, A seemingly weak skill with the sole ability to pass itself on...",
-  "tensuraacadamia.skill.mode.quirk_bestowal.bestow": "Bestow",
-
-  "tensuraacadamia.skill.quirk_bestowal.passed": "The hope for a miracle has been bestowed upon you, go and take this beyond",
-  "tensuraacadamia.skill.quirk_bestowal.pass": "A flicker of you're will has been bestowed to another...",
-  "tensuraacadamia.skill.quirk_bestowal.pass": "A flicker of you're will has been bestowed to another...",
-  "tensuraacadamia.skill.quirk_bestowal.pass": "A flicker of you're will has been bestowed to another...",
+  "tracadamia.skill.gearshift": "Gearshift",
+  "tracadamia.skill.mode.gearshift.transmission": "§dTransmission",
+  "tracadamia.skill.mode.gearshift.launch": "§dLaunch",
 
 
+  "tracadamia.skill.quirk_bestowal": "Quirk Bestowal",
+
+  "tracadamia.skill.quirk_bestowal.description": "Quirk: Quirk Bestowal, A seemingly weak skill with the sole ability to pass itself on...",
+  "tracadamia.skill.mode.quirk_bestowal.bestow": "Bestow",
+
+  "tracadamia.skill.quirk_bestowal.passed": "The hope for a miracle has been bestowed upon you, go and take this beyond",
+  "tracadamia.skill.quirk_bestowal.pass": "A flicker of you're will has been bestowed to another...",
+  "tracadamia.skill.quirk_bestowal.pass": "A flicker of you're will has been bestowed to another...",
+  "tracadamia.skill.quirk_bestowal.pass": "A flicker of you're will has been bestowed to another...",
 
 
 
 
-  "tensuraacadamia.skill.power_stock": "Power Stock",
 
-  "tensuraacadamia.skill.power_stock.description": "Quirk: Power Stock, Stockpile power as you grow and release it for a empowered strike",
-  "tensuraacadamia.skill.mode.power_stock.output": "Output",
-  "tensuraacadamia.skill.mode.power_stock.smash": "Smash",
-  "tracadamia.skill.power_stock.ouputamount": "Used Storage: %s"
 
+  "tracadamia.skill.power_stock": "Power Stock",
+
+  "tracadamia.skill.power_stock.description": "Quirk: Power Stock, Stockpile power as you grow and release it for a empowered strike",
+  "tracadamia.skill.mode.power_stock.output": "Output",
+  "tracadamia.skill.mode.power_stock.smash": "Smash",
+  "tracadamia.skill.power_stock.ouputamount": "Used Storage: %s",
+
+
+
+  "tracadamia.skill.one_for_all_1": "§fOne For All",
+  "tracadamia.skill.one_for_all_2": "<rainb f=1 w=0.5>One For All",
+
+  "tracadamia.skill.one_for_all_1.description": "Quirk: One For All, The first person cultivates the power, and then passes it on to another. The next refines it and passes it on again. In this way, those crying out to be saved and those with brave and true hearts link to form a crystalline network of power!",
+  "tracadamia.skill.mode.one_for_all_1.output": "One For All Output",
+  "tracadamia.skill.mode.one_for_all_1.smash": "Smash!!!",
+  "tracadamia.skill.mode.one_for_all_1.cowling": "One For All: Full Cowling",
+  "tracadamia.skill.mode.one_for_all_1.bestow": "One Power For All Others",
+
+  "tracadamia.skill.mode.power.1": "Percentage 1%",
+  "tracadamia.skill.mode.power.2": "Percentage 5%",
+  "tracadamia.skill.mode.power.3": "Percentage 8%",
+  "tracadamia.skill.mode.power.4": "Percentage 12%",
+  "tracadamia.skill.mode.power.5": "Percentage 16%",
+  "tracadamia.skill.mode.power.6": "Percentage 20%",
+  "tracadamia.skill.mode.power.7": "Percentage 30%",
+  "tracadamia.skill.mode.power.8": "Percentage 45%",
+  "tracadamia.skill.mode.power.9": "Percentage 55%",
+  "tracadamia.skill.mode.power.10": "Percentage 65%",
+  "tracadamia.skill.mode.power.11": "Percentage 75%",
+  "tracadamia.skill.mode.power.12": "Percentage 80%",
+  "tracadamia.skill.mode.power.13": "Percentage 90%",
+  "tracadamia.skill.mode.power.14": "<neon p=8 r=2 a=0.15><rainb f=1 w=0.5><wave a=1 f=1.0 w=0.5>Percentage 100%",
+
+  "tracadamia.skill.mode.power.detroit": "Smash Style: Detroit Smash",
+  "tracadamia.skill.mode.power.carolina": "Smash Style: Carolina Smash",
+  "tracadamia.skill.mode.power.delaware": "Smash Style: Delaware Smash",
+  "tracadamia.skill.mode.power.texas": "Smash Style: Texas Smash",
+  "tracadamia.skill.mode.power.oklahoma": "Smash Style: Oklahoma Smash",
+
+  "tracadamia.skill.mode.power.detroit.active": "Detroit Smash Active",
+  "tracadamia.skill.mode.power.detroit.deactive": "Detroit Smash Deactivated"
 }
