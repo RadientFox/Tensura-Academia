@@ -54,6 +54,8 @@ public class OFAConfig extends ManasConfig {
         public double detroitCost = 100_000.0;
         @Comment("Carolina Smash AP cost")
         public double carolinaCost = 250_000.0;
+        @Comment("Carolina Smash dash distance")
+        public double carolinaDistance = 20.0;
         @Comment("Delaware Smash AP cost")
         public double delawareCost = 75_000.0;
         @Comment("Texas Smash AP cost")

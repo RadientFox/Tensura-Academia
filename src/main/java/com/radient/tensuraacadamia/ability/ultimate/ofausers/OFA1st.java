@@ -3,25 +3,51 @@ package com.radient.tensuraacadamia.ability.ultimate.ofausers;
 import com.github.hvnbael.trnightmare.compat.TextAnimatorCompat;
 import com.github.hvnbael.trnightmare.util.SkillIconFrames;
 import com.radient.tensuraacadamia.config.skills.OFAConfig;
-import com.radient.tensuraacadamia.config.skills.QuirkSkillsConfig;
 import com.radient.tensuraacadamia.regestry.MHAParticles;
+import io.github.manasmods.manascore.attribute.api.ManasCoreAttributes;
 import io.github.manasmods.manascore.config.ConfigRegistry;
 import io.github.manasmods.manascore.network.api.util.Changeable;
 import io.github.manasmods.manascore.skill.api.ManasSkillInstance;
+import io.github.manasmods.tensura.ability.magic.aspectual.wind.TornadoBladeMagic;
 import io.github.manasmods.tensura.ability.skill.Skill;
+import io.github.manasmods.tensura.data.TensuraBlockTags;
+import io.github.manasmods.tensura.enchantment.TensuraEnchantmentHelper;
+import io.github.manasmods.tensura.entity.projectile.magic.WindSphereProjectile;
 import io.github.manasmods.tensura.particle.TensuraParticleHelper;
+import io.github.manasmods.tensura.registry.sound.TensuraSoundEvents;
+import io.github.manasmods.tensura.util.EnergyHelper;
+import io.github.manasmods.tensura.util.ObjectSelectionHelper;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleOptions;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
+import net.minecraft.network.protocol.game.ClientboundAnimatePacket;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.util.RandomSource;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.Mth;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.level.ClipContext;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.Iterator;
+import java.util.List;
 
 public class OFA1st extends Skill {
         private static final OFAConfig.OFA1st CONFIG = ConfigRegistry.getConfig(OFAConfig.class).OFA1st;
@@ -253,6 +279,11 @@ public class OFA1st extends Skill {
 
                         case 1 -> detroitSmash(instance, entity);
 
+                        case 2 -> carolinaSmash(instance, entity);
+
+                        case 3 -> delawareSmash(instance, entity);
+
+
                     }
                 }
 
@@ -291,28 +322,109 @@ public class OFA1st extends Skill {
         var data = player.getPersistentData();
         boolean SmashActive = data.getBoolean("detroitActive");
 
-
         if (SmashActive){
             if (entity instanceof Player){
                 player.displayClientMessage(Component.translatable("tracadamia.skill.mode.power.detroit.deactive").setStyle(Style.EMPTY.withColor(ChatFormatting.WHITE)), true);
-
             }
             data.putBoolean("detroitActive",false);
-
         }else {
             if (entity instanceof Player){
                 player.displayClientMessage(Component.translatable("tracadamia.skill.mode.power.detroit.active").setStyle(Style.EMPTY.withColor(ChatFormatting.WHITE)), true);
-
             }
             data.putBoolean("detroitActive",true);
-
         }
+    }
 
+    private void carolinaSmash(ManasSkillInstance instance, LivingEntity entity){
+        Player player = (Player) entity;
+
+
+            if (!EnergyHelper.isOutOfEnergy(entity, instance, 2)) {
+                instance.addMasteryPoint(entity);
+                ServerLevel level = (ServerLevel)entity.level();
+                double range = CONFIG.carolinaDistance;
+                BlockHitResult result = ObjectSelectionHelper.getPlayerPOVHitResult(level, entity, ClipContext.Fluid.NONE, range);
+                BlockPos resultPos = result.getBlockPos().relative(result.getDirection());
+                Vec3 vec3 = ObjectSelectionHelper.getFloorPos(resultPos);
+                if (!level.getBlockState(resultPos).canBeReplaced()) {
+                    vec3 = ObjectSelectionHelper.getFloorPos(resultPos.above());
+                }
+
+                if (level.getBlockState(resultPos).is(TensuraBlockTags.SKILL_NOT_TELEPORTABLE)) {
+                    level.playSound((Player)null, entity.getX(), entity.getY(), entity.getZ(), (SoundEvent) TensuraSoundEvents.GENERIC_CAST_FAIL.get(), SoundSource.PLAYERS, 1.0F, 1.0F);
+                } else if (!entity.level().getWorldBorder().isWithinBounds(ObjectSelectionHelper.getBlockPos(vec3))) {
+                    entity.sendSystemMessage(Component.translatable("tensura.skill.teleport.out_border").withStyle(ChatFormatting.RED));
+                } else {
+                    Vec3 source = entity.position().add(0.0, (double)(entity.getBbHeight() / 2.0F), 0.0);
+                    Vec3 offSetToTarget = vec3.subtract(source);
+
+                    for(int particleIndex = 1; particleIndex < Mth.floor(offSetToTarget.length()); ++particleIndex) {
+                        Vec3 particlePos = source.add(offSetToTarget.normalize().scale((double)particleIndex));
+                        level.sendParticles(ParticleTypes.CLOUD, particlePos.x, particlePos.y, particlePos.z, 1, 0.0, 0.0, 0.0, 0.0);
+                        TensuraParticleHelper.addServerParticlesAroundPos(entity.getRandom(), level, particlePos, ParticleTypes.EXPLOSION, 3.0);
+                        TensuraParticleHelper.addServerParticlesAroundPos(entity.getRandom(), level, particlePos, ParticleTypes.SWEEP_ATTACK, 2.0);
+                        AABB aabb = (new AABB(ObjectSelectionHelper.getBlockPos(particlePos))).inflate(Math.max(entity.getAttributeValue(Attributes.ENTITY_INTERACTION_RANGE), 2.0));
+                        List<LivingEntity> list = level.getEntitiesOfClass(LivingEntity.class, aabb, (targetx) -> {
+                            return !targetx.is(entity) && !targetx.isAlliedTo(entity);
+                        });
+                        if (!list.isEmpty()) {
+                            float bonus = (float) getCurrnetDamage(player);
+                            float amount = (float)(entity.getAttributeValue(Attributes.ATTACK_DAMAGE) * entity.getAttributeValue(ManasCoreAttributes.CRITICAL_DAMAGE_MULTIPLIER));
+                            Iterator var19 = list.iterator();
+
+                            while(var19.hasNext()) {
+                                LivingEntity target = (LivingEntity)var19.next();
+                                if (target.invulnerableTime < 40) {
+                                    DamageSource damageSource = this.createSource(instance, entity, DamageTypes.MOB_ATTACK, 2);
+                                    if (target.hurt(damageSource, amount + bonus)) {
+                                        ItemStack stack = entity.getMainHandItem();
+                                        stack.getItem().hurtEnemy(stack, target, entity);
+                                        EnchantmentHelper.doPostAttackEffectsWithItemSource(level, target, damageSource, stack);
+                                        TensuraEnchantmentHelper.doAdditionalAfterDamage(level, target, entity, damageSource, stack, amount + bonus);
+                                        entity.level().playSound((Player)null, target.getX(), target.getY(), target.getZ(), SoundEvents.GENERIC_EXPLODE, entity.getSoundSource(), 1.0F, 1.0F);
+                                        if (level instanceof ServerLevel) {
+                                            ServerLevel serverLevel = level;
+                                            serverLevel.getChunkSource().broadcastAndSend(entity, new ClientboundAnimatePacket(entity, 4));
+                                        }
+                                    }
+
+                                    TensuraEnchantmentHelper.doAdditionalAfterAttack(level, target, entity, damageSource, entity.getMainHandItem(), amount + bonus);
+                                    target.invulnerableTime = 40;
+                                }
+                            }
+                        }
+                    }
+
+                    entity.resetFallDistance();
+                    entity.unRide();
+                    entity.teleportTo(vec3.x(), vec3.y(), vec3.z());
+                    entity.swing(InteractionHand.MAIN_HAND, true);
+                    level.playSound((Player)null, entity.getX(), entity.getY(), entity.getZ(), (SoundEvent)TensuraSoundEvents.INSTANT_MOVE.get(), SoundSource.PLAYERS, 1.0F, 1.0F);
+                }
+            }
 
     }
 
 
-    public static double getCurrnetDamage(Player player){
+    private void delawareSmash(ManasSkillInstance instance, LivingEntity entity){
+        Player player = (Player) entity;
+        if (!EnergyHelper.isOutOfEnergy(entity, instance, 2)) {
+            instance.addMasteryPoint(entity);
+            entity.swing(InteractionHand.MAIN_HAND, true);
+            WindSphereProjectile windSphere = new WindSphereProjectile(entity.level(), entity);
+            windSphere.setSpeed(20.0F);
+            windSphere.setDamage(getCurrnetDamage(player));
+            windSphere.setNoGravity(true);
+            windSphere.setKnockForce(3.0F);
+            windSphere.setBurnTicks(-1);
+            windSphere.setSkill(entity, instance, this, 2);
+            windSphere.setPosAndShoot(entity);
+            entity.level().addFreshEntity(windSphere);
+            entity.level().playSound((Player)null, entity.getX(), entity.getY(), entity.getZ(), (SoundEvent)TensuraSoundEvents.CAST_WIND.get(), SoundSource.PLAYERS, 1.0F, 1.0F);
+        }
+    }
+
+    public static float getCurrnetDamage(Player player){
         double fullDamage = (int) CONFIG.fullDamage;
         var data = player.getPersistentData();
         double percentUsed = (int) (data.getInt("outputPercent") * 0.1);
@@ -325,12 +437,11 @@ public class OFA1st extends Skill {
             UsedDamage = UsedDamagePre + (fullDamage* percentUsed);
 
         }else {
-
             UsedDamage = (fullDamage * percentUsed);
 
         }
 
-        return UsedDamage;
+        return (float) UsedDamage;
     }
 
         static {
