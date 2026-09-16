@@ -1,6 +1,6 @@
 package com.radient.tensuraacadamia.regestry;
 
-import com.radient.tensuraacadamia.entity.OFATornado;
+
 import dev.architectury.registry.registries.DeferredRegister;
 import dev.architectury.registry.registries.RegistrySupplier;
 import io.github.manasmods.tensura.entity.projectile.magic.WindTornadoProjectile;

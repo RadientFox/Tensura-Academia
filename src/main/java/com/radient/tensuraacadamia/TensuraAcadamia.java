@@ -1,6 +1,7 @@
 package com.radient.tensuraacadamia;
 
 import com.radient.tensuraacadamia.config.AcadamiaConfigs;
+import com.radient.tensuraacadamia.regestry.MHAEffects;
 import com.radient.tensuraacadamia.regestry.MHAParticles;
 import com.radient.tensuraacadamia.regestry.skills.QuirkSkills;
 import net.neoforged.neoforge.client.event.RegisterParticleProvidersEvent;
@@ -25,6 +26,7 @@ public class TensuraAcadamia {
         modEventBus.addListener(this::commonSetup);
         NeoForge.EVENT_BUS.register(this);
         QuirkSkills.init();
+        MHAEffects.register(modEventBus);
         MHAParticles.init(modEventBus);
         AcadamiaConfigs.init();
     }
