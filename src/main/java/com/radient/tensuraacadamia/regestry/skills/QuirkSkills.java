@@ -20,6 +20,7 @@ public class QuirkSkills {
     public static final RegistrySupplier<FloatQuirk> FLOAT = register("float", FloatQuirk::new);
     public static final RegistrySupplier<GearshiftQuirk> GEARSHIFT = register("gearshift", GearshiftQuirk::new);
     public static final RegistrySupplier<DangerSenseQuirk> DANGERSENSE = register("dangersense", DangerSenseQuirk::new);
+    public static final RegistrySupplier<CopyQuirk> COPY = register("copy", CopyQuirk::new);
 
     private static <E extends ManasSkill> RegistrySupplier<E> register(String name, Supplier<E> supplier) {
         return SkillRegistry.SKILLS.register(ResourceLocation.fromNamespaceAndPath("tracadamia", name), supplier);

@@ -24,12 +24,18 @@ import org.jetbrains.annotations.Nullable;
 public class DangerSenseQuirk extends Skill {
 
 
+    private static final ResourceLocation DANGERSENSE = ResourceLocation.fromNamespaceAndPath("tracademia", "dangersense");
+
     public DangerSenseQuirk() {
         super(Skill.SkillType.UNIQUE);
     }
 
     public @Nullable ResourceLocation getSkillIcon() {
         return ResourceLocation.fromNamespaceAndPath("tracadamia", "textures/skill/unique/dangersense.png");
+    }
+
+    public int getMaxMastery() {
+        return (int) 2500.0;
     }
 
     public boolean canBeSlotted(ManasSkillInstance instance, LivingEntity entity, int mode) {
@@ -40,8 +46,6 @@ public class DangerSenseQuirk extends Skill {
     public MutableComponent getSkillDescription() {
         return Component.literal("Detects threats with a sharp stinging pain in the head, scaling with the danger level. Great for dodging malice, though too many at once can be intense.");
     }
-
-    private static final ResourceLocation DANGERSENSE = ResourceLocation.fromNamespaceAndPath("tracademia", "dangersense");
 
     public boolean canBeToggled(ManasSkillInstance instance, LivingEntity living) {
         return true;
@@ -79,12 +83,10 @@ public class DangerSenseQuirk extends Skill {
             return true;
         } else {
             Object var5 = owner.get();
-            if (var5 instanceof ServerPlayer) {
-                ServerPlayer player = (ServerPlayer)var5;
-                if (!(attacker instanceof Mob)) {
+            if (var5 instanceof ServerPlayer player) {
+                if (!(attacker instanceof Mob mob)) {
                     return true;
                 } else {
-                    Mob mob = (Mob)attacker;
                     if (mob.getTarget() == null || !player.is(mob.getTarget())) {
                         if (player.getRandom().nextBoolean()) {
                             instance.addMasteryPoint(player);
@@ -103,7 +105,7 @@ public class DangerSenseQuirk extends Skill {
 
     private void sendSound(ServerPlayer user, LivingEntity target) {
         Vec3 eyeVec = user.getEyePosition();
-        Vec3 soundPos = eyeVec.add(target.getEyePosition().subtract(eyeVec).normalize().scale((double)5.0F));
+        Vec3 soundPos = eyeVec.add(target.getEyePosition().subtract(eyeVec).normalize().scale(5.0F));
         user.connection.send(new ClientboundSoundPacket(BuiltInRegistries.SOUND_EVENT.wrapAsHolder(SoundEvents.BELL_BLOCK), SoundSource.HOSTILE, soundPos.x(), eyeVec.y(), soundPos.z(), 1.0F, 1.0F, user.getRandom().nextLong()));
     }
 
