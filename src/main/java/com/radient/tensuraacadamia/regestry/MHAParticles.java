@@ -23,6 +23,12 @@ public final class MHAParticles {
             DeferredRegister.create(Registries.PARTICLE_TYPE, "tracadamia");
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> SMASH_PARTICLE =
             PARTICLES.register("smash_particles_1", () -> new SimpleParticleType(false));
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> ELECTRIC_ARC =
+            PARTICLES.register("electric_arc", () -> new SimpleParticleType(false));
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> ELECTRIC_FIELD =
+            PARTICLES.register("electric_field", () -> new SimpleParticleType(false));
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> ELECTRIC_TRAIL =
+            PARTICLES.register("electric_trail", () -> new SimpleParticleType(false));
 
     private MHAParticles() {
     }
@@ -36,6 +42,60 @@ public final class MHAParticles {
         @SubscribeEvent
         public static void registerProviders(RegisterParticleProvidersEvent event) {
             event.registerSpriteSet(SMASH_PARTICLE.get(), SmashParticle.Provider::new);
+            event.registerSpriteSet(ELECTRIC_ARC.get(), sprites -> new ElectricParticle.Provider(sprites, false));
+            event.registerSpriteSet(ELECTRIC_FIELD.get(), sprites -> new ElectricParticle.Provider(sprites, true));
+            event.registerSpriteSet(ELECTRIC_TRAIL.get(), sprites -> new ElectricParticle.Provider(sprites, 2));
+        }
+    }
+
+    private static final class ElectricParticle extends TextureSheetParticle {
+        private ElectricParticle(ClientLevel level, double x, double y, double z,
+                                 double xSpeed, double ySpeed, double zSpeed, SpriteSet sprites, int variant) {
+            super(level, x, y, z, xSpeed, ySpeed, zSpeed);
+            this.pickSprite(sprites);
+            this.lifetime = variant == 2 ? 24 : variant == 1 ? 9 : 7;
+            this.quadSize = variant == 2 ? 0.27F : variant == 1 ? 0.55F : 0.18F;
+            this.gravity = 0.0F;
+            this.hasPhysics = false;
+            this.roll = level.random.nextFloat() * 6.2831855F;
+            this.oRoll = this.roll;
+        }
+
+        @Override
+        public void tick() {
+            super.tick();
+            this.alpha = Math.max(0.0F, 1.0F - (float) this.age / this.lifetime);
+        }
+
+        @Override
+        public int getLightColor(float partialTick) {
+            return 0xF000F0;
+        }
+
+        @Override
+        public ParticleRenderType getRenderType() {
+            return ParticleRenderType.PARTICLE_SHEET_TRANSLUCENT;
+        }
+
+        private static final class Provider implements ParticleProvider<SimpleParticleType> {
+            private final SpriteSet sprites;
+            private final int variant;
+
+            private Provider(SpriteSet sprites, boolean field) {
+                this(sprites, field ? 1 : 0);
+            }
+
+            private Provider(SpriteSet sprites, int variant) {
+                this.sprites = sprites;
+                this.variant = variant;
+            }
+
+            @Override
+            public Particle createParticle(SimpleParticleType type, ClientLevel level,
+                                           double x, double y, double z,
+                                           double xSpeed, double ySpeed, double zSpeed) {
+                return new ElectricParticle(level, x, y, z, xSpeed, ySpeed, zSpeed, sprites, variant);
+            }
         }
     }
 

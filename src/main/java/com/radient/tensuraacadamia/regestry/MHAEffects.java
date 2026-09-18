@@ -6,6 +6,8 @@ import com.radient.tensuraacadamia.effects.BloodParalysisEffect;
 import com.radient.tensuraacadamia.effects.BadTasteEffect;
 import com.radient.tensuraacadamia.effects.CoalgulationEffect;
 import com.radient.tensuraacadamia.effects.QuirkSicknessEffect;
+import com.radient.tensuraacadamia.effects.ElectricBoostEffect;
+import com.radient.tensuraacadamia.effects.WattageEffect;
 import dev.architectury.registry.registries.RegistrySupplier;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
@@ -28,6 +30,8 @@ public class MHAEffects {
     public static final DeferredHolder<MobEffect, MobEffect> BAD_TASTE;
     public static final DeferredHolder<MobEffect, MobEffect> COALGULATION;
     public static final DeferredHolder<MobEffect, MobEffect> QUIRK_SICKNESS;
+    public static final DeferredHolder<MobEffect, MobEffect> ELECTRIC_BOOST;
+    public static final DeferredHolder<MobEffect, MobEffect> WATTAGE;
 
 
     public MHAEffects() {
@@ -47,6 +51,8 @@ public class MHAEffects {
         BAD_TASTE = MOB_EFFECTS.register("bad_taste", BadTasteEffect::new);
         COALGULATION = MOB_EFFECTS.register("coalgulation", CoalgulationEffect::new);
         QUIRK_SICKNESS = MOB_EFFECTS.register("quirk_sickness", QuirkSicknessEffect::new);
+        ELECTRIC_BOOST = MOB_EFFECTS.register("electric_boost", ElectricBoostEffect::new);
+        WATTAGE = MOB_EFFECTS.register("wattage", WattageEffect::new);
     }
 
 }
