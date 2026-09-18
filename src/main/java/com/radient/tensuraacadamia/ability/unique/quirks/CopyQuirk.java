@@ -25,6 +25,10 @@ public class CopyQuirk extends Skill {
     private static final String MOD_NAMESPACE = "tracadamia";
     private static final String COPY_TAG = "CopyQuirkCopy";
 
+    public static boolean isCopiedSkill(ManasSkillInstance instance) {
+        return instance.getTag() != null && instance.getTag().getBoolean(COPY_TAG);
+    }
+
     public CopyQuirk() {
         super(SkillType.UNIQUE);
     }
@@ -188,7 +192,7 @@ public class CopyQuirk extends Skill {
 
         for (ManasSkillInstance instance : SkillAPI.getSkillsFrom(entity).getLearnedSkills()) {
 
-            if (instance.getTag() != null && instance.getTag().getBoolean(COPY_TAG)) {
+            if (isCopiedSkill(instance)) {
 
                 copies.add(instance);
             }

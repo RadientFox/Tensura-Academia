@@ -1,6 +1,7 @@
 package com.radient.tensuraacadamia.ability.ultimate.afo;
 
 import com.radient.tensuraacadamia.TensuraAcadamia;
+import com.radient.tensuraacadamia.ability.unique.quirks.CopyQuirk;
 import com.radient.tensuraacadamia.regestry.skills.QuirkSkills;
 import io.github.manasmods.manascore.skill.api.ManasSkill;
 import io.github.manasmods.manascore.skill.api.ManasSkillInstance;
@@ -54,15 +55,20 @@ public final class AllForOneStock {
         };
     }
 
+    private static boolean canHandle(ManasSkillInstance instance) {
+        return instance != null && canHandle(instance.getSkill())
+                && !instance.isTemporarySkill() && !CopyQuirk.isCopiedSkill(instance);
+    }
+
     public static Map<ResourceLocation, Integer> counts(LivingEntity owner) {
         Map<ResourceLocation, Integer> counts = new LinkedHashMap<>();
         for (ManasSkillInstance instance : SkillAPI.getSkillsFrom(owner).getLearnedSkills()) {
-            if (canHandle(instance.getSkill())) counts.merge(instance.getSkillId(), 1, Integer::sum);
+            if (canHandle(instance)) counts.merge(instance.getSkillId(), 1, Integer::sum);
         }
         for (Tag entry : copies(owner)) {
             ResourceLocation id = ResourceLocation.tryParse(((CompoundTag) entry).getString(SKILL_ID_TAG));
             if (id != null && SkillAPI.getSkillRegistry().contains(id)
-                    && canHandle(SkillAPI.getSkillRegistry().get(id))) {
+                    && canHandle(ManasSkillInstance.fromNBT(((CompoundTag) entry).getCompound(SKILL_DATA_TAG)))) {
                 counts.merge(id, 1, Integer::sum);
             }
         }
@@ -102,7 +108,7 @@ public final class AllForOneStock {
         SkillStorage destination = SkillAPI.getSkillsFrom(to);
         ManasSkillInstance instance = source.getSkill(id).orElse(null);
         CompoundTag copy = findCopy(from, id);
-        if (instance == null && copy == null) return false;
+        if (copy == null && !canHandle(instance)) return false;
 
         ManasSkillInstance moving;
         if (copy != null) {
@@ -110,7 +116,7 @@ public final class AllForOneStock {
         } else {
             moving = instance.copy();
         }
-        if (moving == null) return false;
+        if (!canHandle(moving)) return false;
 
         if (destination.getSkill(id).isPresent()) {
             addCopy(to, moving);
@@ -136,7 +142,7 @@ public final class AllForOneStock {
             return true;
         }
         SkillStorage storage = SkillAPI.getSkillsFrom(owner);
-        if (storage.getSkill(id).isEmpty()) return false;
+        if (!canHandle(storage.getSkill(id).orElse(null))) return false;
         storage.forgetSkill(id);
         return true;
     }
@@ -157,7 +163,8 @@ public final class AllForOneStock {
     private static CompoundTag findCopy(LivingEntity owner, ResourceLocation id) {
         for (Tag entry : copies(owner)) {
             CompoundTag copy = (CompoundTag) entry;
-            if (id.toString().equals(copy.getString(SKILL_ID_TAG))) return copy;
+            if (id.toString().equals(copy.getString(SKILL_ID_TAG))
+                    && canHandle(ManasSkillInstance.fromNBT(copy.getCompound(SKILL_DATA_TAG)))) return copy;
         }
         return null;
     }
@@ -165,7 +172,9 @@ public final class AllForOneStock {
     private static void removeCopy(LivingEntity owner, ResourceLocation id) {
         ListTag list = copies(owner);
         for (int i = 0; i < list.size(); i++) {
-            if (id.toString().equals(list.getCompound(i).getString(SKILL_ID_TAG))) {
+            CompoundTag copy = list.getCompound(i);
+            if (id.toString().equals(copy.getString(SKILL_ID_TAG))
+                    && canHandle(ManasSkillInstance.fromNBT(copy.getCompound(SKILL_DATA_TAG)))) {
                 list.remove(i);
                 owner.getPersistentData().put(STOCK_TAG, list);
                 return;

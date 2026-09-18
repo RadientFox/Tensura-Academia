@@ -25,6 +25,15 @@ import java.util.Map;
 public final class AllForOneScreen extends SkillCreationScreen {
     private static final ResourceLocation SKILL_AMOUNT = ResourceLocation.fromNamespaceAndPath(
             TensuraAcadamia.MODID, "textures/skill/ultimate/skillamount.png");
+    private static final ResourceLocation[] COUNT_DIGITS = new ResourceLocation[10];
+
+    static {
+        for (int digit = 0; digit < COUNT_DIGITS.length; digit++) {
+            COUNT_DIGITS[digit] = ResourceLocation.fromNamespaceAndPath(TensuraAcadamia.MODID,
+                    "textures/skill/ultimate/skillamountnumbers/" + digit + ".png");
+        }
+    }
+
     private final Map<ManasSkill, Integer> skillCounts = new IdentityHashMap<>();
 
     public AllForOneScreen(SkillCreationMenu menu, Inventory inventory, Component title) {
@@ -59,11 +68,13 @@ public final class AllForOneScreen extends SkillCreationScreen {
             int copies = getSkillCount(selected);
             graphics.blit(SKILL_AMOUNT, leftPos + 190, topPos + 10, 125, 9, 23, 22, 256, 256);
             String amount = Integer.toString(copies);
-            float scale = Math.min(1.0F, 18.0F / Math.max(1, font.width(amount)));
+            float scale = Math.min(0.5F, 18.0F / (amount.length() * 16.0F));
             graphics.pose().pushPose();
             graphics.pose().translate(leftPos + 214, topPos + 16, 0);
             graphics.pose().scale(scale, scale, 1.0F);
-            graphics.drawString(font, amount, 0, 0, 0xFFF4DDE0, false);
+            for (int i = 0; i < amount.length(); i++) {
+                graphics.blit(COUNT_DIGITS[amount.charAt(i) - '0'], i * 16, 0, 0, 0, 16, 16, 16, 16);
+            }
             graphics.pose().popPose();
         }
         int x = leftPos + 162;
