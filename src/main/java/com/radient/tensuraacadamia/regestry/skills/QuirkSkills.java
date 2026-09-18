@@ -1,11 +1,7 @@
 package com.radient.tensuraacadamia.regestry.skills;
 
 import com.radient.tensuraacadamia.ability.ultimate.ofausers.OFA1st;
-import com.radient.tensuraacadamia.ability.unique.quirks.FloatQuirk;
-import com.radient.tensuraacadamia.ability.unique.quirks.Bloodcurdle;
-import com.radient.tensuraacadamia.ability.unique.quirks.GearshiftQuirk;
-import com.radient.tensuraacadamia.ability.unique.quirks.Power_Stock;
-import com.radient.tensuraacadamia.ability.unique.quirks.QuirkBestowal;
+import com.radient.tensuraacadamia.ability.unique.quirks.*;
 import dev.architectury.registry.registries.RegistrySupplier;
 import io.github.manasmods.manascore.skill.api.ManasSkill;
 import io.github.manasmods.manascore.skill.impl.SkillRegistry;
@@ -24,6 +20,8 @@ public class QuirkSkills {
     public static final RegistrySupplier<FloatQuirk> FLOAT = register("float", FloatQuirk::new);
     public static final RegistrySupplier<GearshiftQuirk> GEARSHIFT = register("gearshift", GearshiftQuirk::new);
     public static final RegistrySupplier<Bloodcurdle> BLOODCURDLE = register("bloodcurdle", Bloodcurdle::new);
+    public static final RegistrySupplier<DangerSenseQuirk> DANGERSENSE = register("dangersense", DangerSenseQuirk::new);
+    public static final RegistrySupplier<CopyQuirk> COPY = register("copy", CopyQuirk::new);
 
     private static <E extends ManasSkill> RegistrySupplier<E> register(String name, Supplier<E> supplier) {
         return SkillRegistry.SKILLS.register(ResourceLocation.fromNamespaceAndPath("tracadamia", name), supplier);

@@ -58,7 +58,7 @@ public class FloatQuirk extends Skill {
     @Override
     public void onToggleOff(ManasSkillInstance instance, LivingEntity entity) {
         if (entity instanceof Player player) {
-            player.getAbilities().mayfly = false;
+            player.getAbilities().mayfly = true;
 
             player.getAbilities().flying = false;
 
