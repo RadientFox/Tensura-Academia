@@ -31,6 +31,7 @@ public class TensuraAcadamia {
         MHAEffects.register(modEventBus);
         MHASounds.register(modEventBus);
         MHAParticles.init(modEventBus);
+      //  OFAEntitys.ENTITY_TYPES.register(modEventBus);
         AcadamiaConfigs.init();
     }
 

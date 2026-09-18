@@ -1,35 +1,45 @@
 package com.radient.tensuraacadamia.regestry;
 
 
-import dev.architectury.registry.registries.DeferredRegister;
+import com.radient.tensuraacadamia.TensuraAcadamia;
 import dev.architectury.registry.registries.RegistrySupplier;
 import io.github.manasmods.tensura.entity.projectile.magic.WindTornadoProjectile;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.registries.DeferredHolder;
+import net.neoforged.neoforge.registries.DeferredRegister;
+
+import java.util.function.Supplier;
 
 /*
 public class OFAEntitys {
 
-    public static final DeferredRegister<EntityType<?>> ENTITY_TYPES =
-            DeferredRegister.create(Registries.ENTITY_TYPE, "stellarprism",);
-
-    public static final RegistrySupplier<EntityType<OFATornado>> ONYX_VOID = ENTITY_TYPES.register("onyx_void",
-            () -> EntityType.Builder.<OFATornado>of(OFATornado::new, MobCategory.MISC)
-                    .sized(1.0F, 1.0F)
-                    .build("onyx_void"));
+    public static final net.neoforged.neoforge.registries.DeferredRegister<EntityType<?>> ENTITY_TYPES =
+            DeferredRegister.create(Registries.ENTITY_TYPE, TensuraAcadamia.MODID);
 
 
+    public static final DeferredHolder<EntityType<?>, EntityType<BlackwhipProjectile>> BLACKWHIP_PROJECTILE =
+            ENTITY_TYPES.register("blackwhip_projectile",
+                    () -> EntityType.Builder.<BlackwhipProjectile>of(
+                                    BlackwhipProjectile::new,
+                                    MobCategory.MISC
+                            )
+                            .sized(0.1F, 0.1F)
+                            .clientTrackingRange(64)
+                            .updateInterval(1)
+
+
+                            .build("blackwhip_projectile"));
 
 
 
-    public static void register(IEventBus modEventBus) {
-        ENTITY_TYPES.register(modEventBus);
-    }
 
 }
 
 
  */
+
