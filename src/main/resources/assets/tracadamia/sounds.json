@@ -12,5 +12,8 @@
         "stream": true
       }
     ]
+  },
+  "electrification": {
+    "sounds": ["tracadamia:electrification"]
   }
 }

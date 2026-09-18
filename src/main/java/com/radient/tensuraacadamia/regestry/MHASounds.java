@@ -20,6 +20,9 @@ public final class MHASounds {
     public static final DeferredHolder<SoundEvent, SoundEvent> BLEED_REVERSED = SOUNDS.register(
             "bleed_sfx_reversed", () -> SoundEvent.createVariableRangeEvent(
                     ResourceLocation.fromNamespaceAndPath(TensuraAcadamia.MODID, "bleed_sfx_reversed")));
+    public static final DeferredHolder<SoundEvent, SoundEvent> ELECTRIFICATION = SOUNDS.register(
+            "electrification", () -> SoundEvent.createVariableRangeEvent(
+                    ResourceLocation.fromNamespaceAndPath(TensuraAcadamia.MODID, "electrification")));
 
     private MHASounds() {
     }
