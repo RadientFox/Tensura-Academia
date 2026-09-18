@@ -1,6 +1,10 @@
 package com.radient.tensuraacadamia.regestry;
 
 import com.radient.tensuraacadamia.effects.ToInspireOthersEffect;
+import com.radient.tensuraacadamia.effects.BleedingEffect;
+import com.radient.tensuraacadamia.effects.BloodParalysisEffect;
+import com.radient.tensuraacadamia.effects.BadTasteEffect;
+import com.radient.tensuraacadamia.effects.CoalgulationEffect;
 import dev.architectury.registry.registries.RegistrySupplier;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
@@ -18,6 +22,10 @@ public class MHAEffects {
     public static final DeferredRegister<MobEffect> MOB_EFFECTS;
     private static final Map<RegistrySupplier<MobEffect>, Holder<MobEffect>> HOLDER_CACHE;
     public static final DeferredHolder<MobEffect, MobEffect> OTHERSINSPIRE;
+    public static final DeferredHolder<MobEffect, MobEffect> BLEEDING;
+    public static final DeferredHolder<MobEffect, MobEffect> BLOOD_PARALYSIS;
+    public static final DeferredHolder<MobEffect, MobEffect> BAD_TASTE;
+    public static final DeferredHolder<MobEffect, MobEffect> COALGULATION;
 
 
     public MHAEffects() {
@@ -32,6 +40,10 @@ public class MHAEffects {
         MOB_EFFECTS = DeferredRegister.create(Registries.MOB_EFFECT, "tracadamia");
         HOLDER_CACHE = new ConcurrentHashMap();
         OTHERSINSPIRE = MOB_EFFECTS.register("others_inspiration", ToInspireOthersEffect::new);
+        BLEEDING = MOB_EFFECTS.register("bleeding", BleedingEffect::new);
+        BLOOD_PARALYSIS = MOB_EFFECTS.register("blood_paralysis", BloodParalysisEffect::new);
+        BAD_TASTE = MOB_EFFECTS.register("bad_taste", BadTasteEffect::new);
+        COALGULATION = MOB_EFFECTS.register("coalgulation", CoalgulationEffect::new);
     }
 
 }

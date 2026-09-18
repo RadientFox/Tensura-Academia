@@ -1,5 +1,13 @@
 {
 
+  "tracadamia.skill.bloodcurdle": "Bloodcurdle",
+  "tracadamia.skill.bloodcurdle.description": "Quirk: Bloodcurdle. Sword and blade quirk hits cause bleeding. Use Blood Paralysis on a bleeding target to stop their movement.",
+  "tracadamia.skill.mode.bloodcurdle.blood_paralysis": "Blood Paralysis",
+  "effect.tracadamia.bleeding": "Bleeding",
+  "effect.tracadamia.blood_paralysis": "Blood Paralysis",
+  "effect.tracadamia.bad_taste": "Bad Taste",
+  "effect.tracadamia.coalgulation": "Coalgulation",
+
   "tracadamia.skill.float": "Float",
   "tracadamia.skill.mode.float.airdash": "§dAir Dash",
 
