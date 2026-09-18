@@ -1,0 +1,16 @@
+{
+  "bleed_sfx": {
+    "sounds": ["tracadamia:bleed_sfx"]
+  },
+  "bleed_sfx_reversed": {
+    "sounds": ["tracadamia:bleed_sfx_reversed"]
+  },
+  "afo_noteblock_theme": {
+    "sounds": [
+      {
+        "name": "tracadamia:afo_noteblock_theme",
+        "stream": true
+      }
+    ]
+  }
+}

@@ -1,16 +1,21 @@
 package com.radient.tensuraacadamia.ability.unique.quirks;
 
 import com.radient.tensuraacadamia.regestry.MHAEffects;
+import com.radient.tensuraacadamia.regestry.MHASounds;
 import com.radient.tensuraacadamia.regestry.skills.QuirkSkills;
 import io.github.manasmods.manascore.skill.api.ManasSkillInstance;
 import io.github.manasmods.tensura.ability.SkillUtils;
 import io.github.manasmods.tensura.ability.skill.Skill;
 import io.github.manasmods.tensura.data.TensuraEntityTags;
 import io.github.manasmods.tensura.registry.skill.ResistanceSkills;
+import io.github.manasmods.tensura.storage.TensuraStorages;
+import io.github.manasmods.tensura.util.EnergyHelper;
 import io.github.manasmods.tensura.util.ObjectSelectionHelper;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.network.chat.Component;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -66,6 +71,11 @@ public class Bloodcurdle extends Skill {
         return mode == 0 ? "bloodcurdle.blood_paralysis" : super.getModeId(instance, mode);
     }
 
+    @Override
+    public double getAuraCost(LivingEntity entity, ManasSkillInstance instance, int mode) {
+        return mode == 0 ? 500.0D + EnergyHelper.getMaxAura(entity) * 0.01D : 0.0D;
+    }
+
     @SubscribeEvent
     public static void onLivingDamaged(LivingDamageEvent.Post event) {
         LivingEntity target = event.getEntity();
@@ -84,7 +94,10 @@ public class Bloodcurdle extends Skill {
                 || target.hasEffect(MHAEffects.COALGULATION)
                 || !SkillUtils.hasSkill(livingAttacker, QuirkSkills.BLOODCURDLE.get())) return;
 
-        target.addEffect(new MobEffectInstance(MHAEffects.BLEEDING, BLEEDING_TICKS, 0));
+        if (target.addEffect(new MobEffectInstance(MHAEffects.BLEEDING, BLEEDING_TICKS, 0))) {
+            target.level().playSound(null, target.getX(), target.getY(), target.getZ(),
+                    MHASounds.BLEED.get(), SoundSource.PLAYERS, 1.0F, 1.0F);
+        }
     }
 
     private static boolean isSword(ItemStack stack) {
@@ -137,8 +150,21 @@ public class Bloodcurdle extends Skill {
             duration = Math.max(1, duration * 3 / 4);
         }
 
-        target.addEffect(new MobEffectInstance(MHAEffects.BLOOD_PARALYSIS, duration, 0));
+        double auraCost = getAuraCost(entity, instance, mode);
+        var existence = TensuraStorages.getExistenceFrom(entity);
+        if (existence.getAura() < auraCost) {
+            if (entity instanceof Player player) {
+                player.displayClientMessage(Component.literal("You need " + (long) Math.ceil(auraCost)
+                        + " aura for Blood Paralysis."), true);
+            }
+            return;
+        }
+        if (!target.addEffect(new MobEffectInstance(MHAEffects.BLOOD_PARALYSIS, duration, 0))) return;
+        existence.setAura(existence.getAura() - auraCost);
+        existence.markDirty();
         target.removeEffect(MHAEffects.BLEEDING);
+        target.level().playSound(null, target.getX(), target.getY(), target.getZ(),
+                MHASounds.BLEED_REVERSED.get(), SoundSource.PLAYERS, 1.0F, 1.0F);
         applyBadTaste(instance, entity, target);
         instance.addMasteryPoint(entity);
     }

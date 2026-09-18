@@ -1,6 +1,7 @@
 package com.radient.tensuraacadamia.regestry.skills;
 
 import com.radient.tensuraacadamia.ability.ultimate.ofausers.OFA1st;
+import com.radient.tensuraacadamia.ability.ultimate.AllForOne;
 import com.radient.tensuraacadamia.ability.unique.quirks.*;
 import dev.architectury.registry.registries.RegistrySupplier;
 import io.github.manasmods.manascore.skill.api.ManasSkill;
@@ -22,6 +23,7 @@ public class QuirkSkills {
     public static final RegistrySupplier<Bloodcurdle> BLOODCURDLE = register("bloodcurdle", Bloodcurdle::new);
     public static final RegistrySupplier<DangerSenseQuirk> DANGERSENSE = register("dangersense", DangerSenseQuirk::new);
     public static final RegistrySupplier<CopyQuirk> COPY = register("copy", CopyQuirk::new);
+    public static final RegistrySupplier<AllForOne> ALL_FOR_ONE = register("all_for_one", AllForOne::new);
 
     private static <E extends ManasSkill> RegistrySupplier<E> register(String name, Supplier<E> supplier) {
         return SkillRegistry.SKILLS.register(ResourceLocation.fromNamespaceAndPath("tracadamia", name), supplier);

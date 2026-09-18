@@ -1,6 +1,7 @@
 package com.radient.tensuraacadamia.config;
 
 import com.radient.tensuraacadamia.config.skills.OFAConfig;
+import com.radient.tensuraacadamia.config.skills.AFOConfig;
 import com.radient.tensuraacadamia.config.skills.QuirkSkillsConfig;
 import io.github.manasmods.manascore.config.ConfigRegistry;
 
@@ -12,5 +13,6 @@ public class AcadamiaConfigs {
 
         ConfigRegistry.registerConfig(new QuirkSkillsConfig());
         ConfigRegistry.registerConfig(new OFAConfig());
+        ConfigRegistry.registerConfig(new AFOConfig());
     }
 }

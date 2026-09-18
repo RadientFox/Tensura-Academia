@@ -2,10 +2,10 @@ package com.radient.tensuraacadamia;
 
 import com.radient.tensuraacadamia.config.AcadamiaConfigs;
 import com.radient.tensuraacadamia.regestry.MHAEffects;
+import com.radient.tensuraacadamia.regestry.MHASounds;
 import com.radient.tensuraacadamia.regestry.MHAParticles;
 import com.radient.tensuraacadamia.regestry.skills.QuirkSkills;
 import com.radient.tensuraacadamia.ability.unique.quirks.Bloodcurdle;
-import net.neoforged.neoforge.client.event.RegisterParticleProvidersEvent;
 import org.slf4j.Logger;
 
 import com.mojang.logging.LogUtils;
@@ -29,6 +29,7 @@ public class TensuraAcadamia {
         NeoForge.EVENT_BUS.register(Bloodcurdle.class);
         QuirkSkills.init();
         MHAEffects.register(modEventBus);
+        MHASounds.register(modEventBus);
         MHAParticles.init(modEventBus);
         AcadamiaConfigs.init();
     }

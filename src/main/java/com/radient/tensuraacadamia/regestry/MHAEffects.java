@@ -5,6 +5,7 @@ import com.radient.tensuraacadamia.effects.BleedingEffect;
 import com.radient.tensuraacadamia.effects.BloodParalysisEffect;
 import com.radient.tensuraacadamia.effects.BadTasteEffect;
 import com.radient.tensuraacadamia.effects.CoalgulationEffect;
+import com.radient.tensuraacadamia.effects.QuirkSicknessEffect;
 import dev.architectury.registry.registries.RegistrySupplier;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
@@ -26,6 +27,7 @@ public class MHAEffects {
     public static final DeferredHolder<MobEffect, MobEffect> BLOOD_PARALYSIS;
     public static final DeferredHolder<MobEffect, MobEffect> BAD_TASTE;
     public static final DeferredHolder<MobEffect, MobEffect> COALGULATION;
+    public static final DeferredHolder<MobEffect, MobEffect> QUIRK_SICKNESS;
 
 
     public MHAEffects() {
@@ -44,6 +46,7 @@ public class MHAEffects {
         BLOOD_PARALYSIS = MOB_EFFECTS.register("blood_paralysis", BloodParalysisEffect::new);
         BAD_TASTE = MOB_EFFECTS.register("bad_taste", BadTasteEffect::new);
         COALGULATION = MOB_EFFECTS.register("coalgulation", CoalgulationEffect::new);
+        QUIRK_SICKNESS = MOB_EFFECTS.register("quirk_sickness", QuirkSicknessEffect::new);
     }
 
 }

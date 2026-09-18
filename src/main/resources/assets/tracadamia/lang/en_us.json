@@ -1,5 +1,13 @@
 {
 
+  "tracadamia.skill.all_for_one": "All For One",
+  "tracadamia.skill.all_for_one.description": "Quirk: All For One. If it's freedom you desire, then submit to me, my brethren. And bear witness, by my side. This impending void era will give rise to a more perfect demon lord. This will be the story of how I became the greatest demon lord of all!",
+  "tracadamia.skill.mode.all_for_one.steal": "Quirk Steal",
+  "tracadamia.skill.mode.all_for_one.transfer": "Quirk Transfer",
+  "tracadamia.skill.mode.all_for_one.stock": "Quirk Stock",
+  "tracadamia.menu.all_for_one.steal": "Steal",
+  "tracadamia.menu.all_for_one.transfer": "Transfer",
+
   "tracadamia.skill.bloodcurdle": "Bloodcurdle",
   "tracadamia.skill.bloodcurdle.description": "Quirk: Bloodcurdle. Sword and blade quirk hits cause bleeding. Use Blood Paralysis on a bleeding target to stop their movement.",
   "tracadamia.skill.mode.bloodcurdle.blood_paralysis": "Blood Paralysis",
@@ -7,6 +15,7 @@
   "effect.tracadamia.blood_paralysis": "Blood Paralysis",
   "effect.tracadamia.bad_taste": "Bad Taste",
   "effect.tracadamia.coalgulation": "Coalgulation",
+  "effect.tracadamia.quirk_sickness": "Quirk Sickness",
 
   "tracadamia.skill.float": "Float",
   "tracadamia.skill.mode.float.airdash": "§dAir Dash",
