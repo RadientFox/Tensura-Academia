@@ -29,6 +29,10 @@ public final class MHAParticles {
             PARTICLES.register("electric_field", () -> new SimpleParticleType(false));
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> ELECTRIC_TRAIL =
             PARTICLES.register("electric_trail", () -> new SimpleParticleType(false));
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> SMOKESCREEN =
+            PARTICLES.register("smokescreen", () -> new SimpleParticleType(false));
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> SMOKESCREEN_SELF =
+            PARTICLES.register("smokescreen_self", () -> new SimpleParticleType(false));
 
     private MHAParticles() {
     }
@@ -45,6 +49,8 @@ public final class MHAParticles {
             event.registerSpriteSet(ELECTRIC_ARC.get(), sprites -> new ElectricParticle.Provider(sprites, false));
             event.registerSpriteSet(ELECTRIC_FIELD.get(), sprites -> new ElectricParticle.Provider(sprites, true));
             event.registerSpriteSet(ELECTRIC_TRAIL.get(), sprites -> new ElectricParticle.Provider(sprites, 2));
+            event.registerSpriteSet(SMOKESCREEN.get(), sprites -> new SmokeParticle.Provider(sprites, 1.0F));
+            event.registerSpriteSet(SMOKESCREEN_SELF.get(), sprites -> new SmokeParticle.Provider(sprites, 0.2F));
         }
     }
 
@@ -95,6 +101,57 @@ public final class MHAParticles {
                                            double x, double y, double z,
                                            double xSpeed, double ySpeed, double zSpeed) {
                 return new ElectricParticle(level, x, y, z, xSpeed, ySpeed, zSpeed, sprites, variant);
+            }
+        }
+    }
+
+    private static final class SmokeParticle extends TextureSheetParticle {
+        private final SpriteSet sprites;
+        private final float opacity;
+
+        private SmokeParticle(ClientLevel level, double x, double y, double z,
+                              double xSpeed, double ySpeed, double zSpeed, SpriteSet sprites, float opacity) {
+            super(level, x, y, z, xSpeed, ySpeed, zSpeed);
+            this.sprites = sprites;
+            this.opacity = opacity;
+            this.lifetime = 36 + level.random.nextInt(20);
+            this.quadSize = 2.4F + level.random.nextFloat() * 1.4F;
+            this.gravity = 0.0F;
+            this.hasPhysics = false;
+            this.xd = xSpeed;
+            this.yd = ySpeed;
+            this.zd = zSpeed;
+            this.alpha = 0.0F;
+            this.setSpriteFromAge(sprites);
+        }
+
+        @Override
+        public void tick() {
+            super.tick();
+            this.setSpriteFromAge(sprites);
+            this.alpha = opacity * Math.min(0.85F, Math.min(this.age / 8.0F,
+                    (this.lifetime - this.age) / 10.0F));
+        }
+
+        @Override
+        public ParticleRenderType getRenderType() {
+            return ParticleRenderType.PARTICLE_SHEET_TRANSLUCENT;
+        }
+
+        private static final class Provider implements ParticleProvider<SimpleParticleType> {
+            private final SpriteSet sprites;
+            private final float opacity;
+
+            private Provider(SpriteSet sprites, float opacity) {
+                this.sprites = sprites;
+                this.opacity = opacity;
+            }
+
+            @Override
+            public Particle createParticle(SimpleParticleType type, ClientLevel level,
+                                           double x, double y, double z,
+                                           double xSpeed, double ySpeed, double zSpeed) {
+                return new SmokeParticle(level, x, y, z, xSpeed, ySpeed, zSpeed, sprites, opacity);
             }
         }
     }

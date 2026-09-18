@@ -10,6 +10,11 @@
 
   "effect.tracadamia.wattage": "Wattage",
   "effect.tracadamia.electric_boost": "Electric Charge",
+  "effect.tracadamia.aspersion": "Aspersion",
+  "effect.tracadamia.smokescreen_obscured": "Smoke Obscured",
+  "tracadamia.skill.smokescreen": "Smokescreen",
+  "tracadamia.skill.smokescreen.description": "Release a dome of smoke. You can see through your own cloud, but others cannot. Holding costs 1% of maximum AP every 3 seconds. Sense skills are suppressed for everyone inside, including you. Aspersion conceals your presence while slotted.",
+  "tracadamia.skill.mode.smokescreen.smoke_release": "Smoke Release",
   "tracadamia.skill.electrification": "Electrification",
   "tracadamia.skill.electrification.description": "Absorb lightning for a damage boost. Shock attackers while toggled. Discharge nearby or throw a charge that sticks for 30 seconds and can be detonated with a second press.",
   "tracadamia.skill.mode.electrification.discharge": "Discharge",

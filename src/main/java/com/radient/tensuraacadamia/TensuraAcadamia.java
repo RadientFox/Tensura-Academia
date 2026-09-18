@@ -7,6 +7,7 @@ import com.radient.tensuraacadamia.regestry.MHAParticles;
 import com.radient.tensuraacadamia.regestry.skills.QuirkSkills;
 import com.radient.tensuraacadamia.ability.unique.quirks.Bloodcurdle;
 import com.radient.tensuraacadamia.ability.unique.quirks.ElectrificationQuirk;
+import com.radient.tensuraacadamia.ability.unique.quirks.SmokescreenQuirk;
 import org.slf4j.Logger;
 
 import com.mojang.logging.LogUtils;
@@ -29,6 +30,8 @@ public class TensuraAcadamia {
         NeoForge.EVENT_BUS.register(this);
         NeoForge.EVENT_BUS.register(Bloodcurdle.class);
         NeoForge.EVENT_BUS.register(ElectrificationQuirk.class);
+        NeoForge.EVENT_BUS.register(SmokescreenQuirk.class);
+        SmokescreenQuirk.registerSkillEvents();
         QuirkSkills.init();
         MHAEffects.register(modEventBus);
         MHASounds.register(modEventBus);

@@ -4,7 +4,8 @@
   "package": "com.radient.tensuraacadamia.mixin",
   "compatibilityLevel": "JAVA_21",
   "client": [
-    "SkillCreationScreenMixin"
+    "SkillCreationScreenMixin",
+    "SmokescreenPresenceSenseMixin"
   ],
   "injectors": {
     "defaultRequire": 1
