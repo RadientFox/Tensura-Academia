@@ -41,6 +41,29 @@
 
   "tracadamia.skill.dangersense": "Danger Sense",
 
+  "tracadamia.skill.danger_sense2": "Danger Sense",
+
+  "tracadamia.skill.muscle_augmentation": "Muscle Augmentation",
+  "tracadamia.skill.mode.muscle_augmentation.enhancement": "Muscle Enhancement",
+  "tracadamia.skill.mode.muscle_augmentation.strike": "Muscle Overload: Strike",
+  "tracadamia.skill.mode.muscle_augmentation.shield": "Muscle Overload: Shield",
+  "tracadamia.skill.muscle_augmentation.strike_ready": "Muscle Overload: Strike ready",
+  "tracadamia.skill.muscle_augmentation.strike_cancel": "Muscle Overload: Strike cancelled",
+  "tracadamia.skill.muscle_augmentation.strike_output": "Strike Output: %sx",
+  "tracadamia.skill.muscle_augmentation.shield_active": "Cannot use Muscle Overload: Strike while shielding",
+
+  "tracadamia.skill.fat_absorption": "Fat Absorption",
+  "tracadamia.skill.mode.fat_absorption.restrain": "Restrain",
+  "tracadamia.skill.mode.fat_absorption.spear": "Shield into Spear",
+  "tracadamia.skill.mode.fat_absorption.bmi_check": "BMI Check",
+  "tracadamia.skill.fat_absorption.bmi": "Stockpiled Fat: %s",
+  "tracadamia.skill.fat_absorption.fat_gained": "Stockpiled Fat: %s (+%s)",
+  "tracadamia.skill.fat_absorption.not_enough_fat": "Not enough stockpiled fat, %s needed",
+  "tracadamia.skill.fat_absorption.no_fat": "No stockpiled fat",
+  "tracadamia.skill.fat_absorption.spear_ready": "Shield into spear, %s fat",
+  "tracadamia.skill.fat_absorption.spear_cancel": "Shield into spear cancelled",
+
+
   "tracadamia.skill.copy": "Copy",
   "tracadamia.skill.mode.copy.copy": "§dCopy",
 
@@ -50,7 +73,6 @@
   "tracadamia.skill.blackwhip": "Blackwhip",
 
   "tracadamia.skill.blackwhip.description": "Quirk: Blackwhip, The user can generate tendrils of black energy from their body capable of swinging around or binding foes can also be used to spear through foes.",
-
 
 
   "tracadamia.skill.quirk_bestowal": "Quirk Bestowal",
