@@ -8,8 +8,10 @@ import io.github.manasmods.tensura.ability.SkillHelper;
 import io.github.manasmods.tensura.ability.skill.Skill;
 import io.github.manasmods.tensura.event.TensuraSkillEvents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -32,6 +34,11 @@ public class CopyQuirk extends Skill {
     public CopyQuirk() {
         super(SkillType.UNIQUE);
     }
+
+    public @Nullable ResourceLocation getSkillIcon() {
+        return ResourceLocation.fromNamespaceAndPath("tracadamia", "textures/skill/unique/copyquirk.png");
+    }
+
 
     public boolean canBeToggled(ManasSkillInstance instance, LivingEntity living) {
         return true;

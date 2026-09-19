@@ -60,6 +60,4 @@ public class QuirkSkillsConfig extends ManasConfig {
         public QuirkBestowal() {
         }
     }
-
-
 }
