@@ -15,5 +15,13 @@
   },
   "electrification": {
     "sounds": ["tracadamia:electrification"]
+  },
+  "butterfly_effect": {
+    "sounds": [
+      {
+        "name": "tracadamia:butterfly_effect",
+        "stream": true
+      }
+    ]
   }
 }

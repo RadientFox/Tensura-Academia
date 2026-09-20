@@ -86,6 +86,9 @@ public abstract class SkillCreationScreenMixin implements SkillCreationScreenAcc
         }
         int copies = ((AllForOneScreen) (Object) this).getSkillCount(skill);
         if (copies > 1) name = name.copy().append(" x" + copies);
+        if (((AllForOneScreen) (Object) this).isStockpileSelection(skill)) {
+            name = name.copy().append(" [Selected]").withStyle(ChatFormatting.GREEN);
+        }
         callback.setReturnValue(name);
     }
 }

@@ -1,10 +1,51 @@
 {
+  "block.tracadamia.thermal_ice": "Temporary Ice",
+  "tracadamia.skill.half_cold_half_hot": "Half-Cold Half-Hot",
+  "tracadamia.skill.half_cold_half_hot.description": "Cold grants Cold Resistance; Hot grants Heat Resistance. Mastery unlocks Phosphor, Thermal Fluctuation Resistance, and every move. Crouch Switch to enter Phosphor. Ice Wall: 1,000 aura, 20s cooldown, immobilizes for 60s. Ice Glide: 20 aura per second. Ice Spikes: 200 aura, 2s cooldown. Flashfire Fist: hold a 30-block flame beam for up to 3 seconds, 25 heat every 0.25s, 1,000 aura, 30s cooldown. Jet Kindling: 500 aura per melee burst. Wall of Flames: 500 aura, 10s cooldown. Pale Blade: a traveling heat/cold disc dealing 200 cold and 200 heat. Great Glacial Aegir: 30x30, 300 cold and 100 heat that bypasses heat resistance. Switching is free.",
+  "tracadamia.skill.half_cold_half_hot.not_enough_aura": "Not enough aura.",
+  "tracadamia.skill.mode.half_cold_half_hot.switch": "Switch",
+  "tracadamia.skill.mode.half_cold_half_hot.ice_wall": "Heaven Piercing Ice Wall",
+  "tracadamia.skill.mode.half_cold_half_hot.ice_glide": "Ice Glide",
+  "tracadamia.skill.mode.half_cold_half_hot.ice_spikes": "Ice Spikes",
+  "tracadamia.skill.mode.half_cold_half_hot.flashfire_fist": "Flashfire Fist",
+  "tracadamia.skill.mode.half_cold_half_hot.jet_kindling": "Jet Kindling",
+  "tracadamia.skill.mode.half_cold_half_hot.wall_of_flames": "Wall of Flames",
+  "tracadamia.skill.mode.half_cold_half_hot.pale_blade": "Coldflames Pale Blade",
+  "tracadamia.skill.mode.half_cold_half_hot.glacial_aegir": "Great Glacial Aegir",
+  "tracadamia.skill.mode.half_cold_half_hot.phosphor": "Activate Phosphor",
+  "tracadamia.skill.half_cold_half_hot.cold": "Cold Half",
+  "tracadamia.skill.half_cold_half_hot.hot": "Hot Half",
+  "tracadamia.skill.half_cold_half_hot.phosphor": "Phosphor",
+  "tracadamia.skill.half_cold_half_hot.jet_on": "Jet Kindling enabled",
+  "tracadamia.skill.half_cold_half_hot.jet_off": "Jet Kindling disabled",
+  "tracadamia.skill.half_cold_half_hot.aegir_ready": "Great Glacial Aegir: next melee attack armed",
+  "tracadamia.skill.half_cold_half_hot.ground_target": "Look at a grounded living target within 30 blocks.",
+  "tracadamia.skill.half_cold_half_hot.target": "Look at a living target within 30 blocks.",
+
+  "tracadamia.skill.explosion": "Explosion",
+  "tracadamia.skill.explosion.description": "Quirk: Explosion. Heat Nullification and Flame Attack Resistance. Toggle Explosive Attacks to add up to 100 heat on melee. Modes unlock with mastery: Explosive Speed, Stun Grenade, AP Shot / Scattershot, Explode-A-Pult, Land Mine Blast, Howitzer Impact, and Cluster.",
+  "tracadamia.skill.mode.explosion.explosive_speed": "Explosive Speed",
+  "tracadamia.skill.mode.explosion.stun_grenade": "Stun Grenade",
+  "tracadamia.skill.mode.explosion.ap_shot": "AP Shot",
+  "tracadamia.skill.mode.explosion.scattershot": "AP Shot: Scattershot",
+  "tracadamia.skill.mode.explosion.explode_a_pult": "Explode-A-Pult",
+  "tracadamia.skill.mode.explosion.land_mine_blast": "Land Mine Blast",
+  "tracadamia.skill.mode.explosion.howitzer_impact": "Howitzer Impact",
+  "tracadamia.skill.mode.explosion.cluster": "Cluster",
+  "tracadamia.skill.explosion.attacks_on": "Explosive Attacks enabled",
+  "tracadamia.skill.explosion.cluster_on": "Cluster enabled",
+  "tracadamia.skill.explosion.cluster_off": "Cluster disabled",
+  "tracadamia.skill.explosion.scattershot_selected": "Scattershot selected",
+  "tracadamia.skill.explosion.ap_shot_selected": "AP Shot selected",
+  "tracadamia.skill.explosion.too_low": "Howitzer Impact requires at least %s blocks of height",
+  "tracadamia.skill.explosion.not_enough_aura": "You need %s aura",
 
   "tracadamia.skill.all_for_one": "All For One",
   "tracadamia.skill.all_for_one.description": "Quirk: All For One. If it's freedom you desire, then submit to me, my brethren. And bear witness, by my side. This impending void era will give rise to a more perfect demon lord. This will be the story of how I became the greatest demon lord of all!",
   "tracadamia.skill.mode.all_for_one.steal": "Quirk Steal",
   "tracadamia.skill.mode.all_for_one.transfer": "Quirk Transfer",
   "tracadamia.skill.mode.all_for_one.stock": "Quirk Stock",
+  "tracadamia.skill.mode.all_for_one.stockpile_attack": "Stockpile Attack",
   "tracadamia.menu.all_for_one.steal": "Steal",
   "tracadamia.menu.all_for_one.transfer": "Transfer",
 
@@ -41,6 +82,29 @@
 
   "tracadamia.skill.dangersense": "Danger Sense",
 
+  "tracadamia.skill.danger_sense2": "Danger Sense",
+
+  "tracadamia.skill.muscle_augmentation": "Muscle Augmentation",
+  "tracadamia.skill.mode.muscle_augmentation.enhancement": "Muscle Enhancement",
+  "tracadamia.skill.mode.muscle_augmentation.strike": "Muscle Overload: Strike",
+  "tracadamia.skill.mode.muscle_augmentation.shield": "Muscle Overload: Shield",
+  "tracadamia.skill.muscle_augmentation.strike_ready": "Muscle Overload: Strike ready",
+  "tracadamia.skill.muscle_augmentation.strike_cancel": "Muscle Overload: Strike cancelled",
+  "tracadamia.skill.muscle_augmentation.strike_output": "Strike Output: %sx",
+  "tracadamia.skill.muscle_augmentation.shield_active": "Cannot use Muscle Overload: Strike while shielding",
+
+  "tracadamia.skill.fat_absorption": "Fat Absorption",
+  "tracadamia.skill.mode.fat_absorption.restrain": "Restrain",
+  "tracadamia.skill.mode.fat_absorption.spear": "Shield into Spear",
+  "tracadamia.skill.mode.fat_absorption.bmi_check": "BMI Check",
+  "tracadamia.skill.fat_absorption.bmi": "Stockpiled Fat: %s",
+  "tracadamia.skill.fat_absorption.fat_gained": "Stockpiled Fat: %s (+%s)",
+  "tracadamia.skill.fat_absorption.not_enough_fat": "Not enough stockpiled fat, %s needed",
+  "tracadamia.skill.fat_absorption.no_fat": "No stockpiled fat",
+  "tracadamia.skill.fat_absorption.spear_ready": "Shield into spear, %s fat",
+  "tracadamia.skill.fat_absorption.spear_cancel": "Shield into spear cancelled",
+
+
   "tracadamia.skill.copy": "Copy",
   "tracadamia.skill.mode.copy.copy": "§dCopy",
 
@@ -50,7 +114,6 @@
   "tracadamia.skill.blackwhip": "Blackwhip",
 
   "tracadamia.skill.blackwhip.description": "Quirk: Blackwhip, The user can generate tendrils of black energy from their body capable of swinging around or binding foes can also be used to spear through foes.",
-
 
 
   "tracadamia.skill.quirk_bestowal": "Quirk Bestowal",
@@ -108,5 +171,13 @@
   "tracadamia.skill.mode.power.oklahoma": "Smash Style: Oklahoma Smash",
 
   "tracadamia.skill.mode.power.detroit.active": "Detroit Smash Active",
-  "tracadamia.skill.mode.power.detroit.deactive": "Detroit Smash Deactivated"
+  "tracadamia.skill.mode.power.detroit.deactive": "Detroit Smash Deactivated",
+
+  "tracadamia.skill.voice": "Voice",
+  "tracadamia.skill.voice.description": "From Birth!: Voice gains two mastery points per use. Loud! makes chat messages deal sound damage in a 30-block cube for one aura per character. Mastered Voice deals 1.5x damage.",
+  "tracadamia.skill.mode.voice.loud_voice": "Loud Voice!",
+  "tracadamia.skill.mode.voice.loud_out_shout": "Loud-Out Shout!",
+  "tracadamia.skill.voice.loud_on": "Loud! enabled",
+  "tracadamia.skill.voice.loud_off": "Loud! disabled",
+  "tracadamia.skill.voice.not_enough_aura": "Not enough aura."
 }

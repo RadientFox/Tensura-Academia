@@ -391,9 +391,14 @@ public final class ElectrificationQuirk extends Skill {
 
     private static void disruptSkills(LivingEntity target) {
         for (ManasSkillInstance skill : SkillAPI.getSkillsFrom(target).getLearnedSkills()) {
+            boolean changed = false;
             for (int mode = 0; mode < skill.getCooldownList().size(); mode++) {
-                if (skill.getCoolDown(mode) < 20) skill.setCoolDown(20, mode);
+                if (skill.getCoolDown(mode) < 1) {
+                    skill.setCoolDown(1, mode);
+                    changed = true;
+                }
             }
+            if (changed) skill.markDirty();
         }
     }
 

@@ -7,6 +7,7 @@ import net.minecraft.client.particle.ParticleProvider;
 import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.client.particle.SpriteSet;
 import net.minecraft.client.particle.TextureSheetParticle;
+import net.minecraft.client.particle.HugeExplosionParticle;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.core.registries.Registries;
@@ -33,6 +34,14 @@ public final class MHAParticles {
             PARTICLES.register("smokescreen", () -> new SimpleParticleType(false));
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> SMOKESCREEN_SELF =
             PARTICLES.register("smokescreen_self", () -> new SimpleParticleType(false));
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> ORANGE_EXPLOSION =
+            PARTICLES.register("orange_explosion", () -> new SimpleParticleType(false));
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> SMALL_ORANGE_EXPLOSION =
+            PARTICLES.register("small_orange_explosion", () -> new SimpleParticleType(false));
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> VOICE_CANNON =
+            PARTICLES.register("voice_cannon", () -> new SimpleParticleType(false));
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> VOICE_CANNON_WIDE =
+            PARTICLES.register("voice_cannon_wide", () -> new SimpleParticleType(false));
 
     private MHAParticles() {
     }
@@ -51,6 +60,111 @@ public final class MHAParticles {
             event.registerSpriteSet(ELECTRIC_TRAIL.get(), sprites -> new ElectricParticle.Provider(sprites, 2));
             event.registerSpriteSet(SMOKESCREEN.get(), sprites -> new SmokeParticle.Provider(sprites, 1.0F));
             event.registerSpriteSet(SMOKESCREEN_SELF.get(), sprites -> new SmokeParticle.Provider(sprites, 0.2F));
+            event.registerSpriteSet(ORANGE_EXPLOSION.get(),
+                    sprites -> new OrangeExplosionParticle.Provider(sprites, 0.62F, 0.18F));
+            event.registerSpriteSet(SMALL_ORANGE_EXPLOSION.get(),
+                    sprites -> new OrangeExplosionParticle.Provider(sprites, 0.38F, 0.12F));
+            event.registerSpriteSet(VOICE_CANNON.get(), sprites -> new VoiceCannonParticle.Provider(sprites, 5.0F));
+            event.registerSpriteSet(VOICE_CANNON_WIDE.get(), sprites -> new VoiceCannonParticle.Provider(sprites, 15.0F));
+        }
+    }
+
+    private static final class OrangeExplosionParticle extends TextureSheetParticle {
+        private final SpriteSet sprites;
+
+        private OrangeExplosionParticle(ClientLevel level, double x, double y, double z,
+                                        double xSpeed, double ySpeed, double zSpeed, SpriteSet sprites,
+                                        float baseSize, float sizeVariation) {
+            super(level, x, y, z, xSpeed, ySpeed, zSpeed);
+            this.sprites = sprites;
+            this.lifetime = 16;
+            this.quadSize = baseSize + level.random.nextFloat() * sizeVariation;
+            this.gravity = 0.0F;
+            this.hasPhysics = false;
+            this.setColor(1.0F, 0.44F, 0.12F);
+            this.setAlpha(1.0F);
+            this.setParticleSpeed(0.0D, 0.0D, 0.0D);
+            this.setSpriteFromAge(sprites);
+        }
+
+        @Override
+        public void tick() {
+            super.tick();
+            this.setSpriteFromAge(sprites);
+        }
+
+        @Override
+        public int getLightColor(float partialTick) {
+            return 0xF000F0;
+        }
+
+        @Override
+        public ParticleRenderType getRenderType() {
+            return ParticleRenderType.PARTICLE_SHEET_TRANSLUCENT;
+        }
+
+        private static final class Provider implements ParticleProvider<SimpleParticleType> {
+            private final SpriteSet sprites;
+            private final float baseSize;
+            private final float sizeVariation;
+
+            private Provider(SpriteSet sprites, float baseSize, float sizeVariation) {
+                this.sprites = sprites;
+                this.baseSize = baseSize;
+                this.sizeVariation = sizeVariation;
+            }
+
+            @Override
+            public Particle createParticle(SimpleParticleType type, ClientLevel level,
+                                           double x, double y, double z,
+                                           double xSpeed, double ySpeed, double zSpeed) {
+                return new OrangeExplosionParticle(level, x, y, z, xSpeed, ySpeed, zSpeed,
+                        sprites, baseSize, sizeVariation);
+            }
+        }
+    }
+
+    /**
+     * The Warden's actual sonic-boom particle, using its animated wave geometry and
+     * sprite timing, recolored for Voice rather than approximated with a flat sprite.
+     */
+    private static final class VoiceCannonParticle extends HugeExplosionParticle {
+        private final SpriteSet sprites;
+
+        private VoiceCannonParticle(ClientLevel level, double x, double y, double z,
+                                    double xSpeed, double ySpeed, double zSpeed, SpriteSet sprites, float diameter) {
+            super(level, x, y, z, xSpeed, sprites);
+            this.sprites = sprites;
+            this.lifetime = 16;
+            this.quadSize = diameter;
+            // The copied Warden frames are already yellow. Keep their native color
+            // rather than multiplying a cyan texture with a runtime tint.
+            this.setColor(1.0F, 1.0F, 1.0F);
+            this.setAlpha(1.0F);
+            this.setSpriteFromAge(sprites);
+        }
+
+        @Override
+        public void tick() {
+            // This is the exact age-to-frame progression used by SonicBoomParticle.
+            super.tick();
+        }
+
+        private static final class Provider implements ParticleProvider<SimpleParticleType> {
+            private final SpriteSet sprites;
+            private final float diameter;
+
+            private Provider(SpriteSet sprites, float diameter) {
+                this.sprites = sprites;
+                this.diameter = diameter;
+            }
+
+            @Override
+            public Particle createParticle(SimpleParticleType type, ClientLevel level,
+                                           double x, double y, double z,
+                                           double xSpeed, double ySpeed, double zSpeed) {
+                return new VoiceCannonParticle(level, x, y, z, xSpeed, ySpeed, zSpeed, sprites, diameter);
+            }
         }
     }
 

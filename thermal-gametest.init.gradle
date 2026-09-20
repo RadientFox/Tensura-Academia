@@ -1,0 +1,15 @@
+// Optional integration tests; these sources are never included in a normal build.
+allprojects {
+    afterEvaluate {
+        sourceSets.main.java.srcDir('src/gametest/java')
+        sourceSets.main.resources.srcDir('src/gametest/resources')
+        // Only one Tensura version can be loaded by a test server.
+        configurations.localRuntime.dependencies.clear()
+        dependencies.add('localRuntime', files(fileTree('libs') {
+            include '*.jar'
+            exclude 'tensura-neoforge-2.0.0.8.jar'
+        }))
+        neoForge.runs.gameTestServer.gameDirectory = file('build/thermal-gametest-run')
+        neoForge.runs.gameTestServer.systemProperty 'thermal.testDiagnostics', 'true'
+    }
+}
