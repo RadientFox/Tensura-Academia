@@ -27,6 +27,9 @@ public class QuirkSkills {
     public static final RegistrySupplier<Blackwhip> BLACKWHIP = register("blackwhip", Blackwhip::new);
     public static final RegistrySupplier<ElectrificationQuirk> ELECTRIFICATION = register("electrification", ElectrificationQuirk::new);
     public static final RegistrySupplier<SmokescreenQuirk> SMOKESCREEN = register("smokescreen", SmokescreenQuirk::new);
+    public static final RegistrySupplier<ExplosionQuirk> EXPLOSION = register("explosion", ExplosionQuirk::new);
+    public static final RegistrySupplier<HalfColdHalfHot> HALF_COLD_HALF_HOT = register("half_cold_half_hot", HalfColdHalfHot::new);
+    public static final RegistrySupplier<VoiceQuirk> VOICE = register("voice", VoiceQuirk::new);
 
     private static <E extends ManasSkill> RegistrySupplier<E> register(String name, Supplier<E> supplier) {
         return SkillRegistry.SKILLS.register(ResourceLocation.fromNamespaceAndPath("tracadamia", name), supplier);

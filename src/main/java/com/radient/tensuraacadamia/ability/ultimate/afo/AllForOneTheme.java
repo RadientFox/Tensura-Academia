@@ -8,6 +8,7 @@ import net.minecraft.network.protocol.game.ClientboundSoundPacket;
 import net.minecraft.network.protocol.game.ClientboundStopSoundPacket;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.entity.LivingEntity;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
@@ -25,15 +26,19 @@ public final class AllForOneTheme {
     private static final double RANGE_SQUARED = 32.0D * 32.0D;
     private static final int LOOP_TICKS = 467; // Source duration: 23.35 seconds.
     private static final Map<UUID, Map<UUID, Long>> LISTENERS = new HashMap<>();
+    private static final Map<UUID, Long> SILENCED_UNTIL = new HashMap<>();
 
     private AllForOneTheme() {
     }
 
-    public static void tick(ServerPlayer source) {
+    /** Play the theme from any AFO user; listeners are always real server players. */
+    public static void tick(LivingEntity source) {
+        if (!(source.level() instanceof net.minecraft.server.level.ServerLevel level)) return;
+        if (isSilenced(source, level.getGameTime())) return;
         Map<UUID, Long> playing = LISTENERS.computeIfAbsent(source.getUUID(), ignored -> new HashMap<>());
         Set<UUID> inRange = new HashSet<>();
-        long now = source.serverLevel().getGameTime();
-        for (ServerPlayer listener : source.serverLevel().players()) {
+        long now = level.getGameTime();
+        for (ServerPlayer listener : level.players()) {
             if (listener.distanceToSqr(source) > RANGE_SQUARED) continue;
             inRange.add(listener.getUUID());
             Long replayAt = playing.get(listener.getUUID());
@@ -47,17 +52,17 @@ public final class AllForOneTheme {
         while (iterator.hasNext()) {
             UUID listenerId = iterator.next();
             if (inRange.contains(listenerId)) continue;
-            ServerPlayer listener = source.serverLevel().getServer().getPlayerList().getPlayer(listenerId);
+            ServerPlayer listener = levelPlayer(source, listenerId);
             iterator.remove();
             stopIfNoOtherSource(listener, source.getUUID());
         }
     }
 
-    public static void stop(ServerPlayer source) {
+    public static void stop(LivingEntity source) {
         Map<UUID, Long> playing = LISTENERS.remove(source.getUUID());
         if (playing == null) return;
         for (UUID listenerId : playing.keySet()) {
-            ServerPlayer listener = source.serverLevel().getServer().getPlayerList().getPlayer(listenerId);
+            ServerPlayer listener = levelPlayer(source, listenerId);
             stopIfNoOtherSource(listener, source.getUUID());
         }
     }
@@ -72,6 +77,26 @@ public final class AllForOneTheme {
         }
     }
 
+    /** Stop a theme and prevent the AFO skill tick from restarting it for the requested duration. */
+    public static void silence(LivingEntity source, int durationTicks) {
+        if (source.level() instanceof net.minecraft.server.level.ServerLevel level)
+            SILENCED_UNTIL.put(source.getUUID(), level.getGameTime() + durationTicks);
+        stop(source);
+    }
+
+    private static boolean isSilenced(LivingEntity source, long now) {
+        Long until = SILENCED_UNTIL.get(source.getUUID());
+        if (until == null) return false;
+        if (now < until) return true;
+        SILENCED_UNTIL.remove(source.getUUID());
+        return false;
+    }
+
+    private static ServerPlayer levelPlayer(LivingEntity source, UUID listenerId) {
+        if (!(source.level() instanceof net.minecraft.server.level.ServerLevel level)) return null;
+        return level.getServer().getPlayerList().getPlayer(listenerId);
+    }
+
     @SubscribeEvent
     public static void onPlayerTick(PlayerTickEvent.Post event) {
         if (!(event.getEntity() instanceof ServerPlayer player) || player.tickCount % 20 != 0
@@ -82,6 +107,13 @@ public final class AllForOneTheme {
 
     @SubscribeEvent
     public static void onLogout(PlayerEvent.PlayerLoggedOutEvent event) {
-        if (event.getEntity() instanceof ServerPlayer player) stop(player);
+        if (event.getEntity() instanceof ServerPlayer player) {
+            stop(player);
+            SILENCED_UNTIL.remove(player.getUUID());
+        }
+    }
+    
+    public static boolean isPlaying(UUID playerId) {
+        return LISTENERS.containsKey(playerId);
     }
 }

@@ -23,6 +23,10 @@ public final class MHASounds {
     public static final DeferredHolder<SoundEvent, SoundEvent> ELECTRIFICATION = SOUNDS.register(
             "electrification", () -> SoundEvent.createVariableRangeEvent(
                     ResourceLocation.fromNamespaceAndPath(TensuraAcadamia.MODID, "electrification")));
+    public static final ResourceLocation BUTTERFLY_EFFECT_ID = ResourceLocation.fromNamespaceAndPath(
+            TensuraAcadamia.MODID, "butterfly_effect");
+    public static final DeferredHolder<SoundEvent, SoundEvent> BUTTERFLY_EFFECT = SOUNDS.register(
+            "butterfly_effect", () -> SoundEvent.createVariableRangeEvent(BUTTERFLY_EFFECT_ID));
 
     private MHASounds() {
     }

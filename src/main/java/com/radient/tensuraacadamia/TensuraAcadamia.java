@@ -8,6 +8,8 @@ import com.radient.tensuraacadamia.regestry.skills.QuirkSkills;
 import com.radient.tensuraacadamia.ability.unique.quirks.Bloodcurdle;
 import com.radient.tensuraacadamia.ability.unique.quirks.ElectrificationQuirk;
 import com.radient.tensuraacadamia.ability.unique.quirks.SmokescreenQuirk;
+import com.radient.tensuraacadamia.ability.unique.quirks.ExplosionQuirk;
+import com.radient.tensuraacadamia.ability.unique.quirks.VoiceQuirk;
 import org.slf4j.Logger;
 
 import com.mojang.logging.LogUtils;
@@ -31,9 +33,15 @@ public class TensuraAcadamia {
         NeoForge.EVENT_BUS.register(Bloodcurdle.class);
         NeoForge.EVENT_BUS.register(ElectrificationQuirk.class);
         NeoForge.EVENT_BUS.register(SmokescreenQuirk.class);
+        NeoForge.EVENT_BUS.register(ExplosionQuirk.class);
+        // Register the chat listener directly. Class scanning did not reliably attach
+        // Voice's static chat handler in the integrated-server environment.
+        NeoForge.EVENT_BUS.addListener(VoiceQuirk::onChatMessage);
         SmokescreenQuirk.registerSkillEvents();
+        com.radient.tensuraacadamia.ability.unique.quirks.HalfColdHalfHot.registerSkillEvents();
         QuirkSkills.init();
         MHAEffects.register(modEventBus);
+        com.radient.tensuraacadamia.regestry.ThermalIce.register(modEventBus);
         MHASounds.register(modEventBus);
         MHAParticles.init(modEventBus);
       //  OFAEntitys.ENTITY_TYPES.register(modEventBus);

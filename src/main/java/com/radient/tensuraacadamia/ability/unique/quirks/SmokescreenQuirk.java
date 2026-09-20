@@ -47,6 +47,7 @@ public final class SmokescreenQuirk extends Skill {
     private static Map<UUID, LivingEntity> OBSCURED = new HashMap<>();
     private static final Map<UUID, Set<ManasSkillInstance>> PAUSED_SENSES = new HashMap<>();
     private static final Map<UUID, Integer> UNSLOTTED_TICKS = new HashMap<>();
+    private static final Map<UUID, Long> DISABLED_UNTIL = new HashMap<>();
     private static final double DOME_HEIGHT_RATIO = 0.7;
     private static final int AURA_DRAIN_INTERVAL = 60;
 
@@ -195,7 +196,24 @@ public final class SmokescreenQuirk extends Skill {
     @Override
     public void onPressed(ManasSkillInstance instance, LivingEntity entity, int keyNumber, int mode) {
         if (mode != 0 || !(entity.level() instanceof ServerLevel level)) return;
+        long disabledUntil = DISABLED_UNTIL.getOrDefault(entity.getUUID(), 0L);
+        if (level.getGameTime() < disabledUntil) {
+            if (entity instanceof Player player)
+                player.displayClientMessage(Component.literal("Smokescreen has been dispersed."), true);
+            return;
+        }
         CLOUDS.put(entity.getUUID(), new Cloud(entity, level, instance.isMastered(entity)));
+    }
+
+    public static void disableInArea(ServerLevel level, Vec3 center, double radius, int durationTicks) {
+        Iterator<Cloud> iterator = CLOUDS.values().iterator();
+        while (iterator.hasNext()) {
+            Cloud cloud = iterator.next();
+            double combinedRadius = radius + cloud.radius;
+            if (cloud.level != level || cloud.center.distanceToSqr(center) > combinedRadius * combinedRadius) continue;
+            DISABLED_UNTIL.put(cloud.owner.getUUID(), level.getGameTime() + durationTicks);
+            iterator.remove();
+        }
     }
 
     @Override
