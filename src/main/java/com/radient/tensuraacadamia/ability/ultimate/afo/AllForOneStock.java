@@ -147,6 +147,49 @@ public final class AllForOneStock {
         return true;
     }
 
+    /** Removes every ability held by All For One and returns the consumed instances. */
+    public static List<ManasSkillInstance> sacrificeAll(LivingEntity owner) {
+        List<ManasSkillInstance> sacrificed = new ArrayList<>();
+        SkillStorage storage = SkillAPI.getSkillsFrom(owner);
+        for (ManasSkillInstance instance : new ArrayList<>(storage.getLearnedSkills())) {
+            if (!canHandle(instance)) continue;
+            sacrificed.add(instance.copy());
+            storage.forgetSkill(instance.getSkillId());
+        }
+
+        ListTag remainingCopies = new ListTag();
+        for (Tag entry : copies(owner)) {
+            CompoundTag copy = (CompoundTag) entry;
+            ManasSkillInstance instance = ManasSkillInstance.fromNBT(copy.getCompound(SKILL_DATA_TAG));
+            if (canHandle(instance)) sacrificed.add(instance);
+            else remainingCopies.add(copy.copy());
+        }
+        owner.getPersistentData().put(STOCK_TAG, remainingCopies);
+        storage.markDirty();
+        return sacrificed;
+    }
+
+    /** Consumes one copy of each specifically selected stock entry. */
+    public static List<ManasSkillInstance> sacrifice(LivingEntity owner, Iterable<ResourceLocation> selectedIds) {
+        List<ManasSkillInstance> sacrificed = new ArrayList<>();
+        SkillStorage storage = SkillAPI.getSkillsFrom(owner);
+        for (ResourceLocation id : selectedIds) {
+            if (!SkillAPI.getSkillRegistry().contains(id) || !canHandle(SkillAPI.getSkillRegistry().get(id))) continue;
+            CompoundTag copy = findCopy(owner, id);
+            if (copy != null) {
+                sacrificed.add(ManasSkillInstance.fromNBT(copy.getCompound(SKILL_DATA_TAG)));
+                removeCopy(owner, id);
+                continue;
+            }
+            ManasSkillInstance instance = storage.getSkill(id).orElse(null);
+            if (!canHandle(instance)) continue;
+            sacrificed.add(instance.copy());
+            storage.forgetSkill(id);
+        }
+        if (!sacrificed.isEmpty()) storage.markDirty();
+        return sacrificed;
+    }
+
     private static ListTag copies(LivingEntity owner) {
         return owner.getPersistentData().getList(STOCK_TAG, Tag.TAG_COMPOUND);
     }

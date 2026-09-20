@@ -3,6 +3,7 @@ package com.radient.tensuraacadamia.ability.ultimate.afo;
 import com.radient.tensuraacadamia.TensuraAcadamia;
 import com.radient.tensuraacadamia.regestry.skills.QuirkSkills;
 import io.github.manasmods.manascore.skill.api.SkillAPI;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
@@ -36,6 +37,38 @@ public final class AllForOneTestCommand {
                         return 0;
                     }
                     context.getSource().sendSuccess(() -> Component.literal("Summoned Steve with Gearshift."), false);
+                    return 1;
+                }));
+
+        event.getDispatcher().register(Commands.literal("afo_test_bob")
+                .requires(source -> source.hasPermission(2))
+                .executes(context -> {
+                    ServerPlayer player = context.getSource().getPlayer();
+                    if (player == null) return 0;
+                    Zombie bob = EntityType.ZOMBIE.create(player.serverLevel());
+                    if (bob == null) return 0;
+                    bob.moveTo(player.getX() + 2.0D, player.getY(), player.getZ() + 2.0D, 0.0F, 0.0F);
+                    bob.setCustomName(Component.literal("Bob"));
+                    bob.setCustomNameVisible(true);
+                    bob.getAttribute(Attributes.MAX_HEALTH).setBaseValue(2_000.0D);
+                    bob.setHealth(2_000.0F);
+                    player.serverLevel().addFreshEntity(bob);
+                    if (!SkillAPI.getSkillsFrom(bob).learnSkill(QuirkSkills.ALL_FOR_ONE.get())) {
+                        bob.discard();
+                        context.getSource().sendFailure(Component.literal("Could not give All For One to Bob."));
+                        return 0;
+                    }
+                    var afo = SkillAPI.getSkillsFrom(bob).getSkill(QuirkSkills.ALL_FOR_ONE.get().getRegistryName());
+                    if (afo.isEmpty()) {
+                        bob.discard();
+                        context.getSource().sendFailure(Component.literal("Bob did not retain All For One."));
+                        return 0;
+                    }
+                    afo.get().setToggled(true);
+                    afo.get().markDirty();
+                    AllForOneTheme.tick(bob);
+                    context.getSource().sendSuccess(() -> Component.literal(
+                            "Summoned Bob (2,000 HP) with All For One and its theme enabled."), false);
                     return 1;
                 }));
     }
