@@ -21,6 +21,7 @@ public class QuirkSkills {
     public static final RegistrySupplier<QuirkBestowal> QUIRK_BESTOWAL = register("quirk_bestowal", QuirkBestowal::new);
     public static final RegistrySupplier<FloatQuirk> FLOAT = register("float", FloatQuirk::new);
     public static final RegistrySupplier<GearshiftQuirk> GEARSHIFT = register("gearshift", GearshiftQuirk::new);
+    public static final RegistrySupplier<EngineQuirk> ENGINE = register("engine", EngineQuirk::new);
     public static final RegistrySupplier<Bloodcurdle> BLOODCURDLE = register("bloodcurdle", Bloodcurdle::new);
     public static final RegistrySupplier<DangerSenseQuirk> DANGERSENSE = register("dangersense", DangerSenseQuirk::new);
     public static final RegistrySupplier<CopyQuirk> COPY = register("copy", CopyQuirk::new);
