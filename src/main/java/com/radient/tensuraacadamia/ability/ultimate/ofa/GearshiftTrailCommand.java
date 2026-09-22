@@ -11,6 +11,7 @@ import net.minecraft.world.phys.AABB;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 @EventBusSubscriber(modid = TensuraAcadamia.MODID)
 public final class GearshiftTrailCommand {
@@ -48,7 +49,7 @@ public final class GearshiftTrailCommand {
         AABB area = player.getBoundingBox().inflate(SEND_RANGE);
 
         for (ServerPlayer other : player.serverLevel().getEntitiesOfClass(ServerPlayer.class, area)) {
-            NetworkManager.sendToPlayer(other, payload);
+            PacketDistributor.sendToPlayer(other, payload);
         }
 
         source.sendSuccess(() -> Component.literal("Activated Gearshift trail."), true);

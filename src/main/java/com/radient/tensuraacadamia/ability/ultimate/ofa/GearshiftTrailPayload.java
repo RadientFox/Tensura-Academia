@@ -1,12 +1,11 @@
 package com.radient.tensuraacadamia.ability.ultimate.ofa;
 
 import com.radient.tensuraacadamia.TensuraAcadamia;
-import dev.architectury.networking.NetworkManager;
-import dev.architectury.utils.Env;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
 import org.jetbrains.annotations.NotNull;
 
 public record GearshiftTrailPayload(int entityId, int duration, int gear) implements CustomPacketPayload {
@@ -23,10 +22,14 @@ public record GearshiftTrailPayload(int entityId, int duration, int gear) implem
         buf.writeInt(this.gear);
     }
 
-    public void handle(NetworkManager.PacketContext context) {
-        if (context.getEnvironment() == Env.CLIENT) {
-            context.queue(() -> com.radient.tensuraacadamia.ability.ultimate.ofa.GearshiftBlueTrailClient.enable(this.entityId, this.duration, this.gear));
-        }
+    public static void handle(GearshiftTrailPayload payload, IPayloadContext context) {
+        context.enqueueWork(() -> {
+            if (payload.duration <= 0) {
+                GearshiftBlueTrailClient.disable(payload.entityId);
+            } else {
+                GearshiftBlueTrailClient.enable(payload.entityId, payload.duration, payload.gear);
+            }
+        });
     }
 
     @Override

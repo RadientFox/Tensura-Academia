@@ -8,7 +8,10 @@
   ],
   "client": [
     "SkillCreationScreenMixin",
-    "SmokescreenPresenceSenseMixin"
+    "SmokescreenPresenceSenseMixin",
+    "client.ElasticityJumpKeyMixin",
+    "client.AcceleratorRingsFlightMixin",
+    "client.PermeationPhaseMovementMixin"
   ],
   "injectors": {
     "defaultRequire": 1
