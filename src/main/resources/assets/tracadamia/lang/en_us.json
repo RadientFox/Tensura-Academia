@@ -124,6 +124,36 @@
   "tracadamia.skill.weather_manipulation.needs_thunder": "It must be storming",
 
 
+  "tracadamia.skill.strongarm": "Strongarm",
+  "tracadamia.skill.mode.strongarm.flurry": "Flurry",
+  "tracadamia.skill.mode.strongarm.bullet_punches": "Bullet Punches",
+  "tracadamia.skill.mode.strongarm.quick_draw": "Quick Draw",
+  "tracadamia.skill.strongarm.rotations": "Rotations: %s/%s",
+  "tracadamia.skill.strongarm.hands_full": "Your hands must be empty",
+
+
+  "tracadamia.skill.kinetic_booster": "Kinetic Booster",
+  "tracadamia.skill.mode.kinetic_booster.increase": "Increase",
+  "tracadamia.skill.kinetic_booster.output_level": "Output level: %s/%s",
+
+
+  "tracadamia.skill.absorb_and_release": "Absorb and Release",
+  "tracadamia.skill.mode.absorb_and_release.release": "Release",
+  "tracadamia.skill.mode.absorb_and_release.stored": "Stored",
+  "tracadamia.skill.absorb_and_release.stored": "Stored damage: %s/%s",
+  "tracadamia.skill.absorb_and_release.nothing_stored": "No stored damage",
+  "tracadamia.skill.absorb_and_release.released": "Released %s damage",
+
+
+  "tracadamia.skill.rupture": "Rupture",
+  "tracadamia.skill.mode.rupture.rupture": "Rupture",
+
+
+  "tracadamia.skill.burst": "Burst",
+  "tracadamia.skill.mode.burst.burst": "Burst",
+
+
+
   "tracadamia.skill.copy": "Copy",
   "tracadamia.skill.mode.copy.copy": "§dCopy",
 

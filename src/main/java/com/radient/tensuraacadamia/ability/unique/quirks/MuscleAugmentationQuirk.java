@@ -48,6 +48,7 @@ public class MuscleAugmentationQuirk extends Skill {
 
     private static final ResourceLocation MUSCLE = ResourceLocation.fromNamespaceAndPath("tracadamia", "muscle_augmentation");
     private static final ResourceLocation STRIKE_SLOW = ResourceLocation.fromNamespaceAndPath("tracadamia", "muscle_overload_strike");
+    private static final ResourceLocation STRIKE_POWER = ResourceLocation.fromNamespaceAndPath("tracadamia", "muscle_overload_strike_power");
 
     public @Nullable ResourceLocation getSkillIcon() {
         return ResourceLocation.fromNamespaceAndPath("tracadamia", "textures/skill/unique/muscle_augmentation.png");
@@ -274,6 +275,7 @@ public class MuscleAugmentationQuirk extends Skill {
         double output = Mth.clamp(getStrikeOutput(instance) + Math.signum(delta) * STRIKE_OUTPUT_STEP, 1.0D, CONFIG.strikeMaxOutput);
         instance.getOrCreateTag().putDouble(STRIKE_OUTPUT_TAG, output);
         instance.markDirty();
+        setModifier(entity, Attributes.ATTACK_DAMAGE, STRIKE_POWER, isStrikeReady(instance) ? output - 1.0D : 0.0D, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
 
         sendMessage(entity, Component.translatable("tracadamia.skill.muscle_augmentation.strike_output", OUTPUT_FORMAT.format(output)).withStyle(ChatFormatting.AQUA));
     }
@@ -289,7 +291,6 @@ public class MuscleAugmentationQuirk extends Skill {
             return true;
         }
 
-        amount.set(amount.get() * (float) getStrikeOutput(instance));
         setStrikeReady(instance, owner, false);
         return true;
     }
@@ -312,6 +313,7 @@ public class MuscleAugmentationQuirk extends Skill {
         instance.getOrCreateTag().putBoolean(STRIKE_READY_TAG, ready);
         instance.markDirty();
         setModifier(entity, Attributes.MOVEMENT_SPEED, STRIKE_SLOW, ready ? -CONFIG.strikeSpeedPenalty : 0.0D, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
+        setModifier(entity, Attributes.ATTACK_DAMAGE, STRIKE_POWER, ready ? getStrikeOutput(instance) - 1.0D : 0.0D, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
     }
 
     // muscle overload shield
