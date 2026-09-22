@@ -13,6 +13,7 @@ import com.radient.tensuraacadamia.ability.unique.quirks.VoiceQuirk;
 import com.radient.tensuraacadamia.ability.unique.quirks.ElasticityQuirk;
 import com.radient.tensuraacadamia.ability.unique.quirks.AcceleratorRingsQuirk;
 import com.radient.tensuraacadamia.ability.unique.quirks.PermeationQuirk;
+import com.radient.tensuraacadamia.ability.unique.quirks.EngineQuirk;
 import com.radient.tensuraacadamia.network.ElasticityBouncePayload;
 import com.radient.tensuraacadamia.network.AcceleratorRingsFlightPayload;
 import com.radient.tensuraacadamia.network.PermeationPhasePayload;
@@ -46,6 +47,7 @@ public class TensuraAcadamia {
         NeoForge.EVENT_BUS.register(ElasticityQuirk.class);
         NeoForge.EVENT_BUS.register(AcceleratorRingsQuirk.class);
         NeoForge.EVENT_BUS.register(PermeationQuirk.class);
+        EngineQuirk.registerSkillEvents();
         // Register the chat listener directly. Class scanning did not reliably attach
         // Voice's static chat handler in the integrated-server environment.
         NeoForge.EVENT_BUS.addListener(VoiceQuirk::onChatMessage);
