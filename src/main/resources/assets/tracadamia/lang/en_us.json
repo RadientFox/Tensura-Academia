@@ -104,6 +104,18 @@
   "tracadamia.skill.fat_absorption.spear_ready": "Shield into spear, %s fat",
   "tracadamia.skill.fat_absorption.spear_cancel": "Shield into spear cancelled",
 
+  "tracadamia.skill.quad_arms": "Quad Arms",
+  "tracadamia.skill.mode.quad_arms.hold": "Hold",
+
+  "tracadamia.skill.impact_recoil": "Impact Recoil",
+
+  "tracadamia.skill.weather_manipulation": "Weather Manipulation",
+  "tracadamia.skill.mode.weather_manipulation.lightning_strike": "Lightning Strike",
+  "tracadamia.skill.mode.weather_manipulation.summon_storm": "Summon Storm",
+  "tracadamia.skill.mode.weather_manipulation.bolt_charge": "Bolt Charge",
+  "tracadamia.skill.weather_manipulation.needs_rain": "It must be raining",
+  "tracadamia.skill.weather_manipulation.needs_thunder": "There must be a thunderstorm",
+
 
   "tracadamia.skill.copy": "Copy",
   "tracadamia.skill.mode.copy.copy": "§dCopy",

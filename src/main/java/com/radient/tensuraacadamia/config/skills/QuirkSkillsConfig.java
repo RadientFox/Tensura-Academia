@@ -11,6 +11,10 @@ public class QuirkSkillsConfig extends ManasConfig {
     public DangerSense DangerSense = new DangerSense();
     public MuscleAugmentation MuscleAugmentation = new MuscleAugmentation();
     public FatAbsorption FatAbsorption = new FatAbsorption();
+    public QuadArms QuadArms = new QuadArms();
+    public ImpactRecoil ImpactRecoil = new ImpactRecoil();
+    public WeatherManipulation WeatherManipulation = new WeatherManipulation();
+  
 
 
     public QuirkSkillsConfig() {
@@ -165,4 +169,85 @@ public class QuirkSkillsConfig extends ManasConfig {
         public FatAbsorption() {
         }
     }
+
+    public static class QuadArms extends ManasSubConfig {
+        @Comment("Skill Mastery Points")
+        public double masteryPoints = 2_500.0;
+
+        @Comment("Mining Efficiency: Mining speed multiplier")
+        public double miningSpeedMultiplier = 2.0;
+        @Comment("Mining Efficiency: Swim speed bonus")
+        public double swimSpeedBonus = 0.15;
+
+        @Comment("Double Impact: Ticks before 2nd attack")
+        public int doubleImpactDelay = 5;
+
+        @Comment("Hold: Grab range")
+        public double holdRange = 2.0;
+        @Comment("Hold: Distance the grabbed entity is held")
+        public double holdDistance = 1.5;
+
+        public QuadArms() {
+        }
+    }
+
+    public static class ImpactRecoil extends ManasSubConfig {
+        @Comment("Skill Mastery Points")
+        public double masteryPoints = 2_500.0;
+
+        @Comment("Impact Recoil: Physical damage reduction")
+        public double damageReduction = 0.5;
+        @Comment("Impact Recoil: Physical damage reflected")
+        public double recoilPercent = 0.5;
+
+        public ImpactRecoil() {
+        }
+    }
+
+    public static class WeatherManipulation extends ManasSubConfig {
+        @Comment("Skill Mastery Points")
+        public double masteryPoints = 2_500.0;
+
+        @Comment("Elemental Damage: Water, wind, and lightning damage boost")
+        public double elementalBoost = 3.5;
+
+        @Comment("Lightning Strike: Range")
+        public double strikeRange = 30.0;
+        @Comment("Lightning Strike: Damage")
+        public double strikeDamage = 50.0;
+        @Comment("Lightning Strike: Damage with mastery")
+        public double strikeDamageMastered = 75.0;
+
+        @Comment("Summon Storm: Radius")
+        public double stormRadius = 7.0;
+        @Comment("Summon Storm: Radius with mastery")
+        public double stormRadiusMastered = 15.0;
+        @Comment("Summon Storm: Damage per bolt")
+        public double stormDamage = 100.0;
+        @Comment("Summon Storm: Damage per bolt with mastery")
+        public double stormDamageMastered = 150.0;
+        @Comment("Summon Storm: Ticks between the two bolts")
+        public int stormBoltDelay = 10;
+
+        @Comment("Bolt Charge: Charge time in seconds")
+        public int chargeSeconds = 10;
+        @Comment("Bolt Charge: Charge time in seconds with mastery")
+        public int chargeSecondsMastered = 5;
+        @Comment("Bolt Charge: Range in blocks")
+        public double chargeRange = 30.0;
+        @Comment("Bolt Charge: Damage per bolt")
+        public double barrageDamage = 200.0;
+        @Comment("Bolt Charge: Damage per bolt with mastery")
+        public double barrageDamageMastered = 300.0;
+        @Comment("Bolt Charge: Barrage length in seconds")
+        public int barrageSeconds = 4;
+        @Comment("Bolt Charge: Barrage length in seconds with mastery")
+        public int barrageSecondsMastered = 8;
+        @Comment("Bolt Charge: Ticks between barrage bolts")
+        public int barrageInterval = 10;
+
+        public WeatherManipulation() {
+        }
+    }
+
 }
