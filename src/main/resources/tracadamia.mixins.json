@@ -4,14 +4,11 @@
   "package": "com.radient.tensuraacadamia.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
-    "ReincarnationSkillPoolMixin",
-    "InventoryMenuMixin",
-    "ServerGamePacketListenerMixin"
+    "ReincarnationSkillPoolMixin"
   ],
   "client": [
     "SkillCreationScreenMixin",
-    "SmokescreenPresenceSenseMixin",
-    "CreativeInventoryMixin"
+    "SmokescreenPresenceSenseMixin"
   ],
   "injectors": {
     "defaultRequire": 1

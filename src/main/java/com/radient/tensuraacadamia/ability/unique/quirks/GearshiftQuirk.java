@@ -1,8 +1,9 @@
 package com.radient.tensuraacadamia.ability.unique.quirks;
 
 import com.radient.tensuraacadamia.ability.ultimate.ofa.GearshiftTrailPayload;
-import dev.architectury.networking.NetworkManager;
+import com.radient.tensuraacadamia.regestry.skills.QuirkSkills;
 import io.github.manasmods.manascore.skill.api.ManasSkillInstance;
+import io.github.manasmods.manascore.skill.api.SkillAPI;
 import io.github.manasmods.tensura.ability.skill.Skill;
 import io.github.manasmods.tensura.ability.skill.unique.ThrowerSkill;
 import io.github.manasmods.tensura.particle.TensuraParticleHelper;
@@ -15,6 +16,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
@@ -28,6 +30,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 import java.util.List;
 
@@ -48,7 +51,10 @@ public class GearshiftQuirk extends Skill {
     private static final float BASE_DAMAGE_MULT = 1.00F;
     private static final float SECOND_DAMAGE_MULT = 1.50F;
     private static final float THIRD_DAMAGE_MULT = 2.00F;
-    private static final float TOP_DAMAGE_MULT = 2.50F;
+    private static final float TOP_DAMAGE_MULT = 2.00F;
+    private static final float OVERDRIVE_DAMAGE_MULT = 3.00F;
+    private static final float OVERDRIVE_SPEED = 0.50F;
+    private static final float OVERDRIVE_ATTACK_SPEED = 0.50F;
 
     private static final double LAUNCH_AURA_COST = 25_000.0D;
 
@@ -61,6 +67,10 @@ public class GearshiftQuirk extends Skill {
     private static final String ACTIVE_TAG = "tracadamia_gearshift_active";
     private static final String GEAR_TAG = "tracadamia_gearshift_gear";
     private static final String TIME_TAG = "tracadamia_gearshift_time";
+    private static final String OVERDRIVE_TAG = "tracadamia_gearshift_overdrive";
+    private static final String OFA_OUTPUT_TAG = "outputPercent";
+    private static final String SAVED_OFA_OUTPUT_TAG = "tracadamia_gearshift_saved_ofa_output";
+    private static final String FAJIN_STORAGE_TAG = "tracadamia_fajin_stored_power";
 
     private static final int GEARSHIFT_PENALTY_DURATION = 20 * 60 * 5;
 
@@ -108,10 +118,20 @@ public class GearshiftQuirk extends Skill {
         return getData(instance).getBoolean(ACTIVE_TAG);
     }
 
+    private static boolean isOverdrive(ManasSkillInstance instance) {
+        return getData(instance).getBoolean(OVERDRIVE_TAG);
+    }
+
     private static void setActive(ManasSkillInstance instance, boolean active) {
         CompoundTag tag = getData(instance);
         tag.putBoolean(ACTIVE_TAG, active);
 
+        instance.markDirty();
+    }
+
+    private static void setOverdrive(ManasSkillInstance instance, boolean overdrive) {
+        CompoundTag tag = getData(instance);
+        tag.putBoolean(OVERDRIVE_TAG, overdrive);
         instance.markDirty();
     }
 
@@ -148,17 +168,38 @@ public class GearshiftQuirk extends Skill {
         entity.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, GEARSHIFT_PENALTY_DURATION, amplifier, false, true, true));
 
         entity.addEffect(new MobEffectInstance(TensuraMobEffects.getReference(TensuraMobEffects.FRAGILITY), GEARSHIFT_PENALTY_DURATION, amplifier, false, true, true));
-    }private static final double SEND_RANGE = 128.0D;
+    }
 
-    private static void applyGear(LivingEntity entity, int gear) {
+    private static final double SEND_RANGE = 128.0D;
+
+    private static void syncTrail(LivingEntity entity, int duration, int gear) {
+        if (!(entity.level() instanceof ServerLevel level)) {
+            return;
+        }
+
+        GearshiftTrailPayload payload = new GearshiftTrailPayload(entity.getId(), duration, gear);
+        AABB area = entity.getBoundingBox().inflate(SEND_RANGE);
+        for (ServerPlayer viewer : level.getEntitiesOfClass(ServerPlayer.class, area)) {
+            PacketDistributor.sendToPlayer(viewer, payload);
+        }
+    }
+
+    private static void applyGear(LivingEntity entity, int gear, boolean overdrive) {
         removeGearshiftModifiers(entity);
+
+        if (overdrive) {
+            addMovementModifier(entity, OVERDRIVE_SPEED);
+            addAttackSpeedModifier(entity, OVERDRIVE_ATTACK_SPEED);
+            addAttackDamageMultiplier(entity, OVERDRIVE_DAMAGE_MULT);
+            return;
+        }
 
         switch (gear) {
 
             // the loweest gear
             case 0 -> {
                 addMovementModifier(entity, LOW_SPEED);
-                addAttackDamageModifier(entity, LOW_DAMAGE_MULT);
+                addAttackDamageMultiplier(entity, LOW_DAMAGE_MULT);
             }
 
             // normal speeds
@@ -169,21 +210,21 @@ public class GearshiftQuirk extends Skill {
             case 2 -> {
                 addMovementModifier(entity, SECOND_SPEED);
                 addAttackSpeedModifier(entity, SECOND_ATTACK_SPEED);
-                addAttackDamageModifier(entity, SECOND_DAMAGE_MULT);
+                addAttackDamageMultiplier(entity, SECOND_DAMAGE_MULT);
             }
 
             // third gear
             case 3 -> {
                 addMovementModifier(entity, THIRD_SPEED);
                 addAttackSpeedModifier(entity, THIRD_ATTACK_SPEED);
-                addAttackDamageModifier(entity, THIRD_DAMAGE_MULT);
+                addAttackDamageMultiplier(entity, THIRD_DAMAGE_MULT);
             }
 
             // max gear
             case 4 -> {
                 addMovementModifier(entity, TOP_SPEED);
                 addAttackSpeedModifier(entity, TOP_ATTACK_SPEED);
-                addAttackDamageModifier(entity, TOP_DAMAGE_MULT);
+                addAttackDamageMultiplier(entity, TOP_DAMAGE_MULT);
 
             }
 
@@ -212,14 +253,14 @@ public class GearshiftQuirk extends Skill {
         attribute.addOrUpdateTransientModifier(new AttributeModifier(ATTACK_SPEED_MODIFIER, amount, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));
     }
 
-    private static void addAttackDamageModifier(LivingEntity entity, double amount) {
+    private static void addAttackDamageMultiplier(LivingEntity entity, double multiplier) {
         AttributeInstance attribute = entity.getAttribute(Attributes.ATTACK_DAMAGE);
 
         if (attribute == null) {
             return;
         }
 
-        attribute.addOrUpdateTransientModifier(new AttributeModifier(ATTACK_DAMAGE_MODIFIER, amount, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));
+        attribute.addOrUpdateTransientModifier(new AttributeModifier(ATTACK_DAMAGE_MODIFIER, multiplier - 1.0D, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));
     }
 
     private static void removeGearshiftModifiers(LivingEntity entity) {
@@ -234,15 +275,24 @@ public class GearshiftQuirk extends Skill {
         if (attackSpeed != null) {
             attackSpeed.removeModifier(ATTACK_SPEED_MODIFIER);
         }
+
+        AttributeInstance attackDamage = entity.getAttribute(Attributes.ATTACK_DAMAGE);
+        if (attackDamage != null) {
+            attackDamage.removeModifier(ATTACK_DAMAGE_MODIFIER);
+        }
     }
 
     private static void deactivateGearshift(ManasSkillInstance instance, LivingEntity entity) {
         int gear = getGear(instance);
+        boolean overdrive = isOverdrive(instance);
 
         setActive(instance, false);
+        setOverdrive(instance, false);
         setRemainingTime(instance, 0);
 
         removeGearshiftModifiers(entity);
+        restoreOfaOutput(entity);
+        syncTrail(entity, 0, overdrive ? 5 : gear);
 
         entity.removeEffect(MobEffects.GLOWING);
 
@@ -254,6 +304,26 @@ public class GearshiftQuirk extends Skill {
         applyGearshiftPenalty(entity, gear);
 
         instance.setCoolDown(300, 0);
+    }
+
+    private static void boostOverdriveResources(LivingEntity entity) {
+        entity.getPersistentData().putInt(FAJIN_STORAGE_TAG,
+                entity.getPersistentData().getInt(FAJIN_STORAGE_TAG) + 5);
+        if (!SkillAPI.getSkillsFrom(entity).getSkill(QuirkSkills.OFA_1ST.get().getRegistryName()).isPresent()) return;
+
+        CompoundTag data = entity.getPersistentData();
+        if (!data.contains(SAVED_OFA_OUTPUT_TAG)) {
+            data.putDouble(SAVED_OFA_OUTPUT_TAG, data.getDouble(OFA_OUTPUT_TAG));
+        }
+        double originalOutput = data.getDouble(SAVED_OFA_OUTPUT_TAG);
+        data.putDouble(OFA_OUTPUT_TAG, Math.min(1.20D, originalOutput * (8.0D / 3.0D)));
+    }
+
+    private static void restoreOfaOutput(LivingEntity entity) {
+        CompoundTag data = entity.getPersistentData();
+        if (!data.contains(SAVED_OFA_OUTPUT_TAG)) return;
+        data.putDouble(OFA_OUTPUT_TAG, data.getDouble(SAVED_OFA_OUTPUT_TAG));
+        data.remove(SAVED_OFA_OUTPUT_TAG);
     }
 
     private static @Nullable LivingEntity getLookedAtEntity(Player player, double range) {
@@ -379,10 +449,12 @@ public class GearshiftQuirk extends Skill {
         setRemainingTime(instance, remaining - 1);
 
         int gear = getGear(instance);
+        boolean overdrive = isOverdrive(instance);
 
-        applyGear(entity, gear);
+        applyGear(entity, gear, overdrive);
+        if (overdrive) boostOverdriveResources(entity);
 
-        if (gear == 0) {
+        if (!overdrive && gear == 0) {
             entity.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 40, 1, false, false, true));
         }
 
@@ -429,8 +501,9 @@ public class GearshiftQuirk extends Skill {
         setGear(instance, gear);
 
         if (isActive(instance)) {
-            applyGear(player, gear);
+            applyGear(player, gear, false);
             spawnGearTransformationParticles(player, gear);
+            syncTrail(player, Math.max(20, getRemainingTime(instance)), gear);
         }
 
         sendGearMessage(player, gear);
@@ -438,7 +511,7 @@ public class GearshiftQuirk extends Skill {
 
     @Override
     public int getModes(ManasSkillInstance instance) {
-        return 2;
+        return instance.getMastery() >= getMaxMastery() ? 3 : 2;
     }
 
     @Override
@@ -446,17 +519,14 @@ public class GearshiftQuirk extends Skill {
         return switch (mode) {
             case 0 -> "gearshift.transmission";
             case 1 -> "gearshift.launch";
+            case 2 -> "gearshift.overdrive";
             default -> super.getModeId(instance, mode);
         };
     }
 
     @Override
     public int nextMode(LivingEntity entity, ManasSkillInstance instance, int mode, boolean reverse) {
-        if (reverse) {
-            return mode == 0 ? 1 : 0;
-        }
-
-        return mode == 1 ? 0 : 1;
+        return Math.floorMod(mode + (reverse ? -1 : 1), getModes(instance));
     }
 
 
@@ -466,6 +536,7 @@ public class GearshiftQuirk extends Skill {
             return;
         }
 
+        if (mode < 0 || mode >= getModes(instance)) return;
         switch (mode) {
             case 0 -> {
                 if (isActive(instance)) {
@@ -492,11 +563,13 @@ public class GearshiftQuirk extends Skill {
                 }
 
                 setActive(instance, true);
+                setOverdrive(instance, false);
                 setRemainingTime(instance, MAX_GEARSHIFT_TIME);
 
-                applyGear(target, gear);
+                applyGear(target, gear, false);
 
                 spawnGearTransformationParticles(target, gear);
+                syncTrail(target, MAX_GEARSHIFT_TIME, gear);
 
 
                 if (gear != 1) {
@@ -508,7 +581,26 @@ public class GearshiftQuirk extends Skill {
             }
 
             case 1 -> throwGearshiftItem(instance, player);
+            case 2 -> activateOverdrive(instance, player);
         }
+    }
+
+    private static void activateOverdrive(ManasSkillInstance instance, ServerPlayer player) {
+        if (!instance.isMastered(player)) return;
+        if (isActive(instance)) {
+            deactivateGearshift(instance, player);
+            return;
+        }
+
+        setActive(instance, true);
+        setOverdrive(instance, true);
+        setRemainingTime(instance, MAX_GEARSHIFT_TIME);
+        applyGear(player, getGear(instance), true);
+        boostOverdriveResources(player);
+        spawnGearTransformationParticles(player, 4);
+        syncTrail(player, MAX_GEARSHIFT_TIME, 5);
+        instance.addMasteryPoint(player);
+        player.displayClientMessage(Component.translatable("tracadamia.skill.gearshift.overdrive_on"), true);
     }
 
     private void throwGearshiftItem(ManasSkillInstance instance, ServerPlayer player) {

@@ -79,6 +79,13 @@
   "tracadamia.skill.gearshift": "Gearshift",
   "tracadamia.skill.mode.gearshift.transmission": "§dTransmission",
   "tracadamia.skill.mode.gearshift.launch": "§dLaunch",
+  "tracadamia.skill.mode.gearshift.overdrive": "§6Overdrive",
+  "tracadamia.skill.gearshift.overdrive_on": "§6Gearshift: Overdrive",
+  "tracadamia.skill.permeation": "Permeation",
+  "tracadamia.skill.permeation.description": "POWER! Hold Permeate to phase through the ground and become untouchable. Release to erupt from the surface.",
+  "tracadamia.skill.mode.permeation.permeate": "Permeate",
+  "tracadamia.skill.mode.permeation.blinder_touch": "Blinder Touch Eyeball Crush!",
+  "tracadamia.skill.permeation.no_target": "Look directly at a target.",
 
   "tracadamia.skill.dangersense": "Danger Sense",
 
@@ -191,5 +198,19 @@
   "tracadamia.skill.mode.voice.loud_out_shout": "Loud-Out Shout!",
   "tracadamia.skill.voice.loud_on": "Loud! enabled",
   "tracadamia.skill.voice.loud_off": "Loud! disabled",
-  "tracadamia.skill.voice.not_enough_aura": "Not enough aura."
+  "tracadamia.skill.voice.not_enough_aura": "Not enough aura.",
+  "tracadamia.skill.elasticity": "Elasticity",
+  "tracadamia.skill.elasticity.description": "Toggle Trampoline Ground to double your jump height and leave a 5-second elastic surface. Natural Bounce grants Bounce for 2 seconds after touching elastic ground. Elastic Rebound, while slotted, can throw back physical attackers and reflect projectiles. Gently Sandwich unlocks at 1,250 mastery.",
+  "tracadamia.skill.mode.elasticity.gently_rebound": "Gently Rebound",
+  "tracadamia.skill.mode.elasticity.bounce": "Bounce",
+  "tracadamia.skill.mode.elasticity.gently_trampoline": "Gently Trampoline",
+  "tracadamia.skill.mode.elasticity.gently_sandwich": "Gently Sandwich",
+  "tracadamia.skill.elasticity.not_enough_aura": "Not enough aura.",
+  "tracadamia.skill.elasticity.no_bounce": "Bounce requires the Bounce effect.",
+  "tracadamia.skill.accelerator_rings": "Accelerator Rings",
+  "tracadamia.skill.accelerator_rings.description": "Hold Accel to build up to five yellow acceleration rings, then release to launch. Push transfers the stored launch force into entities you collide with.",
+  "tracadamia.skill.mode.accelerator_rings.accel": "Accel",
+  "tracadamia.skill.accelerator_rings.push_on": "Push enabled",
+  "tracadamia.skill.accelerator_rings.push_off": "Push disabled",
+  "effect.tracadamia.bounce": "Bounce"
 }

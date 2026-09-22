@@ -35,10 +35,6 @@ public class QuirkSkills {
     public static final RegistrySupplier<ExplosionQuirk> EXPLOSION = register("explosion", ExplosionQuirk::new);
     public static final RegistrySupplier<HalfColdHalfHot> HALF_COLD_HALF_HOT = register("half_cold_half_hot", HalfColdHalfHot::new);
     public static final RegistrySupplier<VoiceQuirk> VOICE = register("voice", VoiceQuirk::new);
-    public static final RegistrySupplier<QuadArmsQuirk> QUAD_ARMS = register("quad_arms", QuadArmsQuirk::new);
-    public static final RegistrySupplier<ImpactRecoilQuirk> IMPACT_RECOIL = register("impact_recoil", ImpactRecoilQuirk::new);
-    public static final RegistrySupplier<WeatherManipulationQuirk> WEATHER_MANIPULATION = register("weather_manipulation", WeatherManipulationQuirk::new);
- 
 
     private static <E extends ManasSkill> RegistrySupplier<E> register(String name, Supplier<E> supplier) {
         return SkillRegistry.SKILLS.register(ResourceLocation.fromNamespaceAndPath("tracadamia", name), supplier);
