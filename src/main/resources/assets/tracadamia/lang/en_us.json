@@ -121,7 +121,7 @@
   "tracadamia.skill.mode.weather_manipulation.summon_storm": "Summon Storm",
   "tracadamia.skill.mode.weather_manipulation.bolt_charge": "Bolt Charge",
   "tracadamia.skill.weather_manipulation.needs_rain": "It must be raining",
-  "tracadamia.skill.weather_manipulation.needs_thunder": "There must be a thunderstorm",
+  "tracadamia.skill.weather_manipulation.needs_thunder": "It must be storming",
 
 
   "tracadamia.skill.copy": "Copy",
