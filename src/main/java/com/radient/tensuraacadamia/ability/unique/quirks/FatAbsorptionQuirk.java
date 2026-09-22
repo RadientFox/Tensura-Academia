@@ -84,6 +84,7 @@ public class FatAbsorptionQuirk extends Skill {
     private static final float CAKE_SLICE_SATURATION = 0.4F;
 
     private static final ResourceLocation FAT_STOCK = ResourceLocation.fromNamespaceAndPath("tracadamia", "fat_stock");
+    private static final ResourceLocation SPEAR_DAMAGE = ResourceLocation.fromNamespaceAndPath("tracadamia", "fat_absorption_spear");
 
     public FatAbsorptionQuirk() {
         super(Skill.SkillType.UNIQUE);
@@ -373,7 +374,7 @@ public class FatAbsorptionQuirk extends Skill {
         double spearFat = getSpearFat(instance);
         if (spearFat > 0.0D) {
             setFat(instance, getFat(instance) + spearFat);
-            setSpearFat(instance, 0.0D);
+            setSpearFat(instance, entity, 0.0D);
             updateFatStock(instance, entity);
             sendMessage(entity, Component.translatable("tracadamia.skill.fat_absorption.spear_cancel").withStyle(ChatFormatting.GRAY));
             return;
@@ -385,7 +386,7 @@ public class FatAbsorptionQuirk extends Skill {
             return;
         }
 
-        setSpearFat(instance, fat);
+        setSpearFat(instance, entity, fat);
         setFat(instance, 0.0D);
         updateFatStock(instance, entity);
         sendMessage(entity, Component.translatable("tracadamia.skill.fat_absorption.spear_ready", FAT_FORMAT.format(fat)).withStyle(ChatFormatting.GOLD));
@@ -398,8 +399,7 @@ public class FatAbsorptionQuirk extends Skill {
             return true;
         }
 
-        amount.set(amount.get() + (float) (spearFat * CONFIG.spearDamagePerFat));
-        setSpearFat(instance, 0.0D);
+        setSpearFat(instance, owner, 0.0D);
         instance.addMasteryPoint(owner);
         return true;
     }
@@ -430,9 +430,22 @@ public class FatAbsorptionQuirk extends Skill {
         return tag == null ? 0.0D : tag.getDouble(SPEAR_FAT_TAG);
     }
 
-    private static void setSpearFat(ManasSkillInstance instance, double fat) {
+    private static void setSpearFat(ManasSkillInstance instance, LivingEntity entity, double fat) {
         instance.getOrCreateTag().putDouble(SPEAR_FAT_TAG, fat);
         instance.markDirty();
+
+        AttributeInstance attack = entity.getAttribute(Attributes.ATTACK_DAMAGE);
+        if (attack == null) {
+            return;
+        }
+
+        double bonus = fat * CONFIG.spearDamagePerFat;
+        if (bonus <= 0.0D) {
+            attack.removeModifier(SPEAR_DAMAGE);
+            return;
+        }
+
+        attack.addOrReplacePermanentModifier(new AttributeModifier(SPEAR_DAMAGE, bonus, AttributeModifier.Operation.ADD_VALUE));
     }
 
     private static void spawnSpearSparks(Player player) {

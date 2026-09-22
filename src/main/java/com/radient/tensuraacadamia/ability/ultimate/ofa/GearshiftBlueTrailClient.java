@@ -1,5 +1,6 @@
 package com.radient.tensuraacadamia.ability.ultimate.ofa;
 
+import com.radient.tensuraacadamia.TensuraAcadamia;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.BufferUploader;
@@ -20,6 +21,9 @@ import net.minecraft.world.entity.WalkAnimationState;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
 import org.joml.Matrix4f;
 
 import java.lang.reflect.Field;
@@ -31,6 +35,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+@EventBusSubscriber(modid = TensuraAcadamia.MODID, value = Dist.CLIENT)
 public final class GearshiftBlueTrailClient {
     private static final Map<Integer, ActiveTrail> ACTIVE = new ConcurrentHashMap<>();
     private static final int MAX_NODES = 64;
@@ -52,6 +57,7 @@ public final class GearshiftBlueTrailClient {
         ACTIVE.remove(entityId);
     }
 
+    @SubscribeEvent
     public static void onClientTick(ClientTickEvent.Post event) {
         Minecraft minecraft = Minecraft.getInstance();
         time += 0.13F;
@@ -91,6 +97,7 @@ public final class GearshiftBlueTrailClient {
         }
     }
 
+    @SubscribeEvent
     public static void render(RenderLevelStageEvent event) {
         if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_PARTICLES || ACTIVE.isEmpty()) {
             return;

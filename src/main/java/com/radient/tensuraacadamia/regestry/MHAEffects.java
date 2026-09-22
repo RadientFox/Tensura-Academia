@@ -10,6 +10,7 @@ import com.radient.tensuraacadamia.effects.ElectricBoostEffect;
 import com.radient.tensuraacadamia.effects.WattageEffect;
 import com.radient.tensuraacadamia.effects.AspersionEffect;
 import com.radient.tensuraacadamia.effects.SmokescreenObscuredEffect;
+import com.radient.tensuraacadamia.effects.BounceEffect;
 import dev.architectury.registry.registries.RegistrySupplier;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
@@ -36,6 +37,7 @@ public class MHAEffects {
     public static final DeferredHolder<MobEffect, MobEffect> WATTAGE;
     public static final DeferredHolder<MobEffect, MobEffect> ASPERSION;
     public static final DeferredHolder<MobEffect, MobEffect> SMOKESCREEN_OBSCURED;
+    public static final DeferredHolder<MobEffect, MobEffect> BOUNCE;
 
 
     public MHAEffects() {
@@ -59,6 +61,7 @@ public class MHAEffects {
         WATTAGE = MOB_EFFECTS.register("wattage", WattageEffect::new);
         ASPERSION = MOB_EFFECTS.register("aspersion", AspersionEffect::new);
         SMOKESCREEN_OBSCURED = MOB_EFFECTS.register("smokescreen_obscured", SmokescreenObscuredEffect::new);
+        BOUNCE = MOB_EFFECTS.register("bounce", BounceEffect::new);
     }
 
 }

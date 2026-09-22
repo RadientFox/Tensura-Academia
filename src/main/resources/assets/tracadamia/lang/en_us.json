@@ -1,6 +1,15 @@
 {
   "block.tracadamia.thermal_ice": "Temporary Ice",
   "tracadamia.skill.half_cold_half_hot": "Half-Cold Half-Hot",
+  "tracadamia.skill.engine": "Engine",
+  "tracadamia.skill.engine.description": "Engine Legs: 2x movement speed. Legs over Arms, while Engine is in the active preset, replaces melee damage with unarmed leg strikes scaled by Engine speed. Engine Boost: 4x total speed for 3 minutes (6 at mastery). Recipro Burst unlocks at 1,250 mastery: 8x total speed for 1 minute, then all Engine modes have a 1-minute cooldown. Maximum Speed unlocks at 2,500 mastery: 12x total speed for 10 seconds, then all Engine modes have a 2-minute cooldown.",
+  "tracadamia.skill.mode.engine.engine_boost": "Engine Boost",
+  "tracadamia.skill.mode.engine.recipro_burst": "Recipro Burst",
+  "tracadamia.skill.mode.engine.maximum_speed": "Maximum Speed",
+  "tracadamia.skill.engine.activated": "%s active for %s seconds",
+  "tracadamia.skill.engine.ended": "Engine boost ended",
+  "tracadamia.skill.engine.recipro_locked": "Recipro Burst requires %s mastery",
+  "tracadamia.skill.engine.maximum_locked": "Maximum Speed requires %s mastery",
   "tracadamia.skill.half_cold_half_hot.description": "Cold grants Cold Resistance; Hot grants Heat Resistance. Mastery unlocks Phosphor, Thermal Fluctuation Resistance, and every move. Crouch Switch to enter Phosphor. Ice Wall: 1,000 aura, 20s cooldown, immobilizes for 60s. Ice Glide: 20 aura per second. Ice Spikes: 200 aura, 2s cooldown. Flashfire Fist: hold a 30-block flame beam for up to 3 seconds, 25 heat every 0.25s, 1,000 aura, 30s cooldown. Jet Kindling: 500 aura per melee burst. Wall of Flames: 500 aura, 10s cooldown. Pale Blade: a traveling heat/cold disc dealing 200 cold and 200 heat. Great Glacial Aegir: 30x30, 300 cold and 100 heat that bypasses heat resistance. Switching is free.",
   "tracadamia.skill.half_cold_half_hot.not_enough_aura": "Not enough aura.",
   "tracadamia.skill.mode.half_cold_half_hot.switch": "Switch",
@@ -79,6 +88,13 @@
   "tracadamia.skill.gearshift": "Gearshift",
   "tracadamia.skill.mode.gearshift.transmission": "§dTransmission",
   "tracadamia.skill.mode.gearshift.launch": "§dLaunch",
+  "tracadamia.skill.mode.gearshift.overdrive": "§6Overdrive",
+  "tracadamia.skill.gearshift.overdrive_on": "§6Gearshift: Overdrive",
+  "tracadamia.skill.permeation": "Permeation",
+  "tracadamia.skill.permeation.description": "POWER! Hold Permeate to phase through the ground and become untouchable. Release to erupt from the surface.",
+  "tracadamia.skill.mode.permeation.permeate": "Permeate",
+  "tracadamia.skill.mode.permeation.blinder_touch": "Blinder Touch Eyeball Crush!",
+  "tracadamia.skill.permeation.no_target": "Look directly at a target.",
 
   "tracadamia.skill.dangersense": "Danger Sense",
 
@@ -103,6 +119,48 @@
   "tracadamia.skill.fat_absorption.no_fat": "No stockpiled fat",
   "tracadamia.skill.fat_absorption.spear_ready": "Shield into spear, %s fat",
   "tracadamia.skill.fat_absorption.spear_cancel": "Shield into spear cancelled",
+
+  "tracadamia.skill.quad_arms": "Quad Arms",
+  "tracadamia.skill.mode.quad_arms.hold": "Hold",
+
+  "tracadamia.skill.impact_recoil": "Impact Recoil",
+
+  "tracadamia.skill.weather_manipulation": "Weather Manipulation",
+  "tracadamia.skill.mode.weather_manipulation.lightning_strike": "Lightning Strike",
+  "tracadamia.skill.mode.weather_manipulation.summon_storm": "Summon Storm",
+  "tracadamia.skill.mode.weather_manipulation.bolt_charge": "Bolt Charge",
+  "tracadamia.skill.weather_manipulation.needs_rain": "It must be raining",
+  "tracadamia.skill.weather_manipulation.needs_thunder": "It must be storming",
+
+
+  "tracadamia.skill.strongarm": "Strongarm",
+  "tracadamia.skill.mode.strongarm.flurry": "Flurry",
+  "tracadamia.skill.mode.strongarm.bullet_punches": "Bullet Punches",
+  "tracadamia.skill.mode.strongarm.quick_draw": "Quick Draw",
+  "tracadamia.skill.strongarm.rotations": "Rotations: %s/%s",
+  "tracadamia.skill.strongarm.hands_full": "Your hands must be empty",
+
+
+  "tracadamia.skill.kinetic_booster": "Kinetic Booster",
+  "tracadamia.skill.mode.kinetic_booster.increase": "Increase",
+  "tracadamia.skill.kinetic_booster.output_level": "Output level: %s/%s",
+
+
+  "tracadamia.skill.absorb_and_release": "Absorb and Release",
+  "tracadamia.skill.mode.absorb_and_release.release": "Release",
+  "tracadamia.skill.mode.absorb_and_release.stored": "Stored",
+  "tracadamia.skill.absorb_and_release.stored": "Stored damage: %s/%s",
+  "tracadamia.skill.absorb_and_release.nothing_stored": "No stored damage",
+  "tracadamia.skill.absorb_and_release.released": "Released %s damage",
+
+
+  "tracadamia.skill.rupture": "Rupture",
+  "tracadamia.skill.mode.rupture.rupture": "Rupture",
+
+
+  "tracadamia.skill.burst": "Burst",
+  "tracadamia.skill.mode.burst.burst": "Burst",
+
 
 
   "tracadamia.skill.copy": "Copy",
@@ -179,5 +237,19 @@
   "tracadamia.skill.mode.voice.loud_out_shout": "Loud-Out Shout!",
   "tracadamia.skill.voice.loud_on": "Loud! enabled",
   "tracadamia.skill.voice.loud_off": "Loud! disabled",
-  "tracadamia.skill.voice.not_enough_aura": "Not enough aura."
+  "tracadamia.skill.voice.not_enough_aura": "Not enough aura.",
+  "tracadamia.skill.elasticity": "Elasticity",
+  "tracadamia.skill.elasticity.description": "Toggle Trampoline Ground to double your jump height and leave a 5-second elastic surface. Natural Bounce grants Bounce for 2 seconds after touching elastic ground. Elastic Rebound, while slotted, can throw back physical attackers and reflect projectiles. Gently Sandwich unlocks at 1,250 mastery.",
+  "tracadamia.skill.mode.elasticity.gently_rebound": "Gently Rebound",
+  "tracadamia.skill.mode.elasticity.bounce": "Bounce",
+  "tracadamia.skill.mode.elasticity.gently_trampoline": "Gently Trampoline",
+  "tracadamia.skill.mode.elasticity.gently_sandwich": "Gently Sandwich",
+  "tracadamia.skill.elasticity.not_enough_aura": "Not enough aura.",
+  "tracadamia.skill.elasticity.no_bounce": "Bounce requires the Bounce effect.",
+  "tracadamia.skill.accelerator_rings": "Accelerator Rings",
+  "tracadamia.skill.accelerator_rings.description": "Hold Accel to build up to five yellow acceleration rings, then release to launch. Push transfers the stored launch force into entities you collide with.",
+  "tracadamia.skill.mode.accelerator_rings.accel": "Accel",
+  "tracadamia.skill.accelerator_rings.push_on": "Push enabled",
+  "tracadamia.skill.accelerator_rings.push_off": "Push disabled",
+  "effect.tracadamia.bounce": "Bounce"
 }

@@ -251,15 +251,6 @@ public final class ExplosionQuirk extends Skill {
                                   DamageSource source, Changeable<Float> amount) {
         if (owner.level().isClientSide || source.getDirectEntity() != owner) return true;
         
-        // I'M THE FINAL BOSS!! - True Passive: Cancel AFO theme and play Butterfly Effect in 32 block radius around you
-        if (isAFOUserWithTheme(target)) {
-            AllForOneTheme.silence(target, ButterflyEffectTheme.DURATION_TICKS);
-            if (owner instanceof ServerPlayer ownerPlayer) {
-                ButterflyEffectTheme.play(ownerPlayer);
-                ownerPlayer.displayClientMessage(Component.literal("I'M THE FINAL BOSS!!"), true);
-            }
-        }
-
         if (!instance.isToggled() || source.is(DamageTypeTags.IS_EXPLOSION)
                 || source.is(TensuraDamageTypes.HEAT_WAVE)) return true;
         
