@@ -19,6 +19,7 @@ public class QuirkSkillsConfig extends ManasConfig {
     public AbsorbAndRelease AbsorbAndRelease = new AbsorbAndRelease();
     public Rupture Rupture = new Rupture();
     public Burst Burst = new Burst();
+    public LifeForce LifeForce = new LifeForce();
 
 
     public QuirkSkillsConfig() {
@@ -440,6 +441,23 @@ public class QuirkSkillsConfig extends ManasConfig {
         public boolean breakBlocks = true;
 
         public Burst() {
+        }
+    }
+
+    public static class LifeForce extends ManasSubConfig {
+        @Comment("Skill Mastery Points")
+        public double masteryPoints = 2_500.0;
+
+        @Comment("Health Multiplier")
+        public int HPBonus = 3;
+        @Comment("Spiritual Health Multiplier")
+        public int SHPBonus = 3;
+        @Comment("Regen Multiplier")
+        public int regenBonus = 3;
+        @Comment("Slowness Level")
+        public int slownessLevel = 2;
+
+        public LifeForce() {
         }
     }
 }

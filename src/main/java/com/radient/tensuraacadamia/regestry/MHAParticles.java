@@ -42,6 +42,8 @@ public final class MHAParticles {
             PARTICLES.register("voice_cannon", () -> new SimpleParticleType(false));
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> VOICE_CANNON_WIDE =
             PARTICLES.register("voice_cannon_wide", () -> new SimpleParticleType(false));
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> OFA_1_COWL =
+            PARTICLES.register("ofa_1_fullcowl", () -> new SimpleParticleType(false));
 
     private MHAParticles() {
     }
@@ -66,6 +68,8 @@ public final class MHAParticles {
                     sprites -> new OrangeExplosionParticle.Provider(sprites, 0.38F, 0.12F));
             event.registerSpriteSet(VOICE_CANNON.get(), sprites -> new VoiceCannonParticle.Provider(sprites, 5.0F));
             event.registerSpriteSet(VOICE_CANNON_WIDE.get(), sprites -> new VoiceCannonParticle.Provider(sprites, 15.0F));
+
+            event.registerSpriteSet(OFA_1_COWL.get(), SmashParticle.Provider::new);
         }
     }
 
@@ -272,6 +276,38 @@ public final class MHAParticles {
 
     private static final class SmashParticle extends TextureSheetParticle {
         private SmashParticle(ClientLevel level, double x, double y, double z,
+                              double xSpeed, double ySpeed, double zSpeed, SpriteSet sprites) {
+            super(level, x, y, z, xSpeed, ySpeed, zSpeed);
+            this.pickSprite(sprites);
+            this.lifetime = 12;
+            this.quadSize = 0.35F;
+            this.gravity = 0.0F;
+            this.hasPhysics = false;
+        }
+
+        @Override
+        public ParticleRenderType getRenderType() {
+            return ParticleRenderType.PARTICLE_SHEET_TRANSLUCENT;
+        }
+
+        private static final class Provider implements ParticleProvider<SimpleParticleType> {
+            private final SpriteSet sprites;
+
+            private Provider(SpriteSet sprites) {
+                this.sprites = sprites;
+            }
+
+            @Override
+            public Particle createParticle(SimpleParticleType type, ClientLevel level,
+                                           double x, double y, double z,
+                                           double xSpeed, double ySpeed, double zSpeed) {
+                return new SmashParticle(level, x, y, z, xSpeed, ySpeed, zSpeed, sprites);
+            }
+        }
+    }
+
+    private static final class OFA1CowlParticle extends TextureSheetParticle {
+        private OFA1CowlParticle(ClientLevel level, double x, double y, double z,
                               double xSpeed, double ySpeed, double zSpeed, SpriteSet sprites) {
             super(level, x, y, z, xSpeed, ySpeed, zSpeed);
             this.pickSprite(sprites);

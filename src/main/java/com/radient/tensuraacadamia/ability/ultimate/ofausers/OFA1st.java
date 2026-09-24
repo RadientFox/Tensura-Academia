@@ -5,17 +5,26 @@ import com.github.hvnbael.trnightmare.util.SkillIconFrames;
 import com.radient.tensuraacadamia.config.skills.OFAConfig;
 import com.radient.tensuraacadamia.regestry.MHAEffects;
 import com.radient.tensuraacadamia.regestry.MHAParticles;
+import com.radient.tensuraacadamia.regestry.MHASounds;
+import com.radient.tensuraacadamia.regestry.skills.QuirkSkills;
 import io.github.manasmods.manascore.attribute.api.ManasCoreAttributes;
 import io.github.manasmods.manascore.config.ConfigRegistry;
 import io.github.manasmods.manascore.network.api.util.Changeable;
+import io.github.manasmods.manascore.skill.api.ManasSkill;
 import io.github.manasmods.manascore.skill.api.ManasSkillInstance;
+import io.github.manasmods.manascore.skill.api.SkillAPI;
+import io.github.manasmods.tensura.ability.SkillHelper;
+import io.github.manasmods.tensura.ability.SkillUtils;
+import io.github.manasmods.tensura.ability.TensuraSkillInstance;
 import io.github.manasmods.tensura.ability.skill.Skill;
+import io.github.manasmods.tensura.ability.skill.intrinsic.BeastTransformationSkill;
 import io.github.manasmods.tensura.data.TensuraBlockTags;
 import io.github.manasmods.tensura.data.TensuraEntityTags;
 import io.github.manasmods.tensura.enchantment.TensuraEnchantmentHelper;
 import io.github.manasmods.tensura.entity.projectile.magic.WindSphereProjectile;
 import io.github.manasmods.tensura.event.TensuraEntityEvents;
 import io.github.manasmods.tensura.particle.TensuraParticleHelper;
+import io.github.manasmods.tensura.registry.particle.TensuraParticleTypes;
 import io.github.manasmods.tensura.registry.sound.TensuraSoundEvents;
 import io.github.manasmods.tensura.util.EnergyHelper;
 import io.github.manasmods.tensura.util.ObjectSelectionHelper;
@@ -23,6 +32,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
@@ -76,7 +86,24 @@ public class OFA1st extends Skill {
         }
     }
 
-        public int getModes(ManasSkillInstance instance) {
+    public int getMaxMastery() {
+        return (int) CONFIG.masteryPoints;
+    }
+
+
+    private static final int MAX_COWLING_TIME_DRAWBACK = 20 * 15 ;
+
+    private static final ResourceLocation MOVEMENT_MODIFIER = ResourceLocation.fromNamespaceAndPath("tracadamia", "full_cowling_speed");
+    private static final ResourceLocation ATTACK_SPEED_MODIFIER = ResourceLocation.fromNamespaceAndPath("tracadamia", "full_cowling_attack_speed");
+    private static final ResourceLocation JUMP_HEIGHT_MODIFIER = ResourceLocation.fromNamespaceAndPath("tracadamia", "full_cowling_jump_height");
+    private static final ResourceLocation ATTACK_DAMAGE_MODIFIER = ResourceLocation.fromNamespaceAndPath("tracadamia", "full_cowling_damage");
+    private static final ResourceLocation ARMOR_MODIFIER = ResourceLocation.fromNamespaceAndPath("tracadamia", "full_cowling_armor");
+
+    private static final String ACTIVE_TAG = "tracadamia_full_cowling_active";
+    private static final String TIME_TAG = "tracadamia_full_cowling_time";
+
+
+    public int getModes(ManasSkillInstance instance) {
             return 3;
         }
 
@@ -117,6 +144,11 @@ public class OFA1st extends Skill {
 
     public void onTick(ManasSkillInstance instance, LivingEntity entity) {
         Level var6 = entity.level();
+
+        var data = entity.getPersistentData();
+        double percentUsed =  (data.getDouble("outputPercent"));
+        boolean fullCowlingOn = data.getBoolean("fullCowling");
+
         if (var6 instanceof ServerLevel serverLevel) {
             if (instance.isToggled()) {
 
@@ -139,23 +171,41 @@ public class OFA1st extends Skill {
                     }
                 }
             }
+
+            if (fullCowlingOn){
+
+                double x = entity.getX();
+                double y = entity.getY() + entity.getBbHeight() * 0.5D;
+                double z = entity.getZ();
+
+                int time = data.getInt("activatedTimes");
+                if (time % BASE_CONFIG.Mastery.masteryActivateTime == 0) {
+                    TensuraParticleHelper.spawnServerParticles(entity.level(), MHAParticles.OFA_1_COWL.get(), x, y, z, 15, 0.1D, 0.1D, 0.1D, 0.1D, true);
+                }
+
+                data.putInt("activatedTimes", time + 1);
+
+
+
+
+
+
+            }
         }
     }
 
     public boolean onDamageEntity(ManasSkillInstance instance, LivingEntity attacker, LivingEntity target, DamageSource source, Changeable<Float> amount) {
         var data = attacker.getPersistentData();
-        TensuraParticleHelper.spawnServerParticles(target.level(), (ParticleOptions) MHAParticles.SMASH_PARTICLE.get(), target.getX(), target.getY(), target.getZ(), 1, 0.08, 0.08, 0.08, 0.2, true);
         if (attacker instanceof ServerPlayer player) {
 
 
-                if (data.getBoolean("texasActive") == true){
+                if (data.getBoolean("texasActive")){
 
                     Vec3 vec3;
                     double damage = getCurrnetDamage((Player) attacker);
-                    player.displayClientMessage(Component.translatable("tracadamia.skill.mode.power.detroit.active" + damage).setStyle(Style.EMPTY.withColor(ChatFormatting.WHITE)), false);
 
                     amount.set((float) ((double)amount.get() + damage));
-
+                    data.putBoolean("texasActive", false);
 
                     label61: {
                         if (!target.getType().is(TensuraEntityTags.NO_FORCED_MOVE)) {
@@ -183,6 +233,8 @@ public class OFA1st extends Skill {
 
 
                      */
+                    TensuraParticleHelper.spawnServerParticles(target.level(), (ParticleOptions) MHAParticles.SMASH_PARTICLE.get(), target.getX(), target.getY(), target.getZ(), 1, 0.08, 0.08, 0.08, 0.2, true);
+
                     attacker.swing(InteractionHand.MAIN_HAND, true);
                     TensuraParticleHelper.addServerParticlesAroundSelf(target, ParticleTypes.CLOUD, 1.0);
                     attacker.level().playSound((Player)null, attacker.getX(), attacker.getY(), attacker.getZ(), SoundEvents.GENERIC_EXPLODE, SoundSource.PLAYERS, 1.0F, 1.0F);
@@ -197,14 +249,14 @@ public class OFA1st extends Skill {
 
 
 
-                    data.putBoolean("texasActive", false);
+
                     return true;
                 }else if (data.getBoolean("detroitActive")){
 
 
                     Vec3 vec3;
                     double damage = getCurrnetDamage((Player) attacker);
-                    player.displayClientMessage(Component.translatable("tracadamia.skill.mode.power.detroit.active" + damage).setStyle(Style.EMPTY.withColor(ChatFormatting.WHITE)), false);
+                    TensuraParticleHelper.spawnServerParticles(target.level(), (ParticleOptions) MHAParticles.SMASH_PARTICLE.get(), target.getX(), target.getY(), target.getZ(), 1, 0.08, 0.08, 0.08, 0.2, true);
 
                     amount.set((float) ((double)amount.get() + damage));
                     data.putBoolean("detroitActive", false);
@@ -225,7 +277,6 @@ public class OFA1st extends Skill {
 
     public void onPressed(ManasSkillInstance instance, LivingEntity entity, int keyNumber, int mode) {
         var data = entity.getPersistentData();
-        Player player = (Player) entity;
         int subMode = data.getInt("modeV");
         int smashMode = data.getInt("modeSmash");
         double percentage = data.getDouble("outputPercent");
@@ -238,6 +289,7 @@ public class OFA1st extends Skill {
                     if (nextMode > 14) {
                         nextMode = 1;
                     }
+                    Player player = (Player) entity;
 
                     player.getPersistentData().putInt("modeV", nextMode);
                     switch (nextMode) {
@@ -315,6 +367,8 @@ public class OFA1st extends Skill {
                 }
             }case 1->{
 
+                Player player = (Player) entity;
+
                 if (player.isCrouching()){
 
                     if (entity instanceof Player) {
@@ -369,13 +423,40 @@ public class OFA1st extends Skill {
 
 
 
-            }case 2->{
-                player.displayClientMessage(Component.literal("Output: " + data.getInt("outputPercent")), false);
-                if (data.getInt("outputPercent") == 1){
-                    colorName = true;
-                }else {
-                    colorName = false;
+            }case 2-> fullCowlActivate(instance, entity);
+
+
+
+
+
+            case 3->{
+                LivingEntity target = ObjectSelectionHelper.getTargetingEntity(entity, 5.0, false);
+
+                if (entity instanceof Player){
+                    if (target instanceof Player){
+
+                        if (!SkillUtils.hasSkill(target, (ManasSkill) QuirkSkills.OFA_1ST.get())) {
+                            if (!(instance.getMastery() < (double) 0.0F) && !instance.isTemporarySkill()) {
+                                TensuraSkillInstance eye = new TensuraSkillInstance(QuirkSkills.OFA_1ST.get());
+                                eye.getOrCreateTag().putBoolean("NoMagiculeCost", true);
+                                SkillHelper.learnSkill(target, eye);
+                                SkillAPI.getSkillsFrom(entity).forgetSkill(QuirkSkills.OFA_1ST.get());
+                                if (entity instanceof ServerPlayer player) {
+                                    player.displayClientMessage(Component.translatable("tracadamia.skill.quirk_bestowal.pass").setStyle(Style.EMPTY.withColor(ChatFormatting.RED)), false);
+                                }
+                                if (target instanceof ServerPlayer player) {
+                                    player.displayClientMessage(Component.translatable("tracadamia.skill.quirk_bestowal.passed").setStyle(Style.EMPTY.withColor(ChatFormatting.RED)), false);
+                                }
+                            }
+                        }
+
+                    }
+
                 }
+
+
+
+
             }
 
 
@@ -406,6 +487,7 @@ public class OFA1st extends Skill {
             }
             data.putBoolean("detroitActive",false);
         }else {
+            player.level().playSound((Player)null, player.getX(), player.getY(), player.getZ(), (SoundEvent) MHASounds.CHARGING.get(), SoundSource.PLAYERS, 1.0F, 1.0F);
             if (entity instanceof Player){
                 player.displayClientMessage(Component.translatable("tracadamia.skill.mode.power.detroit.active").setStyle(Style.EMPTY.withColor(ChatFormatting.WHITE)), true);
             }
@@ -419,16 +501,22 @@ public class OFA1st extends Skill {
         var data = player.getPersistentData();
         boolean SmashActive = data.getBoolean("texasActive");
 
-        if (SmashActive){
-            if (entity instanceof Player){
-                player.displayClientMessage(Component.translatable("tracadamia.skill.mode.power.detroit.deactive").setStyle(Style.EMPTY.withColor(ChatFormatting.WHITE)), true);
+
+        double percentUsed =  (data.getDouble("outputPercent"));
+        if (percentUsed > 0.2) {
+            if (SmashActive) {
+                if (entity instanceof Player) {
+                    player.displayClientMessage(Component.translatable("tracadamia.skill.mode.power.detroit.deactive").setStyle(Style.EMPTY.withColor(ChatFormatting.WHITE)), true);
+                }
+                data.putBoolean("texasActive", false);
+            } else {
+                player.level().playSound((Player) null, player.getX(), player.getY(), player.getZ(), (SoundEvent) MHASounds.CHARGING.get(), SoundSource.PLAYERS, 1.0F, 1.0F);
+
+                if (entity instanceof Player) {
+                    player.displayClientMessage(Component.translatable("tracadamia.skill.mode.power.detroit.active").setStyle(Style.EMPTY.withColor(ChatFormatting.WHITE)), true);
+                }
+                data.putBoolean("texasActive", true);
             }
-            data.putBoolean("texasActive",false);
-        }else {
-            if (entity instanceof Player){
-                player.displayClientMessage(Component.translatable("tracadamia.skill.mode.power.detroit.active").setStyle(Style.EMPTY.withColor(ChatFormatting.WHITE)), true);
-            }
-            data.putBoolean("texasActive",true);
         }
     }
 
@@ -504,27 +592,32 @@ public class OFA1st extends Skill {
 
 
     private void delawareSmash(ManasSkillInstance instance, LivingEntity entity){
-        Player player = (Player) entity;
-        if (!EnergyHelper.isOutOfEnergy(entity, instance, 2)) {
-            instance.addMasteryPoint(entity);
-            entity.swing(InteractionHand.MAIN_HAND, true);
-            WindSphereProjectile windSphere = new WindSphereProjectile(entity.level(), entity);
-            windSphere.setSpeed(2.0F);
-            windSphere.setDamage((float) getCurrnetDamage(player));
-            windSphere.setNoGravity(true);
-            windSphere.setKnockForce(3.0F);
-            windSphere.setBurnTicks(-1);
-            windSphere.setSkill(entity, instance, this, 2);
-            windSphere.setPosAndShoot(entity);
-            entity.level().addFreshEntity(windSphere);
-            entity.level().playSound((Player)null, entity.getX(), entity.getY(), entity.getZ(), (SoundEvent)TensuraSoundEvents.CAST_WIND.get(), SoundSource.PLAYERS, 1.0F, 1.0F);
+
+        var data = entity.getPersistentData();
+        double percentUsed =  (data.getDouble("outputPercent"));
+        if (percentUsed > 0.2) {
+            Player player = (Player) entity;
+            if (!EnergyHelper.isOutOfEnergy(entity, instance, 2)) {
+                instance.addMasteryPoint(entity);
+                entity.swing(InteractionHand.MAIN_HAND, true);
+                WindSphereProjectile windSphere = new WindSphereProjectile(entity.level(), entity);
+                windSphere.setSpeed(2.0F);
+                windSphere.setDamage((float) getCurrnetDamage(player));
+                windSphere.setNoGravity(true);
+                windSphere.setKnockForce(3.0F);
+                windSphere.setBurnTicks(-1);
+                windSphere.setSkill(entity, instance, this, 2);
+                windSphere.setPosAndShoot(entity);
+                entity.level().addFreshEntity(windSphere);
+                entity.level().playSound((Player) null, entity.getX(), entity.getY(), entity.getZ(), (SoundEvent) TensuraSoundEvents.CAST_WIND.get(), SoundSource.PLAYERS, 1.0F, 1.0F);
+            }
         }
     }
 
     public static double getCurrnetDamage(Player player){
-        double fullDamage = (int) CONFIG.fullDamage;
+        double fullDamage =  CONFIG.fullDamage;
         var data = player.getPersistentData();
-        double percentUsed = (int) (data.getDouble("outputPercent"));
+        double percentUsed =  (data.getDouble("outputPercent"));
         boolean fullCowlingOn = data.getBoolean("fullCowling");
         double UsedDamage = 0;
         double UsedDamagePre = 0;
@@ -543,7 +636,38 @@ public class OFA1st extends Skill {
         return (float) UsedDamage;
     }
 
-        static {
+
+
+
+
+
+
+    private void fullCowlActivate(ManasSkillInstance instance, LivingEntity entity){
+
+        CompoundTag tag = instance.getOrCreateTag();
+        double percentUsed =  (tag.getDouble("outputPercent"));
+        boolean fullCowlingOn = tag.getBoolean("fullCowling");
+        if (instance.getMastery() >= (instance.getMaxMastery() * 0.1)){
+
+            if (fullCowlingOn){
+                tag.putBoolean("fullCowling", false);
+            }else {
+                tag.putBoolean("fullCowling", true);
+            }
+
+        }
+
+    }
+
+
+
+
+
+
+
+
+
+    static {
         ICON_FRAMES = OFA1st.build("ofa", 32);
     }
 

@@ -45,6 +45,7 @@ public class QuirkSkills {
     public static final RegistrySupplier<AbsorbAndReleaseQuirk> ABSORB_AND_RELEASE = register("absorb_and_release", AbsorbAndReleaseQuirk::new);
     public static final RegistrySupplier<RuptureQuirk> RUPTURE = register("rupture", RuptureQuirk::new);
     public static final RegistrySupplier<BurstQuirk> BURST = register("burst", BurstQuirk::new);
+    public static final RegistrySupplier<LifeForceQuirk> LifeForce = register("life_force", LifeForceQuirk::new);
 
 
 
