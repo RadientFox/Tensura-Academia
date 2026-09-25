@@ -1,4 +1,4 @@
-package com.radient.tensuraacadamia.ability.ultimate.ofausers;
+package com.radient.tensuraacadamia.ability.ultimate.ofaembers;
 
 import com.github.hvnbael.trnightmare.compat.TextAnimatorCompat;
 import com.github.hvnbael.trnightmare.util.SkillIconFrames;
@@ -17,14 +17,12 @@ import io.github.manasmods.tensura.ability.SkillHelper;
 import io.github.manasmods.tensura.ability.SkillUtils;
 import io.github.manasmods.tensura.ability.TensuraSkillInstance;
 import io.github.manasmods.tensura.ability.skill.Skill;
-import io.github.manasmods.tensura.ability.skill.intrinsic.BeastTransformationSkill;
 import io.github.manasmods.tensura.data.TensuraBlockTags;
 import io.github.manasmods.tensura.data.TensuraEntityTags;
 import io.github.manasmods.tensura.enchantment.TensuraEnchantmentHelper;
 import io.github.manasmods.tensura.entity.projectile.magic.WindSphereProjectile;
 import io.github.manasmods.tensura.event.TensuraEntityEvents;
 import io.github.manasmods.tensura.particle.TensuraParticleHelper;
-import io.github.manasmods.tensura.registry.particle.TensuraParticleTypes;
 import io.github.manasmods.tensura.registry.sound.TensuraSoundEvents;
 import io.github.manasmods.tensura.util.EnergyHelper;
 import io.github.manasmods.tensura.util.ObjectSelectionHelper;
@@ -63,11 +61,11 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Iterator;
 import java.util.List;
 
-public class OFA1st extends Skill {
+public class OFA1st_Embers extends Skill {
         private static final OFAConfig.OFA1st CONFIG = ConfigRegistry.getConfig(OFAConfig.class).OFA1st;
         public static final ResourceLocation OFA1ST = ResourceLocation.fromNamespaceAndPath("tracadamia", "one_for_all_1");
 
-    public OFA1st() {
+    public OFA1st_Embers() {
             super(SkillType.ULTIMATE);
         }
 
@@ -123,7 +121,7 @@ public class OFA1st extends Skill {
         if (colorName) {
             return SkillIconFrames.pickAnimated(ICON_FRAMES, this.iconTick);
         }else {
-            return ResourceLocation.fromNamespaceAndPath("tracadamia", "textures/skill/ultimate/one_for_all_1.png");
+            return ResourceLocation.fromNamespaceAndPath("tracadamia", "textures/skill/ultimate/ofa_embers_1.png");
         }
     }
 
@@ -406,7 +404,7 @@ public class OFA1st extends Skill {
 
                 }else {
                     switch (smashMode){
-
+/*
                         case 1 -> detroitSmash(instance, entity);
 
                         case 2 -> carolinaSmash(instance, entity);
@@ -416,6 +414,8 @@ public class OFA1st extends Skill {
                         case 4 -> texaSmash(instance, entity);
 
 
+
+ */
                     }
                 }
 
@@ -432,33 +432,7 @@ public class OFA1st extends Skill {
             case 3->{
                 LivingEntity target = ObjectSelectionHelper.getTargetingEntity(entity, 5.0, false);
 
-                if (entity instanceof Player){
-                    if (target instanceof Player){
 
-                        if ((!SkillUtils.hasSkill(target, (ManasSkill) QuirkSkills.OFA_1ST.get())) && (!SkillUtils.hasSkill(target, (ManasSkill) QuirkSkills.OFA_1ST.get()))) {
-                            if (!(instance.getMastery() < (double) 0.0F) && !instance.isTemporarySkill()) {
-                                TensuraSkillInstance eye = new TensuraSkillInstance(QuirkSkills.OFA_2ND.get());
-                                TensuraSkillInstance eye2 = new TensuraSkillInstance(QuirkSkills.GEARSHIFT.get());
-                                TensuraSkillInstance eye3 = new TensuraSkillInstance(QuirkSkills.OFA1st_Embers.get());
-                                eye.getOrCreateTag().putBoolean("NoMagiculeCost", true);
-                                eye2.getOrCreateTag().putBoolean("NoMagiculeCost", true);
-                                eye3.getOrCreateTag().putBoolean("NoMagiculeCost", true);
-                                SkillHelper.learnSkill(target, eye);
-                                SkillHelper.learnSkill(target, eye2);
-                                SkillHelper.learnSkill(entity, eye3);
-                                SkillAPI.getSkillsFrom(entity).forgetSkill(QuirkSkills.OFA_1ST.get());
-                                if (entity instanceof ServerPlayer player) {
-                                    player.displayClientMessage(Component.translatable("tracadamia.skill.quirk_bestowal.pass").setStyle(Style.EMPTY.withColor(ChatFormatting.RED)), false);
-                                }
-                                if (target instanceof ServerPlayer player) {
-                                    player.displayClientMessage(Component.translatable("tracadamia.skill.quirk_bestowal.passed").setStyle(Style.EMPTY.withColor(ChatFormatting.RED)), false);
-                                }
-                            }
-                        }
-
-                    }
-
-                }
 
 
 
@@ -674,7 +648,7 @@ public class OFA1st extends Skill {
 
 
     static {
-        ICON_FRAMES = OFA1st.build("ofa", 32);
+        ICON_FRAMES = OFA1st_Embers.build("ofa", 32);
     }
 
     public static ResourceLocation[] build(String prefix, int count) {

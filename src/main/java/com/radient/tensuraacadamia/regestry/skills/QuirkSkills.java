@@ -1,5 +1,7 @@
 package com.radient.tensuraacadamia.regestry.skills;
 
+import com.radient.tensuraacadamia.ability.ultimate.ofaembers.OFA1st_Embers;
+import com.radient.tensuraacadamia.ability.ultimate.ofausers.OFA2nd;
 import com.radient.tensuraacadamia.ability.unique.quirks.DangerSenseQuirk;
 import com.radient.tensuraacadamia.ability.ultimate.ofausers.OFA1st;
 import com.radient.tensuraacadamia.ability.ultimate.AllForOne;
@@ -15,6 +17,8 @@ public class QuirkSkills {
 
 
     public static final RegistrySupplier<OFA1st> OFA_1ST = register("one_for_all_1", OFA1st::new);
+    public static final RegistrySupplier<OFA1st_Embers> OFA1st_Embers = register("one_for_all_1_embers", OFA1st_Embers::new);
+    public static final RegistrySupplier<OFA2nd> OFA_2ND = register("one_for_all_2", OFA2nd::new);
 
 
     public static final RegistrySupplier<Power_Stock> POWER_STOCK = register("power_stock", Power_Stock::new);
