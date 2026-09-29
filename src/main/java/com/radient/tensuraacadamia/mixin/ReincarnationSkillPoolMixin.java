@@ -10,15 +10,22 @@ import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import java.util.ArrayList;
 import java.util.List;
 
-/** Add the quirk before Tensura applies eligibility checks, on both old and new pool implementations. */
+/** Add custom quirks before Tensura filters the reincarnation pool. */
 @Mixin(value = ReincarnationMenu.class, remap = false)
 public abstract class ReincarnationSkillPoolMixin {
     @ModifyVariable(method = "getReincarnationSkills", at = @At("HEAD"), argsOnly = true, ordinal = 0)
-    private static List<ManasSkill> tracadamia$addThermalQuirk(List<ManasSkill> pool) {
-        ManasSkill skill = QuirkSkills.HALF_COLD_HALF_HOT.get();
-        if (pool.contains(skill)) return pool;
+    private static List<ManasSkill> tracadamia$addCustomQuirks(List<ManasSkill> pool) {
         List<ManasSkill> expanded = new ArrayList<>(pool);
-        expanded.add(skill);
+        addIfMissing(expanded, QuirkSkills.HALF_COLD_HALF_HOT.get());
+        addIfMissing(expanded, QuirkSkills.BEAMS_FROM_HIS_EYES.get());
+        addIfMissing(expanded, QuirkSkills.IMPURE_BEAM.get());
+        addIfMissing(expanded, QuirkSkills.VINES.get());
+        addIfMissing(expanded, QuirkSkills.BLAST.get());
+        addIfMissing(expanded, QuirkSkills.DARK_SHADOW.get());
         return expanded;
+    }
+
+    private static void addIfMissing(List<ManasSkill> skills, ManasSkill skill) {
+        if (!skills.contains(skill)) skills.add(skill);
     }
 }

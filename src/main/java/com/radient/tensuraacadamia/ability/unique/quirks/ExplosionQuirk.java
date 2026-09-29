@@ -107,7 +107,18 @@ public final class ExplosionQuirk extends Skill {
         }
     }
 
-    private record PultLaunch(LivingEntity target, Vec3 origin, Vec3 direction) {
+    private static final class PultLaunch {
+        private final LivingEntity target;
+        private final Vec3 origin;
+        private final Vec3 direction;
+        private final long expiresAt;
+
+        private PultLaunch(LivingEntity target, Vec3 origin, Vec3 direction, long expiresAt) {
+            this.target = target;
+            this.origin = origin;
+            this.direction = direction;
+            this.expiresAt = expiresAt;
+        }
     }
 
     private static final class Howitzer {
@@ -349,12 +360,12 @@ public final class ExplosionQuirk extends Skill {
         return instance.isPresent() && instance.get().isToggled();
     }
     
-    private static void triggerFinalBossAttack(ManasSkillInstance instance, ServerPlayer player, LivingEntity afoTarget) {
+    private static boolean triggerFinalBossAttack(ManasSkillInstance instance, ServerPlayer player, LivingEntity afoTarget) {
         long now = player.serverLevel().getGameTime();
         if (FINAL_BOSS_COOLDOWN.getOrDefault(player.getUUID(), 0L) > now) {
             player.displayClientMessage(Component.literal("Final Boss on cooldown: " + 
                     ((FINAL_BOSS_COOLDOWN.get(player.getUUID()) - now) / 20) + " seconds"), true);
-            return;
+            return false;
         }
         
         ServerLevel level = player.serverLevel();
@@ -368,12 +379,17 @@ public final class ExplosionQuirk extends Skill {
         player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 60, 4));
         afoTarget.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 60, 4));
         afoTarget.addEffect(new MobEffectInstance(TensuraMobEffects.getReference(TensuraMobEffects.PARALYSIS), 60, 2));
+        player.setDeltaMovement(Vec3.ZERO);
+        afoTarget.setDeltaMovement(Vec3.ZERO);
+        player.hurtMarked = true;
+        afoTarget.hurtMarked = true;
         
         // Schedule the massive explosion after slowdown
         SCHEDULED_EXPLOSIONS.add(new ScheduledExplosion(player, afoTarget, targetPos, now + 60));
         
         // Set cooldown
         FINAL_BOSS_COOLDOWN.put(player.getUUID(), now + FINAL_BOSS_COOLDOWN_TICKS);
+        return true;
     }
 
     private static boolean stunGrenade(ManasSkillInstance instance, ServerPlayer player) {
@@ -521,6 +537,10 @@ public final class ExplosionQuirk extends Skill {
             
             if (scheduled.remainingTicks > 0) {
                 scheduled.remainingTicks--;
+                scheduled.attacker.setDeltaMovement(Vec3.ZERO);
+                scheduled.target.setDeltaMovement(Vec3.ZERO);
+                scheduled.attacker.hurtMarked = true;
+                scheduled.target.hurtMarked = true;
                 // Show countdown visual
                 if (scheduled.remainingTicks % 20 == 0) {
                     level.sendParticles(ParticleTypes.END_ROD, 
@@ -596,14 +616,18 @@ public final class ExplosionQuirk extends Skill {
                 var instance = SkillAPI.getSkillsFrom(rush.owner).getSkill(QuirkSkills.EXPLOSION.get().getRegistryName());
                 if (instance.isPresent()) {
                     AABB sweptPath = rush.owner.getBoundingBox().expandTowards(rush.direction.scale(rush.speed())).inflate(3.0D);
+                    boolean finalBossTriggered = false;
                     for (LivingEntity nearby : level.getEntitiesOfClass(LivingEntity.class,
                             sweptPath, target -> target != rush.owner && target.isAlive())) {
                         if (rush.owner instanceof ServerPlayer player && isAFOUserWithTheme(nearby)) {
-                            triggerFinalBossAttack(instance.get(), player, nearby);
-                            rushIterator.remove();
-                            continue;
+                            if (triggerFinalBossAttack(instance.get(), player, nearby)) {
+                                rushIterator.remove();
+                                finalBossTriggered = true;
+                                break;
+                            }
                         }
                     }
+                    if (finalBossTriggered) continue;
                 }
             }
             
@@ -626,7 +650,8 @@ public final class ExplosionQuirk extends Skill {
                 Vec3 launch = rush.direction.add(0.0, 0.5, 0.0).normalize().scale(PULT_LAUNCH_SPEED);
                 nearest.setDeltaMovement(launch);
                 nearest.hurtMarked = true;
-                PULT_LAUNCHES.put(nearest.getUUID(), new PultLaunch(nearest, nearest.position(), launch.normalize()));
+                PULT_LAUNCHES.put(nearest.getUUID(), new PultLaunch(nearest, nearest.position(), launch.normalize(),
+                        level.getGameTime() + 100L));
                 orangeExplosion(level, nearest.position(), 2.0, false);
                 rushIterator.remove();
             } else {
@@ -640,7 +665,8 @@ public final class ExplosionQuirk extends Skill {
         while (pultIterator.hasNext()) {
             PultLaunch launch = pultIterator.next();
             if (!launch.target.isAlive() || launch.target.isRemoved()
-                    || !(launch.target.level() instanceof ServerLevel)) {
+                    || !(launch.target.level() instanceof ServerLevel level)
+                    || level.getGameTime() >= launch.expiresAt) {
                 pultIterator.remove();
                 continue;
             }
@@ -649,6 +675,9 @@ public final class ExplosionQuirk extends Skill {
                 launch.target.setPos(cappedPosition.x, cappedPosition.y, cappedPosition.z);
                 launch.target.setDeltaMovement(Vec3.ZERO);
                 launch.target.hurtMarked = true;
+                pultIterator.remove();
+            } else if (launch.target.onGround() || launch.target.horizontalCollision
+                    || launch.target.getDeltaMovement().dot(launch.direction) <= 0.1D) {
                 pultIterator.remove();
             }
         }

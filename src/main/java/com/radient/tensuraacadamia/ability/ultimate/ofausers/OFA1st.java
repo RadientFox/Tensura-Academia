@@ -142,6 +142,13 @@ public class OFA1st extends Skill {
         }
 
 
+    @Override
+    public boolean canTick(ManasSkillInstance instance, LivingEntity entity) {
+        return instance.isToggled() || entity.getPersistentData().getBoolean("fullCowling")
+                || instance.getOrCreateTag().getBoolean("cowlingParticles");
+    }
+
+    @Override
     public void onTick(ManasSkillInstance instance, LivingEntity entity) {
         Level var6 = entity.level();
 
@@ -150,6 +157,17 @@ public class OFA1st extends Skill {
         boolean fullCowlingOn = data.getBoolean("fullCowling");
 
         if (var6 instanceof ServerLevel serverLevel) {
+            if (entity.isAlive() && entity.tickCount % 10 == 0
+                    && (entity.getPersistentData().getBoolean("fullCowling")
+                        || instance.getOrCreateTag().getBoolean("cowlingParticles"))) {
+                for (int i = 0; i < 5; i++) {
+                    serverLevel.sendParticles(MHAParticles.OFA_COWLING.get(),
+                            entity.getRandomX(1.0D), entity.getRandomY(), entity.getRandomZ(1.0D), 0,
+                            entity.getRandom().nextGaussian() * 0.02D,
+                            entity.getRandom().nextGaussian() * 0.02D,
+                            entity.getRandom().nextGaussian() * 0.02D, 1.0D);
+                }
+            }
             if (instance.isToggled()) {
 
                 float radius = 30.0F;
@@ -423,7 +441,20 @@ public class OFA1st extends Skill {
 
 
 
-            }case 2-> fullCowlActivate(instance, entity);
+            }case 2->{
+                fullCowlActivate(instance, entity);
+                if (!entity.level().isClientSide()) {
+                    var visualData = instance.getOrCreateTag();
+                    visualData.putBoolean("cowlingParticles", !visualData.getBoolean("cowlingParticles"));
+                    instance.markDirty();
+                }
+                player.displayClientMessage(Component.literal("Output: " + data.getInt("outputPercent")), false);
+                if (data.getInt("outputPercent") == 1){
+                    colorName = true;
+                }else {
+                    colorName = false;
+                }
+            }
 
 
 

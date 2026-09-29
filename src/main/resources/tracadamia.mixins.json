@@ -13,7 +13,20 @@
     "FallingBlockEntityInvoker",
     "LivingEntityClimbMixin",
     "LightningBoltAccessor",
-    "LivingEntityFloatMixin"
+    "LivingEntityFloatMixin",
+    "PermeationSkillGateMixin",
+    "PermeationPlayerTickMixin",
+    "PerilDiffusionMeleeMixin",
+    "WoodenSwordsDamageSourceMixin",
+    "MobDoubleHealthMixin",
+    "DoubleCloneEPGainMixin",
+    "LivingEntityDoubleHealthMixin",
+    "TailwindFlightMixin",
+    "HomingArrowAccessor",
+    "VinesMovementMixin",
+    "VinesSkillGateMixin",
+    "DarkShadowMovementMixin"
+
   ],
   "client": [
     "SkillCreationScreenMixin",
@@ -23,7 +36,10 @@
     "client.AcceleratorRingsFlightMixin",
     "client.PermeationPhaseMovementMixin",
     "client.LevelRendererAccessor",
-    "client.PlayerModelMixin"
+    "client.PlayerModelMixin",
+    "client.EngineKickMixin",
+    "client.WoodenSwordsFirstPersonMixin"
+
   ],
   "injectors": {
     "defaultRequire": 1

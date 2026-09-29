@@ -46,6 +46,9 @@ public class QuirkSkills {
     public static final RegistrySupplier<StrongarmQuirk> STRONGARM = register("strongarm", StrongarmQuirk::new);
     public static final RegistrySupplier<KineticBoosterQuirk> KINETIC_BOOSTER = register("kinetic_booster", KineticBoosterQuirk::new);
     public static final RegistrySupplier<SpringlikeLimbsQuirk> SPRINGLIKE_LIMBS = register("springlike_limbs", SpringlikeLimbsQuirk::new);
+    public static final RegistrySupplier<AcceleratorRingsQuirk> ACCELERATOR_RINGS = register("accelerator_rings", AcceleratorRingsQuirk::new);
+    public static final RegistrySupplier<PermeationQuirk> PERMEATION = register("permeation", PermeationQuirk::new);
+    public static final RegistrySupplier<PerilDiffusionQuirk> PERIL_DIFFUSION = register("peril_diffusion", PerilDiffusionQuirk::new);
     public static final RegistrySupplier<AbsorbAndReleaseQuirk> ABSORB_AND_RELEASE = register("absorb_and_release", AbsorbAndReleaseQuirk::new);
     public static final RegistrySupplier<RuptureQuirk> RUPTURE = register("rupture", RuptureQuirk::new);
     public static final RegistrySupplier<BurstQuirk> BURST = register("burst", BurstQuirk::new);
@@ -64,6 +67,19 @@ public class QuirkSkills {
     public static final RegistrySupplier<BodyMorphQuirk> BODY_MORPH = register("body_morph", BodyMorphQuirk::new);
     public static final RegistrySupplier<ExtraArmsQuirk> EXTRA_ARMS = register("extra_arms", ExtraArmsQuirk::new);
     public static final RegistrySupplier<TailQuirk> TAIL = register("tail", TailQuirk::new);
+    public static final RegistrySupplier<WoodenSwordsQuirk> WOODEN_SWORDS = register("wooden_swords_from_his_hands", WoodenSwordsQuirk::new);
+    public static final RegistrySupplier<BeamsFromHisEyesQuirk> BEAMS_FROM_HIS_EYES = register("beams_from_his_eyes", BeamsFromHisEyesQuirk::new);
+    public static final RegistrySupplier<ImpureBeamQuirk> IMPURE_BEAM = register("impure_beam", ImpureBeamQuirk::new);
+    public static final RegistrySupplier<DoubleQuirk> DOUBLE = register("double", DoubleQuirk::new);
+    public static final RegistrySupplier<QueenBeamQuirk> QUEEN_BEAM = register("queen_beam", QueenBeamQuirk::new);
+    public static final RegistrySupplier<PopOffQuirk> POP_OFF = register("pop_off", PopOffQuirk::new);
+    public static final RegistrySupplier<WhirlwindQuirk> WHIRLWIND = register("whirlwind", WhirlwindQuirk::new);
+    public static final RegistrySupplier<HomingQuirk> HOMING = register("homing", HomingQuirk::new);
+    public static final RegistrySupplier<SolidAirQuirk> SOLID_AIR = register("solid_air", SolidAirQuirk::new);
+    public static final RegistrySupplier<VinesQuirk> VINES = register("vines", VinesQuirk::new);
+    public static final RegistrySupplier<BlastQuirk> BLAST = register("blast", BlastQuirk::new);
+    public static final RegistrySupplier<DarkShadowQuirk> DARK_SHADOW = register("dark_shadow", DarkShadowQuirk::new);
+
 
 
 

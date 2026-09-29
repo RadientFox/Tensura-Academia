@@ -35,6 +35,13 @@ public class QuirkSkillsConfig extends ManasConfig {
     public BodyMorph BodyMorph = new BodyMorph();
     public ExtraArms ExtraArms = new ExtraArms();
     public Tail Tail = new Tail();
+    public Blast Blast = new Blast();
+
+    public static class Blast extends ManasSubConfig {
+        @Comment("Maximum block hardness Big Ass Blast can destroy. Negative-hardness blocks are always protected.")
+        public double maxBlockHardness = 3;
+    }
+
 
 
     public QuirkSkillsConfig() {

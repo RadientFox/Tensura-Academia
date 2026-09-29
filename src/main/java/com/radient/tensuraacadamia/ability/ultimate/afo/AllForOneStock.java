@@ -45,7 +45,7 @@ public final class AllForOneStock {
     }
 
     public static boolean canHandle(ManasSkill skill) {
-        if (skill == QuirkSkills.ALL_FOR_ONE.get()) return false;
+        if (skill == QuirkSkills.ALL_FOR_ONE.get() || skill == QuirkSkills.PERIL_DIFFUSION.get()) return false;
         if (skill instanceof Magic) return true;
         if (!(skill instanceof Skill typed)) return false;
         return switch (typed.getType()) {
@@ -147,54 +147,24 @@ public final class AllForOneStock {
         return true;
     }
 
-    /** Removes every ability held by All For One and returns the consumed instances. */
-    public static List<ManasSkillInstance> sacrificeAll(LivingEntity owner) {
-        List<ManasSkillInstance> sacrificed = new ArrayList<>();
-        SkillStorage storage = SkillAPI.getSkillsFrom(owner);
-        for (ManasSkillInstance instance : new ArrayList<>(storage.getLearnedSkills())) {
-            if (!canHandle(instance)) continue;
-            sacrificed.add(instance.copy());
-            storage.forgetSkill(instance.getSkillId());
+    public static List<ManasSkillInstance> instances(LivingEntity owner) {
+        List<ManasSkillInstance> stock = new ArrayList<>();
+        for (ManasSkillInstance instance : SkillAPI.getSkillsFrom(owner).getLearnedSkills()) {
+            if (canHandle(instance) || instance.getSkill() == QuirkSkills.PERIL_DIFFUSION.get()) stock.add(instance.copy());
         }
-
-        ListTag remainingCopies = new ListTag();
         for (Tag entry : copies(owner)) {
             CompoundTag copy = (CompoundTag) entry;
             ManasSkillInstance instance = ManasSkillInstance.fromNBT(copy.getCompound(SKILL_DATA_TAG));
-            if (canHandle(instance)) sacrificed.add(instance);
-            else remainingCopies.add(copy.copy());
+            if (canHandle(instance)) stock.add(instance);
         }
-        owner.getPersistentData().put(STOCK_TAG, remainingCopies);
-        storage.markDirty();
-        return sacrificed;
-    }
-
-    /** Consumes one copy of each specifically selected stock entry. */
-    public static List<ManasSkillInstance> sacrifice(LivingEntity owner, Iterable<ResourceLocation> selectedIds) {
-        List<ManasSkillInstance> sacrificed = new ArrayList<>();
-        SkillStorage storage = SkillAPI.getSkillsFrom(owner);
-        for (ResourceLocation id : selectedIds) {
-            if (!SkillAPI.getSkillRegistry().contains(id) || !canHandle(SkillAPI.getSkillRegistry().get(id))) continue;
-            CompoundTag copy = findCopy(owner, id);
-            if (copy != null) {
-                sacrificed.add(ManasSkillInstance.fromNBT(copy.getCompound(SKILL_DATA_TAG)));
-                removeCopy(owner, id);
-                continue;
-            }
-            ManasSkillInstance instance = storage.getSkill(id).orElse(null);
-            if (!canHandle(instance)) continue;
-            sacrificed.add(instance.copy());
-            storage.forgetSkill(id);
-        }
-        if (!sacrificed.isEmpty()) storage.markDirty();
-        return sacrificed;
+        return stock;
     }
 
     private static ListTag copies(LivingEntity owner) {
         return owner.getPersistentData().getList(STOCK_TAG, Tag.TAG_COMPOUND);
     }
 
-    private static void addCopy(LivingEntity owner, ManasSkillInstance instance) {
+    static void addCopy(LivingEntity owner, ManasSkillInstance instance) {
         ListTag list = copies(owner);
         CompoundTag entry = new CompoundTag();
         entry.putString(SKILL_ID_TAG, instance.getSkillId().toString());
