@@ -34,8 +34,6 @@ public class QuirkSkillsConfig extends ManasConfig {
     public BodyMorph BodyMorph = new BodyMorph();
     public ExtraArms ExtraArms = new ExtraArms();
     public Tail Tail = new Tail();
-    public ZeroGravity ZeroGravity = new ZeroGravity();
-    public SlideAndGlide SlideAndGlide = new SlideAndGlide();
 
 
     public QuirkSkillsConfig() {
