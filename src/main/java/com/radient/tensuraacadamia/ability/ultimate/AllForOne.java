@@ -27,7 +27,7 @@ import net.minecraft.world.phys.Vec3;
 import java.util.List;
 
 public class AllForOne extends Skill {
-    public static final double TARGET_RANGE = 8.0D;
+    public static final double TARGET_RANGE = 2.0D;
     private static final int MAX_MASTERY = 2_500;
     private static final String STOCKPILE_LEVEL = "StockpileOutputLevel";
 

@@ -24,6 +24,7 @@ import io.github.manasmods.tensura.enchantment.TensuraEnchantmentHelper;
 import io.github.manasmods.tensura.entity.projectile.magic.WindSphereProjectile;
 import io.github.manasmods.tensura.event.TensuraEntityEvents;
 import io.github.manasmods.tensura.particle.TensuraParticleHelper;
+import io.github.manasmods.tensura.registry.attribute.TensuraAttributes;
 import io.github.manasmods.tensura.registry.particle.TensuraParticleTypes;
 import io.github.manasmods.tensura.registry.sound.TensuraSoundEvents;
 import io.github.manasmods.tensura.util.EnergyHelper;
@@ -49,6 +50,8 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.AttributeInstance;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -153,8 +156,9 @@ public class OFA1st extends Skill {
         Level var6 = entity.level();
 
         var data = entity.getPersistentData();
-        double percentUsed =  (data.getDouble("outputPercent"));
-        boolean fullCowlingOn = data.getBoolean("fullCowling");
+        CompoundTag tag = instance.getOrCreateTag();
+        double percentUsed =  (tag.getDouble("outputPercent"));
+        boolean fullCowlingOn = tag.getBoolean("fullCowling");
 
         if (var6 instanceof ServerLevel serverLevel) {
             if (entity.isAlive() && entity.tickCount % 10 == 0
@@ -191,6 +195,9 @@ public class OFA1st extends Skill {
             }
 
             if (fullCowlingOn){
+                Player player = (Player) entity;
+
+                player.displayClientMessage(Component.translatable("tracadamia.skill.mode.power").setStyle(Style.EMPTY.withColor(ChatFormatting.WHITE)), true);
 
                 double x = entity.getX();
                 double y = entity.getY() + entity.getBbHeight() * 0.5D;
@@ -204,26 +211,45 @@ public class OFA1st extends Skill {
                 data.putInt("activatedTimes", time + 1);
 
 
+                addDamageModifier(entity, (CONFIG.fullcowldamage * percentUsed));
 
 
+            }else {
+
+                AttributeInstance attribute = entity.getAttribute(Attributes.ATTACK_DAMAGE);
 
 
+                if (attribute != null) {
+                    attribute.removeModifier(ATTACK_DAMAGE_MODIFIER);
+                }
             }
         }
     }
 
+
+    private static void addDamageModifier(LivingEntity entity, double amount) {
+        AttributeInstance attribute = entity.getAttribute(Attributes.ATTACK_DAMAGE);
+
+        if (attribute == null) {
+            return;
+        }
+
+        attribute.addOrUpdateTransientModifier(new AttributeModifier(ATTACK_DAMAGE_MODIFIER, amount, AttributeModifier.Operation.ADD_VALUE));
+    }
+
     public boolean onDamageEntity(ManasSkillInstance instance, LivingEntity attacker, LivingEntity target, DamageSource source, Changeable<Float> amount) {
         var data = attacker.getPersistentData();
+        CompoundTag tag = instance.getOrCreateTag();
         if (attacker instanceof ServerPlayer player) {
 
 
-                if (data.getBoolean("texasActive")){
+                if (tag.getBoolean("texasActive")){
 
                     Vec3 vec3;
-                    double damage = getCurrnetDamage((Player) attacker);
+                    double damage = getCurrnetDamage(instance, (Player) attacker);
 
                     amount.set((float) ((double)amount.get() + damage));
-                    data.putBoolean("texasActive", false);
+                    tag.putBoolean("texasActive", false);
 
                     label61: {
                         if (!target.getType().is(TensuraEntityTags.NO_FORCED_MOVE)) {
@@ -269,15 +295,15 @@ public class OFA1st extends Skill {
 
 
                     return true;
-                }else if (data.getBoolean("detroitActive")){
+                }else if (tag.getBoolean("detroitActive")){
 
 
                     Vec3 vec3;
-                    double damage = getCurrnetDamage((Player) attacker);
+                    double damage = getCurrnetDamage(instance, (Player) attacker);
                     TensuraParticleHelper.spawnServerParticles(target.level(), (ParticleOptions) MHAParticles.SMASH_PARTICLE.get(), target.getX(), target.getY(), target.getZ(), 1, 0.08, 0.08, 0.08, 0.2, true);
 
                     amount.set((float) ((double)amount.get() + damage));
-                    data.putBoolean("detroitActive", false);
+                    tag.putBoolean("detroitActive", false);
                     return true;
                 }
 
@@ -286,8 +312,8 @@ public class OFA1st extends Skill {
 
 
         }
-        data.putBoolean("detroitActive", false);
-        data.putBoolean("texasActive", false);
+        tag.putBoolean("detroitActive", false);
+        tag.putBoolean("texasActive", false);
         return true;
     }
 
@@ -295,9 +321,10 @@ public class OFA1st extends Skill {
 
     public void onPressed(ManasSkillInstance instance, LivingEntity entity, int keyNumber, int mode) {
         var data = entity.getPersistentData();
+        CompoundTag tag = instance.getOrCreateTag();
         int subMode = data.getInt("modeV");
-        int smashMode = data.getInt("modeSmash");
-        double percentage = data.getDouble("outputPercent");
+        int smashMode = tag.getInt("modeSmash");
+        double percentage = tag.getDouble("outputPercent");
 
         switch (mode) {
 
@@ -314,72 +341,72 @@ public class OFA1st extends Skill {
                         case 1-> {
                             player.displayClientMessage(Component.translatable("tracadamia.skill.mode.power.1").setStyle(Style.EMPTY.withColor(ChatFormatting.WHITE)), true);
                             player.getPersistentData().putInt("modeV", 1);
-                            data.putDouble("outputPercent", 0.01);
+                            tag.putDouble("outputPercent", 0.01);
                         }
                         case 2-> {
                             player.displayClientMessage(Component.translatable("tracadamia.skill.mode.power.2").setStyle(Style.EMPTY.withColor(ChatFormatting.WHITE)), true);
                             player.getPersistentData().putInt("modeV", 2);
-                            data.putDouble("outputPercent", 0.05);
+                            tag.putDouble("outputPercent", 0.05);
                         }
                         case 3-> {
                             player.displayClientMessage(Component.translatable("tracadamia.skill.mode.power.3").setStyle(Style.EMPTY.withColor(ChatFormatting.WHITE)), true);
                             player.getPersistentData().putInt("modeV", 3);
-                            data.putDouble("outputPercent", 0.08);
+                            tag.putDouble("outputPercent", 0.08);
                         }
                         case 4-> {
                             player.displayClientMessage(Component.translatable("tracadamia.skill.mode.power.4").setStyle(Style.EMPTY.withColor(ChatFormatting.WHITE)), true);
                             player.getPersistentData().putInt("modeV", 4);
-                            data.putDouble("outputPercent", 0.12);
+                            tag.putDouble("outputPercent", 0.12);
                         }
                         case 5-> {
                             player.displayClientMessage(Component.translatable("tracadamia.skill.mode.power.5").setStyle(Style.EMPTY.withColor(ChatFormatting.WHITE)), true);
                             player.getPersistentData().putInt("modeV", 5);
-                            data.putDouble("outputPercent", 0.16);
+                            tag.putDouble("outputPercent", 0.16);
                         }
                         case 6-> {
                             player.displayClientMessage(Component.translatable("tracadamia.skill.mode.power.6").setStyle(Style.EMPTY.withColor(ChatFormatting.WHITE)), true);
                             player.getPersistentData().putInt("modeV", 6);
-                            data.putDouble("outputPercent", 0.20);
+                            tag.putDouble("outputPercent", 0.20);
                         }
                         case 7-> {
                             player.displayClientMessage(Component.translatable("tracadamia.skill.mode.power.7").setStyle(Style.EMPTY.withColor(ChatFormatting.WHITE)), true);
                             player.getPersistentData().putInt("modeV", 7);
-                            data.putDouble("outputPercent", 0.30);
+                            tag.putDouble("outputPercent", 0.30);
                         }
                         case 8-> {
                             player.displayClientMessage(Component.translatable("tracadamia.skill.mode.power.8").setStyle(Style.EMPTY.withColor(ChatFormatting.WHITE)), true);
                             player.getPersistentData().putInt("modeV", 8);
-                            data.putDouble("outputPercent", 0.45);
+                            tag.putDouble("outputPercent", 0.45);
                         }
                         case 9-> {
                             player.displayClientMessage(Component.translatable("tracadamia.skill.mode.power.9").setStyle(Style.EMPTY.withColor(ChatFormatting.WHITE)), true);
                             player.getPersistentData().putInt("modeV", 9);
-                            data.putDouble("outputPercent", 0.55);
+                            tag.putDouble("outputPercent", 0.55);
                         }
                         case 10-> {
                             player.displayClientMessage(Component.translatable("tracadamia.skill.mode.power.10").setStyle(Style.EMPTY.withColor(ChatFormatting.WHITE)), true);
                             player.getPersistentData().putInt("modeV", 10);
-                            data.putDouble("outputPercent", 0.65);
+                            tag.putDouble("outputPercent", 0.65);
                         }
                         case 11-> {
                             player.displayClientMessage(Component.translatable("tracadamia.skill.mode.power.11").setStyle(Style.EMPTY.withColor(ChatFormatting.WHITE)), true);
                             player.getPersistentData().putInt("modeV", 11);
-                            data.putDouble("outputPercent", 0.75);
+                            tag.putDouble("outputPercent", 0.75);
                         }
                         case 12-> {
                             player.displayClientMessage(Component.translatable("tracadamia.skill.mode.power.12").setStyle(Style.EMPTY.withColor(ChatFormatting.WHITE)), true);
                             player.getPersistentData().putInt("modeV", 12);
-                            data.putDouble("outputPercent", 0.80);
+                            tag.putDouble("outputPercent", 0.80);
                         }
                         case 13-> {
                             player.displayClientMessage(Component.translatable("tracadamia.skill.mode.power.13").setStyle(Style.EMPTY.withColor(ChatFormatting.WHITE)), true);
                             player.getPersistentData().putInt("modeV", 13);
-                            data.putDouble("outputPercent", 0.90);
+                            tag.putDouble("outputPercent", 0.90);
                         }
                         case 14-> {
                             player.displayClientMessage(Component.translatable("tracadamia.skill.mode.power.14").setStyle(Style.EMPTY.withColor(ChatFormatting.WHITE)), true);
                             player.getPersistentData().putInt("modeV", 14);
-                            data.putDouble("outputPercent", 1);
+                            tag.putDouble("outputPercent", 1);
                         }
                     }
                 }
@@ -395,29 +422,29 @@ public class OFA1st extends Skill {
                             nextMode = 1;
                         }
 
-                        player.getPersistentData().putInt("modeSmash", nextMode);
+                        tag.putInt("modeSmash", nextMode);
                         switch (nextMode) {
                             case 1 -> {
                                 player.displayClientMessage(Component.translatable("tracadamia.skill.mode.power.detroit").setStyle(Style.EMPTY.withColor(ChatFormatting.WHITE)), true);
-                                player.getPersistentData().putInt("modeSmash", 1);
+                                tag.putInt("modeSmash", 1);
 
                             }
                             case 2 -> {
                                 player.displayClientMessage(Component.translatable("tracadamia.skill.mode.power.carolina").setStyle(Style.EMPTY.withColor(ChatFormatting.WHITE)), true);
-                                player.getPersistentData().putInt("modeSmash", 2);
+                                tag.putInt("modeSmash", 2);
                             }
                             case 3 -> {
                                 player.displayClientMessage(Component.translatable("tracadamia.skill.mode.power.delaware").setStyle(Style.EMPTY.withColor(ChatFormatting.WHITE)), true);
-                                player.getPersistentData().putInt("modeSmash", 3);
+                                tag.putInt("modeSmash", 3);
 
                             }
                             case 4 -> {
                                 player.displayClientMessage(Component.translatable("tracadamia.skill.mode.power.texas").setStyle(Style.EMPTY.withColor(ChatFormatting.WHITE)), true);
-                                player.getPersistentData().putInt("modeSmash", 4);
+                                tag.putInt("modeSmash", 4);
                             }
                             case 5 -> {
                                 player.displayClientMessage(Component.translatable("tracadamia.skill.mode.power.oklahoma").setStyle(Style.EMPTY.withColor(ChatFormatting.WHITE)), true);
-                                player.getPersistentData().putInt("modeSmash", 5);
+                                tag.putInt("modeSmash", 5);
                             }
                         }
                     }
@@ -468,7 +495,7 @@ public class OFA1st extends Skill {
                 if (entity instanceof Player){
                     if (target instanceof Player){
 
-                        if ((!SkillUtils.hasSkill(target, (ManasSkill) QuirkSkills.OFA_1ST.get())) && (!SkillUtils.hasSkill(target, (ManasSkill) QuirkSkills.OFA_1ST.get()))) {
+                        if ((!SkillUtils.hasSkill(target, (ManasSkill) QuirkSkills.OFA_1ST.get())) && (!SkillUtils.hasSkill(target, (ManasSkill) QuirkSkills.OFA_2ND.get()))) {
                             if (!(instance.getMastery() < (double) 0.0F) && !instance.isTemporarySkill()) {
                                 TensuraSkillInstance eye = new TensuraSkillInstance(QuirkSkills.OFA_2ND.get());
                                 TensuraSkillInstance eye2 = new TensuraSkillInstance(QuirkSkills.GEARSHIFT.get());
@@ -517,26 +544,27 @@ public class OFA1st extends Skill {
     private void detroitSmash(ManasSkillInstance instance, LivingEntity entity){
         Player player = (Player) entity;
 
+        CompoundTag tag = instance.getOrCreateTag();
         var data = player.getPersistentData();
-        boolean SmashActive = data.getBoolean("detroitActive");
+        boolean SmashActive = tag.getBoolean("detroitActive");
 
         if (SmashActive){
             if (entity instanceof Player){
                 player.displayClientMessage(Component.translatable("tracadamia.skill.mode.power.detroit.deactive").setStyle(Style.EMPTY.withColor(ChatFormatting.WHITE)), true);
             }
-            data.putBoolean("detroitActive",false);
+            tag.putBoolean("detroitActive",false);
         }else {
             player.level().playSound((Player)null, player.getX(), player.getY(), player.getZ(), (SoundEvent) MHASounds.CHARGING.get(), SoundSource.PLAYERS, 1.0F, 1.0F);
             if (entity instanceof Player){
                 player.displayClientMessage(Component.translatable("tracadamia.skill.mode.power.detroit.active").setStyle(Style.EMPTY.withColor(ChatFormatting.WHITE)), true);
             }
-            data.putBoolean("detroitActive",true);
+            tag.putBoolean("detroitActive",true);
         }
     }
 
     private void texaSmash(ManasSkillInstance instance, LivingEntity entity){
         Player player = (Player) entity;
-
+        CompoundTag tag = instance.getOrCreateTag();
         var data = player.getPersistentData();
         boolean SmashActive = data.getBoolean("texasActive");
 
@@ -547,14 +575,14 @@ public class OFA1st extends Skill {
                 if (entity instanceof Player) {
                     player.displayClientMessage(Component.translatable("tracadamia.skill.mode.power.texas.deactive").setStyle(Style.EMPTY.withColor(ChatFormatting.WHITE)), true);
                 }
-                data.putBoolean("texasActive", false);
+                tag.putBoolean("texasActive", false);
             } else {
                 player.level().playSound((Player) null, player.getX(), player.getY(), player.getZ(), (SoundEvent) MHASounds.CHARGING.get(), SoundSource.PLAYERS, 1.0F, 1.0F);
 
                 if (entity instanceof Player) {
                     player.displayClientMessage(Component.translatable("tracadamia.skill.mode.power.texas.active").setStyle(Style.EMPTY.withColor(ChatFormatting.WHITE)), true);
                 }
-                data.putBoolean("texasActive", true);
+                tag.putBoolean("texasActive", true);
             }
         }
     }
@@ -592,7 +620,7 @@ public class OFA1st extends Skill {
                             return !targetx.is(entity) && !targetx.isAlliedTo(entity);
                         });
                         if (!list.isEmpty()) {
-                            float bonus = (float) getCurrnetDamage(player);
+                            float bonus = (float) getCurrnetDamage(instance, player);
                             float amount = (float)(entity.getAttributeValue(Attributes.ATTACK_DAMAGE) * entity.getAttributeValue(ManasCoreAttributes.CRITICAL_DAMAGE_MULTIPLIER));
                             Iterator var19 = list.iterator();
 
@@ -631,9 +659,9 @@ public class OFA1st extends Skill {
 
 
     private void delawareSmash(ManasSkillInstance instance, LivingEntity entity){
-
+        CompoundTag tag = instance.getOrCreateTag();
         var data = entity.getPersistentData();
-        double percentUsed =  (data.getDouble("outputPercent"));
+        double percentUsed =  (tag.getDouble("outputPercent"));
         if (percentUsed > 0.2) {
             Player player = (Player) entity;
             if (!EnergyHelper.isOutOfEnergy(entity, instance, 2)) {
@@ -641,7 +669,7 @@ public class OFA1st extends Skill {
                 entity.swing(InteractionHand.MAIN_HAND, true);
                 WindSphereProjectile windSphere = new WindSphereProjectile(entity.level(), entity);
                 windSphere.setSpeed(2.0F);
-                windSphere.setDamage((float) getCurrnetDamage(player));
+                windSphere.setDamage((float) getCurrnetDamage(instance, player));
                 windSphere.setNoGravity(true);
                 windSphere.setKnockForce(3.0F);
                 windSphere.setBurnTicks(-1);
@@ -653,11 +681,12 @@ public class OFA1st extends Skill {
         }
     }
 
-    public static double getCurrnetDamage(Player player){
+    public static double getCurrnetDamage(ManasSkillInstance instance, Player player){
         double fullDamage =  CONFIG.fullDamage;
         var data = player.getPersistentData();
-        double percentUsed =  (data.getDouble("outputPercent"));
-        boolean fullCowlingOn = data.getBoolean("fullCowling");
+        CompoundTag tag = instance.getOrCreateTag();
+        double percentUsed =  (tag.getDouble("outputPercent"));
+        boolean fullCowlingOn = tag.getBoolean("fullCowling");
         double UsedDamage = 0;
         double UsedDamagePre = 0;
 

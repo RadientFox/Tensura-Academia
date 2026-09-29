@@ -1,19 +1,6 @@
 package com.radient.tensuraacadamia.regestry;
 
-import com.radient.tensuraacadamia.effects.ToInspireOthersEffect;
-import com.radient.tensuraacadamia.effects.BleedingEffect;
-import com.radient.tensuraacadamia.effects.BloodParalysisEffect;
-import com.radient.tensuraacadamia.effects.BadTasteEffect;
-import com.radient.tensuraacadamia.effects.CoalgulationEffect;
-import com.radient.tensuraacadamia.effects.QuirkSicknessEffect;
-import com.radient.tensuraacadamia.effects.ElectricBoostEffect;
-import com.radient.tensuraacadamia.effects.WattageEffect;
-import com.radient.tensuraacadamia.effects.AspersionEffect;
-import com.radient.tensuraacadamia.effects.SmokescreenObscuredEffect;
-import com.radient.tensuraacadamia.effects.BounceEffect;
-import com.radient.tensuraacadamia.effects.SplinterEffect;
-import com.radient.tensuraacadamia.effects.PopEffect;
-import com.radient.tensuraacadamia.effects.TailwindEffect;
+import com.radient.tensuraacadamia.effects.*;
 import dev.architectury.registry.registries.RegistrySupplier;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
@@ -46,6 +33,7 @@ public class MHAEffects {
     public static final DeferredHolder<MobEffect, MobEffect> TAILWIND;
     public static final DeferredHolder<MobEffect, MobEffect> WIND_FLIGHT;
     public static final DeferredHolder<MobEffect, MobEffect> DARK_SHADOW_FLIGHT;
+    public static final DeferredHolder<MobEffect, MobEffect> AFFECTION;
 
 
     public MHAEffects() {
@@ -75,6 +63,7 @@ public class MHAEffects {
         TAILWIND = MOB_EFFECTS.register("tailwind", () -> new TailwindEffect(false));
         WIND_FLIGHT = MOB_EFFECTS.register("wind_flight", () -> new TailwindEffect(true));
         DARK_SHADOW_FLIGHT = MOB_EFFECTS.register("dark_shadow_flight", com.radient.tensuraacadamia.effects.DarkShadowFlightEffect::new);
+        AFFECTION = MOB_EFFECTS.register("affection", Affection::new);
     }
 
 }
