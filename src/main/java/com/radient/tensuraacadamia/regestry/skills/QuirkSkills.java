@@ -1,6 +1,5 @@
 package com.radient.tensuraacadamia.regestry.skills;
 
-import com.radient.tensuraacadamia.ability.battlewill.CrawlersShootyGoBlamArt;
 import com.radient.tensuraacadamia.ability.unique.quirks.DangerSenseQuirk;
 import com.radient.tensuraacadamia.ability.ultimate.ofausers.OFA1st;
 import com.radient.tensuraacadamia.ability.ultimate.AllForOne;
