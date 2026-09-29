@@ -448,7 +448,9 @@ public class OFA1st extends Skill {
                     visualData.putBoolean("cowlingParticles", !visualData.getBoolean("cowlingParticles"));
                     instance.markDirty();
                 }
-                player.displayClientMessage(Component.literal("Output: " + data.getInt("outputPercent")), false);
+                if (entity instanceof Player player) {
+                    player.displayClientMessage(Component.literal("Output: " + data.getInt("outputPercent")), false);
+                }
                 if (data.getInt("outputPercent") == 1){
                     colorName = true;
                 }else {

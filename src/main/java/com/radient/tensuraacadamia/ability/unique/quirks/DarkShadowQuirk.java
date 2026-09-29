@@ -42,10 +42,10 @@ import java.util.List;
 
 public final class DarkShadowQuirk extends Skill {
     public static final int COMMAND = 0, ABYSS = 1, CLAWS = 2, ARMS = 3, ANGEL = 4, SABBATH = 5,
-            WOMB = 6, RELEASE = 7, RAGNAROK = 8, FLEETING = 9, BALDUR = 10;
-    public static final int[] UNLOCK = {0, 10, 20, 30, 40, 50, 50, 60, 75, 90, 100};
-    public static final int[] COST = {0, 1000, 5000, 7500, 10000, 5000, 10000, 20000, 30000, 25000, 10000};
-    public static final int[] COOLDOWN = {0, 0, 10, 15, 0, 5, 30, 120, 120, 45, 300};
+            WOMB = 6, RELEASE = 7, RAGNAROK = 8, FLEETING = 9, BALDUR = 10, BARRAGE = 11;
+    public static final int[] UNLOCK = {0, 10, 20, 30, 40, 50, 50, 60, 75, 90, 100, 100};
+    public static final int[] COST = {0, 1000, 5000, 7500, 10000, 5000, 10000, 20000, 30000, 25000, 10000, 0};
+    public static final int[] COOLDOWN = {0, 0, 10, 15, 0, 5, 30, 120, 120, 45, 300, 0};
     public static final String SHADOW = "DarkShadowEntity", SNAPSHOT = "DarkShadowSnapshot", FUSED = "DarkShadowFused",
             DEATH_READY = "DarkShadowDeathReady";
     public DarkShadowQuirk() { super(SkillType.UNIQUE); }
@@ -72,7 +72,7 @@ public final class DarkShadowQuirk extends Skill {
         boolean fusion = fused(instance);
         List<Integer> modes = new ArrayList<>();
         for (int mode = 0; mode < UNLOCK.length; mode++) {
-            boolean abyssMove = mode >= CLAWS && mode <= SABBATH || mode >= FLEETING;
+            boolean abyssMove = mode >= CLAWS && mode <= SABBATH || mode >= FLEETING && mode <= BALDUR;
             if ((mode == ABYSS || fusion == abyssMove) && instance.getMastery() >= UNLOCK[mode] * 100) modes.add(mode);
         }
         return modes;
@@ -88,7 +88,7 @@ public final class DarkShadowQuirk extends Skill {
             case ABYSS -> "black_abyss"; case CLAWS -> "piercing_twilight_claws"; case ARMS -> "covert_black_ops_arms";
             case ANGEL -> "black_fallen_angel"; case SABBATH -> "sabbath"; case WOMB -> "womb";
             case RELEASE -> "total_release"; case RAGNAROK -> "ragnarok"; case FLEETING -> "fleeting_blow";
-            case BALDUR -> "light_of_baldur"; default -> "shadow_command";
+            case BALDUR -> "light_of_baldur"; case BARRAGE -> "muda_muda_muda"; default -> "shadow_command";
         };
     }
     public static ManasSkillInstance instance(LivingEntity owner) {
@@ -172,6 +172,8 @@ public final class DarkShadowQuirk extends Skill {
         DarkShadow shadow = shadow(owner);
         if (shadow == null) { message(owner, "summon_required"); return; }
         if (shadow.berserk()) { message(owner, "berserk_locked"); return; }
+        if (mode != BARRAGE) shadow.stopBarrage();
+        if (mode == BARRAGE && shadow.barraging()) { shadow.keepBarrage(); return; }
         if (mode == COMMAND) {
             shadow.cycleCommand(instance.getMastery() >= 2500);
             message(owner, "command." + shadow.command()); return;
@@ -198,6 +200,7 @@ public final class DarkShadowQuirk extends Skill {
             case ARMS -> shadow.grab(target);
             case RELEASE -> shadow.totalRelease();
             case RAGNAROK -> shadow.startRagnarok();
+            case BARRAGE -> { if (!shadow.startBarrage()) return; }
             default -> { return; }
         }
         existence.setAura(existence.getAura() - COST[mode]); existence.markDirty();
@@ -206,6 +209,24 @@ public final class DarkShadowQuirk extends Skill {
         }
         refreshCooldowns(instance, owner);
         instance.markDirty();
+    }
+    @Override public boolean shouldTriggerReleaseOnHeldInterrupt(ManasSkillInstance instance, LivingEntity owner, int key, int mode) { return true; }
+    @Override public boolean onHeld(ManasSkillInstance instance, LivingEntity owner, int heldTicks, int mode) {
+        var modes = availableModes(instance);
+        boolean allowed = instance.isToggled() && mode >= 0 && mode < modes.size() && modes.get(mode) == BARRAGE;
+        if (owner.level().isClientSide) return allowed;
+        DarkShadow shadow = shadow(owner);
+        if (shadow == null) return false;
+        if (!allowed || !shadow.barraging() || shadow.fused() || shadow.berserk()) {
+            shadow.stopBarrage(); return false;
+        }
+        shadow.keepBarrage();
+        return true;
+    }
+    @Override public void onRelease(ManasSkillInstance instance, LivingEntity owner, int heldTicks, int key, int mode) {
+        if (owner.level().isClientSide) return;
+        DarkShadow shadow = shadow(owner);
+        if (shadow != null) shadow.stopBarrage();
     }
     public static void finishAttack(DarkShadow shadow, LivingEntity owner, int mode, Vec3 direction, LivingEntity target) {
         switch (mode) {
@@ -274,7 +295,7 @@ public final class DarkShadowQuirk extends Skill {
     public static DamageSource damageSource(DarkShadow shadow, int mode) {
         LivingEntity owner = shadow.creator();
         DamageSource source = TensuraDamageTypes.getIndirectEntityDamageSource(shadow.level(), Element.DARKNESS.getDefaultDamage(),
-                mode == COMMAND || mode == RAGNAROK ? shadow : owner, shadow);
+                mode == COMMAND || mode == RAGNAROK || mode == BARRAGE ? shadow : owner, shadow);
         var tensura = (TensuraDamageSource) source;
         tensura.tensura$setAbilityInstance(owner == null ? null : instance(owner));
         tensura.tensura$setSkillType(SkillType.UNIQUE); tensura.tensura$setElement(Element.DARKNESS);

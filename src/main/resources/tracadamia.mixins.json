@@ -13,7 +13,6 @@
     "FallingBlockEntityInvoker",
     "LivingEntityClimbMixin",
     "LightningBoltAccessor",
-    "LivingEntityFloatMixin",
     "PermeationSkillGateMixin",
     "PermeationPlayerTickMixin",
     "PerilDiffusionMeleeMixin",

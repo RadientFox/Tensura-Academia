@@ -89,7 +89,10 @@ public final class DarkShadowRenderer extends EntityRenderer<DarkShadow> {
         VertexConsumer armVertices = buffers.getBuffer(translucentArms
                 ? RenderType.entityTranslucent(TEXTURE) : RenderType.entityCutoutNoCull(TEXTURE));
         int action = shadow.action();
-        if (owner != null && action >= 0 && action != DarkShadowQuirk.WOMB && action != DarkShadowQuirk.ANGEL) {
+        if (owner != null && action == DarkShadowQuirk.BARRAGE) {
+            barrage(shadow, owner, age, partialTick, poses, buffers, light, translucentArms);
+        }
+        if (owner != null && action >= 0 && action != DarkShadowQuirk.WOMB && action != DarkShadowQuirk.ANGEL && action != DarkShadowQuirk.BARRAGE) {
             var ownerSkill = owner instanceof net.minecraft.world.entity.LivingEntity living ? DarkShadowQuirk.instance(living) : null;
             boolean mastered = ownerSkill != null && ownerSkill.getMastery() >= 10000;
             Vec3 origin = (hideBody ? owner.getPosition(partialTick).add(0, owner.getBbHeight() * 0.72, 0)
@@ -184,6 +187,31 @@ public final class DarkShadowRenderer extends EntityRenderer<DarkShadow> {
             }
         }
         super.render(shadow, yaw, partialTick, poses, buffers, light);
+    }
+    private void barrage(DarkShadow shadow, Entity owner, float age, float partialTick,
+                         PoseStack poses, MultiBufferSource buffers, int light, boolean firstPerson) {
+        Vec3 origin = new Vec3(0, shadow.getBbHeight() * 0.56, 0);
+        Vec3 forward = owner.getViewVector(partialTick).normalize();
+        Vec3 right = forward.cross(new Vec3(0, 1, 0)).normalize();
+        if (right.lengthSqr() < 0.01) right = new Vec3(1, 0, 0);
+        Vec3 up = forward.cross(right).normalize();
+        VertexConsumer vertices = buffers.getBuffer(RenderType.entityTranslucent(TEXTURE));
+        for (int trail = 2; trail >= 0; trail--) for (int side = -1; side <= 1; side += 2) {
+            double time = age - trail * 0.65, phase = time / (DarkShadow.BARRAGE_INTERVAL * 2.0) + (side == 1 ? 0.5 : 0);
+            double extension = 0.5 - 0.5 * Math.cos(phase * Math.PI * 2);
+            Vec3 shoulder = origin.add(right.scale(side * Math.min(0.7, shadow.visualScale() * 0.35)));
+            Vec3 tip = origin.add(forward.scale(0.25 + extension * (DarkShadow.BARRAGE_REACH - 0.25)))
+                    .add(right.scale(side * (0.3 + Math.sin(time * 0.73) * 0.18)))
+                    .add(up.scale(Math.cos(time * 0.91 + side) * 0.55));
+            Vec3 elbow = shoulder.lerp(tip, 0.5).add(right.scale(side * (1 - extension) * 0.45));
+            int alpha = trail == 0 ? (firstPerson ? 153 : 255) : (firstPerson ? 45 : 65) / trail;
+            int black = alpha << 24 | 0x0C0C0C, purple = alpha << 24 | 0x291038;
+            arm(model, vertices, poses, shoulder, elbow, 0.27F, light, black);
+            arm(model, vertices, poses, elbow, tip, 0.31F, light, black);
+            arm(model, vertices, poses, tip, tip.add(forward.scale(0.35)), 0.46F, light, black);
+            Vec3 stripe = right.scale(side * 0.13);
+            arm(model, vertices, poses, elbow.add(stripe), tip.add(stripe), 0.06F, light, purple);
+        }
     }
     private void tail(DarkShadow shadow, Entity owner, Vec3 base, float partialTick, PoseStack poses, MultiBufferSource buffers, int light) {
         Vec3 from = new Vec3(0, 0.2 * shadow.visualScale(), 0);

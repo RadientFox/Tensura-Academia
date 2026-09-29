@@ -43,6 +43,9 @@ public final class DarkShadow extends Mob {
     public static final double BERSERK_CHANCE = 0.25;
     public static final float DAMAGE_PER_PERCENT = 2.5F;
     public static final int PUNCH_INTERVAL = 40;
+    public static final int BARRAGE_INTERVAL = 2;
+    public static final double BARRAGE_REACH = 2, BARRAGE_WIDTH = 2, BARRAGE_HEIGHT = 2;
+    public static final float BARRAGE_DAMAGE_MULTIPLIER = 0.2F;
     public static final double ATTACK_GAP = 1.25;
     private static final String BINDING = "DarkShadowBinding";
     private static final EntityDataAccessor<Integer> OWNER = SynchedEntityData.defineId(DarkShadow.class, EntityDataSerializers.INT);
@@ -68,6 +71,7 @@ public final class DarkShadow extends Mob {
     private UUID queuedTarget;
     private Vec3 queuedDirection;
     private boolean counterPunch;
+    private long barrageUntil, nextBarragePunch;
 
     public DarkShadow(EntityType<? extends DarkShadow> type, Level level) {
         super(type, level);
@@ -213,11 +217,34 @@ public final class DarkShadow extends Mob {
             counterPunch = true;
         }
     }
-    public boolean attacking() { return queuedMode >= 0 || punchAt > 0; }
+    public boolean attacking() { return queuedMode >= 0 || punchAt > 0 || barraging(); }
     public void cancelAttack() {
+        stopBarrage();
         if (queuedMode == DarkShadowQuirk.WOMB && captiveId == null) entityData.set(CAPTIVE, -1);
         queuedMode = -1; queuedTarget = null; queuedDirection = null;
         entityData.set(ACTION, -1);
+    }
+    public boolean barraging() { return action() == DarkShadowQuirk.BARRAGE && barrageUntil > level().getGameTime(); }
+    public boolean startBarrage() {
+        if (fused() || berserk() || ragnarok() || captiveId != null || queuedMode >= 0 || punchAt > 0 || !mastered()) return false;
+        nextBarragePunch = level().getGameTime();
+        keepBarrage();
+        showArms(position().add(0, getBbHeight() * 0.56, 0).add(creator().getLookAngle().scale(BARRAGE_REACH)), DarkShadowQuirk.BARRAGE, 3);
+        return true;
+    }
+    public void keepBarrage() { barrageUntil = level().getGameTime() + 3; }
+    public void stopBarrage() {
+        barrageUntil = 0;
+        if (action() == DarkShadowQuirk.BARRAGE) entityData.set(ACTION, -1);
+    }
+    private void tickBarrage(LivingEntity owner) {
+        Vec3 origin = position().add(0, getBbHeight() * 0.56, 0);
+        Vec3 direction = owner.getLookAngle();
+        showArms(origin.add(direction.scale(BARRAGE_REACH)), DarkShadowQuirk.BARRAGE, 3);
+        if (level().getGameTime() < nextBarragePunch) return;
+        nextBarragePunch = level().getGameTime() + BARRAGE_INTERVAL;
+        DarkShadowQuirk.strikeBox(this, origin, direction, BARRAGE_REACH, BARRAGE_WIDTH, BARRAGE_HEIGHT, BARRAGE_DAMAGE_MULTIPLIER, DarkShadowQuirk.BARRAGE);
+        if (activeTicks % 4 == 0) level().playSound(null, blockPosition(), SoundEvents.PLAYER_ATTACK_STRONG, SoundSource.PLAYERS, 0.4F, 1.4F);
     }
     public void cancelNormalPunch() { if (queuedMode == DarkShadowQuirk.COMMAND) cancelAttack(); }
     public void queueAttack(int mode, LivingEntity target) {
@@ -449,10 +476,11 @@ public final class DarkShadow extends Mob {
         if (flying() && !owner.hasEffect(MHAEffects.DARK_SHADOW_FLIGHT)) stopFlight();
         tickCaptive(owner);
         tickAttack(owner);
+        if (action() == DarkShadowQuirk.BARRAGE && (!barraging() || fused() || berserk() || !mastered())) stopBarrage();
         if (actionUntil <= server.getGameTime()) entityData.set(ACTION, -1);
         LivingEntity target = null;
         if (berserk()) target = owner;
-        else if (!fused() && !ragnarok() && captiveId == null) {
+        else if (!fused() && !ragnarok() && captiveId == null && !barraging()) {
             if (command() == 0 && activeTicks % 10 == 0) {
                 setTarget(server.getEntitiesOfClass(LivingEntity.class, owner.getBoundingBox().inflate(tetherRange() + 3), this::enemy)
                         .stream().filter(owner::hasLineOfSight).min(Comparator.comparingDouble(owner::distanceToSqr)).orElse(null));
@@ -463,6 +491,11 @@ public final class DarkShadow extends Mob {
             target = getTarget();
         }
         Vec3 goal = fused() && !berserk() ? owner.position() : owner.position().add(owner.getLookAngle().multiply(-1.3, 0, -1.3));
+        if (barraging()) {
+            Vec3 forward = owner.getLookAngle().multiply(1, 0, 1).normalize();
+            Vec3 right = forward.cross(new Vec3(0, 1, 0));
+            goal = owner.position().add(forward.scale(0.3)).add(right.scale(0.7));
+        }
         if (ragnarok() && punchPoint != null) goal = punchPoint.subtract(0, getBbHeight() * 0.4, 0);
         else if (target != null && target.isAlive()) goal = attackPosition(target, owner);
         Vec3 offset = goal.subtract(owner.position());
@@ -477,6 +510,7 @@ public final class DarkShadow extends Mob {
         if (action() >= 0) entityData.set(END, visualPoint.subtract(position()).toVector3f());
         if (punchAt > 0 && punchPoint != null) entityData.set(END, punchPoint.subtract(position()).toVector3f());
         setYRot(owner.getYRot()); yBodyRot = owner.yBodyRot; yHeadRot = owner.yHeadRot;
+        if (barraging()) tickBarrage(owner);
         if (target != null && !attacking() && captiveId == null && !ragnarok() && server.getGameTime() >= nextAttack
                 && inPunchReach(target) && hasLineOfSight(target)) {
             queueAttack(DarkShadowQuirk.COMMAND, target);

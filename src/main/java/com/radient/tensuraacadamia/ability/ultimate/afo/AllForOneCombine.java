@@ -38,7 +38,7 @@ public final class AllForOneCombine {
         var storage = SkillAPI.getSkillsFrom(owner);
         if (!eligible(storage.getSkill(QuirkSkills.PERMEATION.get()).orElse(null))) return List.of();
         List<ResourceLocation> choices = new ArrayList<>();
-        for (var partner : List.of(QuirkSkills.DANGERSENSE.get(), QuirkSkills.DANGER_SENSE2.get())) {
+        for (var partner : List.of(QuirkSkills.DANGERSENSE.get())) {
             if (eligible(storage.getSkill(partner).orElse(null))) choices.add(partner.getRegistryName());
         }
         return choices;
