@@ -5,6 +5,7 @@ import io.github.manasmods.manascore.config.ConfigRegistry;
 import io.github.manasmods.manascore.skill.api.ManasSkillInstance;
 import io.github.manasmods.tensura.ability.skill.Skill;
 import io.github.manasmods.tensura.damage.TensuraDamageSource;
+import io.github.manasmods.tensura.util.EnergyHelper;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.Holder;
 import net.minecraft.core.particles.DustParticleOptions;
@@ -41,6 +42,11 @@ public class RuptureQuirk extends Skill {
     }
 
     @Override
+    public double getAuraCost(LivingEntity entity, ManasSkillInstance instance, int mode) {
+        return CONFIG.auraCost;
+    }
+
+    @Override
     public int getModes(ManasSkillInstance instance) {
         return 1;
     }
@@ -50,7 +56,7 @@ public class RuptureQuirk extends Skill {
         return mode == RUPTURE ? "rupture.rupture" : super.getModeId(instance, mode);
     }
 
-    // Rupture, Active
+    // Rupture
     @Override
     public boolean onHeld(ManasSkillInstance instance, LivingEntity entity, int heldTicks, int mode) {
         if (mode != RUPTURE || !(entity.level() instanceof ServerLevel level)) {
@@ -62,7 +68,7 @@ public class RuptureQuirk extends Skill {
             level.sendParticles(BLOOD, entity.getX(), entity.getY(0.5D), entity.getZ(), 2 + Math.min(heldTicks, chargeTicks) / 10, 0.4D, 0.6D, 0.4D, 0.0D);
         }
 
-        // Activation time, same as Greed
+        // Activation time
         if (heldTicks % 20 == 0) {
             level.playSound(null, entity.getX(), entity.getY(), entity.getZ(), SoundEvents.WARDEN_HEARTBEAT, SoundSource.PLAYERS, 1.0F, 1.0F);
             if (entity instanceof Player player) {
@@ -79,6 +85,10 @@ public class RuptureQuirk extends Skill {
             return;
         }
 
+        if (EnergyHelper.isOutOfEnergy(entity, instance, mode)) {
+            return;
+        }
+
         boolean mastered = instance.isMastered(entity);
         double radius = mastered ? CONFIG.radiusMastered : CONFIG.radius;
 
@@ -89,7 +99,7 @@ public class RuptureQuirk extends Skill {
         List<LivingEntity> targets = level.getEntitiesOfClass(LivingEntity.class, entity.getBoundingBox().inflate(radius),
                 target -> target != entity && target.isAlive() && target.distanceTo(entity) <= radius);
 
-        // Not a direct hit, so melee passives stay out of it
+        // Not a direct hit
         for (LivingEntity target : targets) {
             target.invulnerableTime = 0;
             target.hurt(new DamageSource(type, null, entity), damage);
@@ -97,7 +107,10 @@ public class RuptureQuirk extends Skill {
 
         spawnRupture(level, entity, radius);
         instance.addMasteryPoint(entity);
-        killUser(entity, level.damageSources().generic());
+        instance.setCoolDown(CONFIG.activationCooldown, mode);
+        if (entity.getRandom().nextDouble() >= (mastered ? CONFIG.surviveChanceMastered : CONFIG.surviveChance)) {
+            killUser(entity, level.damageSources().generic());
+        }
     }
 
     // Four way burst

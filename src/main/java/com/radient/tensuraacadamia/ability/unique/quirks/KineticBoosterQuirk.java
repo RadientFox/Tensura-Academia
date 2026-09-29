@@ -4,6 +4,7 @@ import com.radient.tensuraacadamia.config.skills.QuirkSkillsConfig;
 import io.github.manasmods.manascore.config.ConfigRegistry;
 import io.github.manasmods.manascore.skill.api.ManasSkillInstance;
 import io.github.manasmods.tensura.ability.skill.Skill;
+import io.github.manasmods.tensura.util.EnergyHelper;
 import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -38,6 +39,11 @@ public class KineticBoosterQuirk extends Skill {
     }
 
     @Override
+    public double getAuraCost(LivingEntity entity, ManasSkillInstance instance, int mode) {
+        return CONFIG.auraCost;
+    }
+
+    @Override
     public int getModes(ManasSkillInstance instance) {
         return 1;
     }
@@ -51,6 +57,10 @@ public class KineticBoosterQuirk extends Skill {
     @Override
     public void onPressed(ManasSkillInstance instance, LivingEntity entity, int keyNumber, int mode) {
         if (mode != INCREASE || entity.level().isClientSide) {
+            return;
+        }
+
+        if (getNextLevel(instance, entity) != getLevel(instance) && EnergyHelper.isOutOfEnergy(entity, instance, mode)) {
             return;
         }
 
@@ -71,11 +81,17 @@ public class KineticBoosterQuirk extends Skill {
     }
 
     // Crouch to decrease
+    private static int getNextLevel(ManasSkillInstance instance, LivingEntity entity) {
+        return Mth.clamp(getLevel(instance) + (entity.isShiftKeyDown() ? -1 : 1), 0, CONFIG.maxLevel);
+    }
+
     private static void changeLevel(ManasSkillInstance instance, LivingEntity entity) {
-        int outputLevel = Mth.clamp(getLevel(instance) + (entity.isShiftKeyDown() ? -1 : 1), 0, CONFIG.maxLevel);
-        instance.getOrCreateTag().putInt(LEVEL_TAG, outputLevel);
-        instance.markDirty();
-        updateOutput(instance, entity);
+        int outputLevel = getNextLevel(instance, entity);
+        if (outputLevel != getLevel(instance)) {
+            instance.getOrCreateTag().putInt(LEVEL_TAG, outputLevel);
+            instance.markDirty();
+            updateOutput(instance, entity);
+        }
 
         if (entity instanceof Player player) {
             player.displayClientMessage(Component.translatable("tracadamia.skill.kinetic_booster.output_level", outputLevel, CONFIG.maxLevel).withStyle(ChatFormatting.GOLD), true);
@@ -89,11 +105,11 @@ public class KineticBoosterQuirk extends Skill {
 
     private static void updateOutput(ManasSkillInstance instance, LivingEntity entity) {
         AttributeInstance attack = entity.getAttribute(Attributes.ATTACK_DAMAGE);
-        if (attack == null) {
+        if (attack == null || entity.level().isClientSide) {
             return;
         }
 
-        double perLevel = instance.isMastered(entity) ? CONFIG.damagePerLevelMastered : CONFIG.damagePerLevel;
+        double perLevel = instance.isMastered(entity) ? CONFIG.outputDamageMastered : CONFIG.outputDamage;
         double bonus = getLevel(instance) * perLevel;
         if (bonus <= 0.0D) {
             attack.removeModifier(OUTPUT);
@@ -101,11 +117,11 @@ public class KineticBoosterQuirk extends Skill {
         }
 
         AttributeModifier current = attack.getModifier(OUTPUT);
-        if (current != null && current.amount() == bonus) {
+        if (current != null && current.amount() == bonus && current.operation() == AttributeModifier.Operation.ADD_VALUE) {
             return;
         }
 
-        attack.addOrReplacePermanentModifier(new AttributeModifier(OUTPUT, bonus, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));
+        attack.addOrReplacePermanentModifier(new AttributeModifier(OUTPUT, bonus, AttributeModifier.Operation.ADD_VALUE));
     }
 
     // Output level mastery

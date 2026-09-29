@@ -1,6 +1,7 @@
 package com.radient.tensuraacadamia.ability.unique.quirks;
 
 import com.radient.tensuraacadamia.config.skills.QuirkSkillsConfig;
+import com.radient.tensuraacadamia.util.DamageReduction;
 import io.github.manasmods.manascore.config.ConfigRegistry;
 import io.github.manasmods.manascore.network.api.util.Changeable;
 import io.github.manasmods.manascore.skill.api.ManasSkillInstance;
@@ -10,6 +11,7 @@ import io.github.manasmods.tensura.damage.TensuraDamageHelper;
 import io.github.manasmods.tensura.particle.TensuraParticleHelper;
 import io.github.manasmods.tensura.particle.TensuraParticleUtils;
 import io.github.manasmods.tensura.registry.sound.TensuraSoundEvents;
+import io.github.manasmods.tensura.util.EnergyHelper;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.Holder;
 import net.minecraft.nbt.CompoundTag;
@@ -45,6 +47,7 @@ public class MuscleAugmentationQuirk extends Skill {
     private static final String SIZE_TAG = "size";
     private static final String STRIKE_READY_TAG = "strikeReady";
     private static final String STRIKE_OUTPUT_TAG = "strikeOutput";
+    private static final String GREW_TAG = "grew";
 
     private static final ResourceLocation MUSCLE = ResourceLocation.fromNamespaceAndPath("tracadamia", "muscle_augmentation");
     private static final ResourceLocation STRIKE_SLOW = ResourceLocation.fromNamespaceAndPath("tracadamia", "muscle_overload_strike");
@@ -61,6 +64,11 @@ public class MuscleAugmentationQuirk extends Skill {
     @Override
     public int getMaxMastery() {
         return (int) CONFIG.masteryPoints;
+    }
+
+    @Override
+    public double getAuraCost(LivingEntity entity, ManasSkillInstance instance, int mode) {
+        return mode == STRIKE ? CONFIG.auraCost : 0.0D;
     }
 
     @Override
@@ -145,7 +153,7 @@ public class MuscleAugmentationQuirk extends Skill {
 
     private static void setModifier(LivingEntity entity, Holder<Attribute> attribute, ResourceLocation id, double amount, AttributeModifier.Operation operation) {
         AttributeInstance attributeInstance = entity.getAttribute(attribute);
-        if (attributeInstance == null) {
+        if (attributeInstance == null || entity.level().isClientSide) {
             return;
         }
 
@@ -188,6 +196,10 @@ public class MuscleAugmentationQuirk extends Skill {
                     return;
                 }
 
+                if (EnergyHelper.isOutOfEnergy(entity, instance, mode)) {
+                    return;
+                }
+
                 setStrikeReady(instance, entity, true);
                 instance.addMasteryPoint(entity);
                 sendMessage(entity, Component.translatable("tracadamia.skill.muscle_augmentation.strike_ready").withStyle(ChatFormatting.GOLD));
@@ -198,6 +210,20 @@ public class MuscleAugmentationQuirk extends Skill {
                     learnMode(instance, entity, mode);
                 }
             }
+        }
+    }
+
+    @Override
+    public void onRelease(ManasSkillInstance instance, LivingEntity entity, int heldTicks, int keyNumber, int mode) {
+        if (mode == ENHANCEMENT) {
+            CompoundTag tag = instance.getTag();
+            if (tag != null && tag.getBoolean(GREW_TAG)) {
+                tag.remove(GREW_TAG);
+                instance.markDirty();
+                instance.setCoolDown(CONFIG.enhancementCooldown, mode);
+            }
+        } else if (mode == SHIELD && heldTicks > 0) {
+            instance.setCoolDown(CONFIG.shieldModeCooldown, mode);
         }
     }
 
@@ -231,6 +257,7 @@ public class MuscleAugmentationQuirk extends Skill {
 
         double newSize = Math.min(size + CONFIG.growthPerTick, maxSize);
         setSize(instance, newSize);
+        instance.getOrCreateTag().putBoolean(GREW_TAG, true);
         updateMuscles(instance, entity);
         addHeldMastery(instance, entity, heldTicks);
 
@@ -292,6 +319,7 @@ public class MuscleAugmentationQuirk extends Skill {
         }
 
         setStrikeReady(instance, owner, false);
+        instance.setCoolDown(CONFIG.strikeModeCooldown, STRIKE);
         return true;
     }
 
@@ -328,7 +356,7 @@ public class MuscleAugmentationQuirk extends Skill {
             return true;
         }
 
-        amount.set(amount.get() * (float) (1.0D - CONFIG.shieldReduction));
+        amount.set(DamageReduction.reduce(owner, source, amount.get(), CONFIG.shieldReduction));
         instance.setCoolDown(CONFIG.shieldCooldown, SHIELD);
         owner.level().playSound(null, owner.getX(), owner.getY(), owner.getZ(), SoundEvents.SHIELD_BLOCK, SoundSource.PLAYERS, 1.0F, 1.0F);
         return true;

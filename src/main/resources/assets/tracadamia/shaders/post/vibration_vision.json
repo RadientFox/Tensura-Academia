@@ -1,0 +1,24 @@
+{
+    "targets": [
+        "swap",
+        "mask"
+    ],
+    "passes": [
+        {
+            "name": "tracadamia:vibration_vision",
+            "intarget": "minecraft:main",
+            "outtarget": "swap",
+            "auxtargets": [
+                {
+                    "name": "MaskSampler",
+                    "id": "mask"
+                }
+            ]
+        },
+        {
+            "name": "blit",
+            "intarget": "swap",
+            "outtarget": "minecraft:main"
+        }
+    ]
+}

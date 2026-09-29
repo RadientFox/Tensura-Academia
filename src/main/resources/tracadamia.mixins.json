@@ -4,11 +4,26 @@
   "package": "com.radient.tensuraacadamia.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
-    "ReincarnationSkillPoolMixin"
+    "ReincarnationSkillPoolMixin",
+    "InventoryMenuMixin",
+    "ServerGamePacketListenerMixin",
+    "ServerGamePacketListenerAccessor",
+    "VibrationTargetingMixin",
+    "BlockDropsMixin",
+    "FallingBlockEntityInvoker",
+    "LivingEntityClimbMixin",
+    "LightningBoltAccessor",
+    "LivingEntityFloatMixin"
   ],
   "client": [
     "SkillCreationScreenMixin",
-    "SmokescreenPresenceSenseMixin"
+    "SmokescreenPresenceSenseMixin",
+    "CreativeInventoryMixin",
+    "client.ElasticityJumpKeyMixin",
+    "client.AcceleratorRingsFlightMixin",
+    "client.PermeationPhaseMovementMixin",
+    "client.LevelRendererAccessor",
+    "client.PlayerModelMixin"
   ],
   "injectors": {
     "defaultRequire": 1

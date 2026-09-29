@@ -6,6 +6,7 @@ import io.github.manasmods.manascore.skill.api.ManasSkillInstance;
 import io.github.manasmods.tensura.ability.skill.Skill;
 import io.github.manasmods.tensura.damage.TensuraDamageSource;
 import io.github.manasmods.tensura.entity.magic.field.MagicExplosion;
+import io.github.manasmods.tensura.util.EnergyHelper;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
@@ -24,7 +25,7 @@ public class BurstQuirk extends Skill {
 
     private static final int BURST = 0;
 
-    // Tensura explosion
+    //Explosion
     private static class BurstExplosion extends MagicExplosion {
         private BurstExplosion(Level level, Entity owner) {
             super(level, owner);
@@ -45,6 +46,11 @@ public class BurstQuirk extends Skill {
     @Override
     public int getMaxMastery() {
         return (int) CONFIG.masteryPoints;
+    }
+
+    @Override
+    public double getAuraCost(LivingEntity entity, ManasSkillInstance instance, int mode) {
+        return CONFIG.auraCost;
     }
 
     @Override
@@ -88,6 +94,10 @@ public class BurstQuirk extends Skill {
             return;
         }
 
+        if (EnergyHelper.isOutOfEnergy(entity, instance, mode)) {
+            return;
+        }
+
         boolean mastered = instance.isMastered(entity);
         MagicExplosion explosion = new BurstExplosion(level, entity);
         explosion.setSkill(entity, instance, this, BURST);
@@ -99,7 +109,10 @@ public class BurstQuirk extends Skill {
         level.addFreshEntity(explosion);
 
         instance.addMasteryPoint(entity);
-        killUser(entity, entity.damageSources().explosion(null, null));
+        instance.setCoolDown(CONFIG.activationCooldown, mode);
+        if (entity.getRandom().nextDouble() >= (mastered ? CONFIG.surviveChanceMastered : CONFIG.surviveChance)) {
+            killUser(entity, entity.damageSources().explosion(null, null));
+        }
     }
 
     // Lethal unless something prevents death

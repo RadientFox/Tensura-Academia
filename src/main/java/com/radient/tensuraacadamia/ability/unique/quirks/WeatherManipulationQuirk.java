@@ -2,24 +2,29 @@ package com.radient.tensuraacadamia.ability.unique.quirks;
 
 import com.radient.tensuraacadamia.TensuraAcadamia;
 import com.radient.tensuraacadamia.config.skills.QuirkSkillsConfig;
+import com.radient.tensuraacadamia.entity.StormBoltEntity;
+import com.radient.tensuraacadamia.util.DamageReduction;
 import io.github.manasmods.manascore.config.ConfigRegistry;
+import io.github.manasmods.manascore.network.api.util.Changeable;
 import io.github.manasmods.manascore.skill.api.ManasSkill;
 import io.github.manasmods.manascore.skill.api.ManasSkillInstance;
-import io.github.manasmods.manascore.skill.api.SkillAPI;
-import io.github.manasmods.manascore.skill.api.Skills;
 import io.github.manasmods.tensura.ability.SkillHelper;
 import io.github.manasmods.tensura.ability.SkillUtils;
 import io.github.manasmods.tensura.ability.TensuraSkill;
 import io.github.manasmods.tensura.ability.TensuraSkillInstance;
+import io.github.manasmods.tensura.ability.magic.Element;
 import io.github.manasmods.tensura.ability.skill.Skill;
+import io.github.manasmods.tensura.damage.TensuraDamageHelper;
+import io.github.manasmods.tensura.damage.TensuraDamageSource;
+import io.github.manasmods.tensura.damage.TensuraDamageTypes;
 import io.github.manasmods.tensura.entity.magic.lightning.LightningBolt;
 import io.github.manasmods.tensura.particle.TensuraParticleHelper;
 import io.github.manasmods.tensura.registry.attribute.TensuraAttributes;
 import io.github.manasmods.tensura.registry.particle.TensuraParticleTypes;
 import io.github.manasmods.tensura.registry.skill.ExtraSkills;
-import io.github.manasmods.tensura.registry.skill.ResistanceSkills;
 import io.github.manasmods.tensura.registry.sound.TensuraSoundEvents;
 import io.github.manasmods.tensura.util.AttributeHelper;
+import io.github.manasmods.tensura.util.EnergyHelper;
 import io.github.manasmods.tensura.util.ObjectSelectionHelper;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.Holder;
@@ -29,25 +34,28 @@ import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.ClipContext;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @EventBusSubscriber(modid = TensuraAcadamia.MODID)
@@ -60,18 +68,19 @@ public class WeatherManipulationQuirk extends Skill {
     private static final int BOLT_CHARGE = 2;
 
     private static final float BOLT_RADIUS = 1.5F;
-    private static final int RESISTANCE_SECONDS = 10;
+    private static final SoundSource ABILITY_SOUND = Arrays.stream(SoundSource.values()).filter(source -> source.getName().equals("ability")).findFirst().orElse(SoundSource.PLAYERS);
 
     private static final int STORM_VISUAL_INTERVAL = 15;
     private static final double STORM_VISUAL_MIN_DISTANCE = 8.0D;
     private static final double STORM_VISUAL_MAX_DISTANCE = 24.0D;
-
-    private static final String RESISTANCE_TAG = "tracadamia_weather_resistance";
+    private static final double STORM_BOLT_REACH = 3.0D;
 
     private static final ResourceLocation WEATHER_DEGRADATION = ResourceLocation.fromNamespaceAndPath("tracadamia", "weather_manipulation_degradation");
+    private static final ResourceLocation WEATHER_RESISTANCE = ResourceLocation.fromNamespaceAndPath("tracadamia", "weather_manipulation_resistance");
 
     private static final List<Holder<Attribute>> BOOSTS = List.of(TensuraAttributes.WATER_BOOST, TensuraAttributes.WIND_BOOST, TensuraAttributes.LIGHTNING_BOOST);
     private static final List<Holder<Attribute>> DEGRADATIONS = List.of(TensuraAttributes.LIGHTNING_RESIST_DEGRADATION, TensuraAttributes.WIND_RESIST_DEGRADATION);
+    private static final List<Holder<Attribute>> RESISTANCES = List.of(TensuraAttributes.WATER_RESISTANCE, TensuraAttributes.WIND_RESISTANCE);
 
     private static final List<PendingBolt> PENDING_BOLTS = new ArrayList<>();
     private static final List<Barrage> BARRAGES = new ArrayList<>();
@@ -87,6 +96,11 @@ public class WeatherManipulationQuirk extends Skill {
     @Override
     public int getMaxMastery() {
         return (int) CONFIG.masteryPoints;
+    }
+
+    @Override
+    public double getAuraCost(LivingEntity entity, ManasSkillInstance instance, int mode) {
+        return CONFIG.auraCost;
     }
 
     @Override
@@ -184,9 +198,13 @@ public class WeatherManipulationQuirk extends Skill {
 
     private static void applyPassives(LivingEntity entity) {
         // Elemental Resistance
-        grantResistance(entity, ResistanceSkills.ELECTRICITY_RESISTANCE.get());
-        grantResistance(entity, ResistanceSkills.WATER_ATTACK_RESISTANCE.get());
-        grantResistance(entity, ResistanceSkills.WIND_ATTACK_RESISTANCE.get());
+        for (Holder<Attribute> resistance : RESISTANCES) {
+            AttributeInstance attribute = entity.getAttribute(resistance);
+            AttributeModifier current = attribute == null ? null : attribute.getModifier(WEATHER_RESISTANCE);
+            if (attribute != null && (current == null || current.amount() != CONFIG.elementalResistance)) {
+                attribute.addOrReplacePermanentModifier(new AttributeModifier(WEATHER_RESISTANCE, CONFIG.elementalResistance, AttributeModifier.Operation.ADD_VALUE));
+            }
+        }
 
         // Elemental Damage
         for (Holder<Attribute> boost : BOOSTS) {
@@ -208,13 +226,15 @@ public class WeatherManipulationQuirk extends Skill {
     }
 
     private static void removePassives(LivingEntity entity) {
-        Skills skills = SkillAPI.getSkillsFrom(entity);
-        for (ManasSkill resistance : List.of(ResistanceSkills.ELECTRICITY_RESISTANCE.get(), ResistanceSkills.WATER_ATTACK_RESISTANCE.get(), ResistanceSkills.WIND_ATTACK_RESISTANCE.get())) {
-            skills.getSkill(resistance).filter(WeatherManipulationQuirk::isWeatherResistance).ifPresent(instance -> skills.forgetSkill(instance, null));
-        }
-
         for (Holder<Attribute> boost : BOOSTS) {
             AttributeHelper.removeElementalMultiplier(entity, boost, CONFIG.elementalBoost);
+        }
+
+        for (Holder<Attribute> resistance : RESISTANCES) {
+            AttributeInstance attribute = entity.getAttribute(resistance);
+            if (attribute != null) {
+                attribute.removeModifier(WEATHER_RESISTANCE);
+            }
         }
 
         for (Holder<Attribute> degradation : DEGRADATIONS) {
@@ -231,29 +251,13 @@ public class WeatherManipulationQuirk extends Skill {
         }
     }
 
-    // Temporary resistance
-    private static void grantResistance(LivingEntity entity, ManasSkill resistance) {
-        Skills skills = SkillAPI.getSkillsFrom(entity);
-        ManasSkillInstance owned = skills.getSkill(resistance).orElse(null);
-        if (owned != null) {
-            if (isWeatherResistance(owned)) {
-                owned.setRemoveTime(RESISTANCE_SECONDS);
-                owned.markDirty();
-                skills.markDirty();
-            }
-            return;
+    @Override
+    public boolean onTakenDamage(ManasSkillInstance instance, LivingEntity owner, DamageSource source, Changeable<Float> amount) {
+        if (instance.isToggled() && TensuraDamageHelper.isLightningDamage(source) && ((TensuraDamageSource) source).tensura$getElement() != Element.WIND) {
+            amount.set(DamageReduction.reduce(owner, source, amount.get(), CONFIG.elementalResistance));
         }
 
-        TensuraSkillInstance instance = new TensuraSkillInstance(resistance);
-        instance.setToggled(true);
-        instance.getOrCreateTag().putBoolean(RESISTANCE_TAG, true);
-        instance.getOrCreateTag().putBoolean("NoMagiculeCost", true);
-        SkillHelper.learnSkill(entity, instance, RESISTANCE_SECONDS, null);
-    }
-
-    private static boolean isWeatherResistance(ManasSkillInstance instance) {
-        CompoundTag tag = instance.getTag();
-        return instance.isTemporarySkill() && tag != null && tag.getBoolean(RESISTANCE_TAG);
+        return true;
     }
 
     @Override
@@ -275,14 +279,19 @@ public class WeatherManipulationQuirk extends Skill {
             return;
         }
 
+        if (EnergyHelper.isOutOfEnergy(entity, instance, LIGHTNING_STRIKE)) {
+            return;
+        }
+
         LivingEntity target = ObjectSelectionHelper.getTargetingEntity(entity, CONFIG.strikeRange, false, false);
         Vec3 pos = target != null ? target.position() : ObjectSelectionHelper.getPlayerPOVHitResult(level, entity, ClipContext.Fluid.NONE, CONFIG.strikeRange).getLocation();
         float damage = (float) (instance.isMastered(entity) ? CONFIG.strikeDamageMastered : CONFIG.strikeDamage);
 
         strike(instance, entity, LIGHTNING_STRIKE, pos, damage);
         entity.swing(InteractionHand.MAIN_HAND, true);
-        entity.playSound(TensuraSoundEvents.CAST_LIGHTNING.get());
+        playSound(entity, TensuraSoundEvents.CAST_LIGHTNING.get(), 1.0F, 1.0F);
         instance.addMasteryPoint(entity);
+        instance.setCoolDown(CONFIG.strikeCooldown, LIGHTNING_STRIKE);
     }
 
     // Summon Storm
@@ -302,6 +311,10 @@ public class WeatherManipulationQuirk extends Skill {
             return;
         }
 
+        if (EnergyHelper.isOutOfEnergy(entity, instance, SUMMON_STORM)) {
+            return;
+        }
+
         long time = level.getGameTime();
         for (LivingEntity target : targets) {
             strike(instance, entity, SUMMON_STORM, target.position(), damage);
@@ -309,8 +322,9 @@ public class WeatherManipulationQuirk extends Skill {
         }
 
         entity.swing(InteractionHand.MAIN_HAND, true);
-        entity.playSound(TensuraSoundEvents.CAST_LIGHTNING.get());
+        playSound(entity, TensuraSoundEvents.CAST_LIGHTNING.get(), 1.0F, 1.0F);
         instance.addMasteryPoint(entity);
+        instance.setCoolDown(CONFIG.stormCooldown, SUMMON_STORM);
     }
 
     // Bolt Charge
@@ -332,13 +346,13 @@ public class WeatherManipulationQuirk extends Skill {
             TensuraParticleHelper.addServerParticlesAroundSelf(entity, TensuraParticleTypes.LIGHTNING_SPARK.get(), 1.0D);
         }
 
-        // Storm visuals
+        // Storm bolts
         if (heldTicks % STORM_VISUAL_INTERVAL == 0 && entity.level() instanceof ServerLevel level) {
-            spawnStormVisual(level, entity);
+            spawnStormBolt(level, instance, entity);
         }
 
         if (heldTicks == chargeTicks) {
-            entity.playSound(TensuraSoundEvents.CAST_LIGHTNING.get());
+            playSound(entity, TensuraSoundEvents.CAST_LIGHTNING.get(), 1.0F, 1.0F);
         }
 
         // Activation time
@@ -351,12 +365,7 @@ public class WeatherManipulationQuirk extends Skill {
         return true;
     }
 
-    private static void spawnStormVisual(ServerLevel level, LivingEntity entity) {
-        var bolt = EntityType.LIGHTNING_BOLT.create(level);
-        if (bolt == null) {
-            return;
-        }
-
+    private static void spawnStormBolt(ServerLevel level, ManasSkillInstance instance, LivingEntity entity) {
         RandomSource random = entity.getRandom();
         double angle = random.nextDouble() * Math.PI * 2.0D;
         double distance = STORM_VISUAL_MIN_DISTANCE + random.nextDouble() * (STORM_VISUAL_MAX_DISTANCE - STORM_VISUAL_MIN_DISTANCE);
@@ -364,14 +373,33 @@ public class WeatherManipulationQuirk extends Skill {
         int z = Mth.floor(entity.getZ() + Math.sin(angle) * distance);
         int y = level.getHeight(Heightmap.Types.MOTION_BLOCKING, x, z);
 
-        bolt.moveTo(x + 0.5D, y, z + 0.5D);
-        bolt.setVisualOnly(true);
+        StormBoltEntity bolt = StormBoltEntity.TYPE.get().create(level);
+        if (bolt == null) {
+            return;
+        }
+
+        Vec3 pos = new Vec3(x + 0.5D, y, z + 0.5D);
+        bolt.moveTo(pos);
         level.addFreshEntity(bolt);
+        level.playSound(null, pos.x, pos.y, pos.z, SoundEvents.LIGHTNING_BOLT_THUNDER, ABILITY_SOUND, 4.0F, 0.8F + random.nextFloat() * 0.2F);
+        level.playSound(null, pos.x, pos.y, pos.z, SoundEvents.LIGHTNING_BOLT_IMPACT, ABILITY_SOUND, 2.0F, 0.5F + random.nextFloat() * 0.2F);
+
+        float damage = (float) (instance.isMastered(entity) ? CONFIG.chargeStrikeDamageMastered : CONFIG.chargeStrikeDamage);
+        AABB area = new AABB(pos.x - STORM_BOLT_REACH, pos.y - STORM_BOLT_REACH, pos.z - STORM_BOLT_REACH, pos.x + STORM_BOLT_REACH, pos.y + 6.0D + STORM_BOLT_REACH, pos.z + STORM_BOLT_REACH);
+        for (LivingEntity target : level.getEntitiesOfClass(LivingEntity.class, area, target -> target != entity && target.isAlive() && !entity.isAlliedTo(target))) {
+            target.invulnerableTime = 0;
+            target.hurt(((Skill) instance.getSkill()).createSource(instance, entity, TensuraDamageTypes.LIGHTNING_ELEMENTAL, BOLT_CHARGE), damage);
+        }
     }
 
     @Override
     public void onRelease(ManasSkillInstance instance, LivingEntity entity, int heldTicks, int keyNumber, int mode) {
-        if (mode != BOLT_CHARGE || heldTicks < getChargeTicks(instance, entity) || !(entity.level() instanceof ServerLevel level) || !level.isThundering()) {
+        if (mode != BOLT_CHARGE || heldTicks < getChargeTicks(instance, entity) || !(entity.level() instanceof ServerLevel level)) {
+            return;
+        }
+
+        if (!level.isThundering()) {
+            fail(entity, "tracadamia.skill.weather_manipulation.needs_thunder");
             return;
         }
 
@@ -386,9 +414,15 @@ public class WeatherManipulationQuirk extends Skill {
         long time = level.getGameTime();
         long length = (mastered ? CONFIG.barrageSecondsMastered : CONFIG.barrageSeconds) * 20L;
 
+        if (EnergyHelper.isOutOfEnergy(entity, instance, mode)) {
+            return;
+        }
+
         BARRAGES.add(new Barrage(instance, entity, target, damage, time, time + length));
         entity.swing(InteractionHand.MAIN_HAND, true);
+        playSound(entity, TensuraSoundEvents.CAST_LIGHTNING.get(), 1.0F, 1.0F);
         instance.addMasteryPoint(entity);
+        instance.setCoolDown(CONFIG.boltChargeCooldown, BOLT_CHARGE);
     }
 
     private static int getChargeTicks(ManasSkillInstance instance, LivingEntity entity) {
@@ -442,9 +476,12 @@ public class WeatherManipulationQuirk extends Skill {
         level.addFreshEntity(bolt);
     }
 
+    private static void playSound(LivingEntity entity, SoundEvent sound, float volume, float pitch) {
+        entity.level().playSound(null, entity.getX(), entity.getY(), entity.getZ(), sound, ABILITY_SOUND, volume, pitch);
+    }
+
     private static void fail(LivingEntity entity, String key) {
-        Level level = entity.level();
-        level.playSound(null, entity.getX(), entity.getY(), entity.getZ(), TensuraSoundEvents.GENERIC_CAST_FAIL.get(), SoundSource.PLAYERS, 1.0F, 1.0F);
+        playSound(entity, TensuraSoundEvents.GENERIC_CAST_FAIL.get(), 1.0F, 1.0F);
         if (entity instanceof Player player) {
             player.displayClientMessage(Component.translatable(key).withStyle(ChatFormatting.RED), true);
         }

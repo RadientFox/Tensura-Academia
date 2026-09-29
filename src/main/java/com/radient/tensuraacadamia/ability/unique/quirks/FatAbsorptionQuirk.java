@@ -3,6 +3,7 @@ package com.radient.tensuraacadamia.ability.unique.quirks;
 import com.radient.tensuraacadamia.TensuraAcadamia;
 import com.radient.tensuraacadamia.config.skills.QuirkSkillsConfig;
 import com.radient.tensuraacadamia.regestry.skills.QuirkSkills;
+import com.radient.tensuraacadamia.util.DamageReduction;
 import io.github.manasmods.manascore.config.ConfigRegistry;
 import io.github.manasmods.manascore.network.api.util.Changeable;
 import io.github.manasmods.manascore.skill.api.ManasSkillInstance;
@@ -13,6 +14,7 @@ import io.github.manasmods.tensura.damage.TensuraDamageSource;
 import io.github.manasmods.tensura.particle.TensuraParticleHelper;
 import io.github.manasmods.tensura.registry.effect.TensuraMobEffects;
 import io.github.manasmods.tensura.registry.particle.TensuraParticleTypes;
+import io.github.manasmods.tensura.util.EnergyHelper;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
@@ -96,6 +98,11 @@ public class FatAbsorptionQuirk extends Skill {
     }
 
     @Override
+    public double getAuraCost(LivingEntity entity, ManasSkillInstance instance, int mode) {
+        return mode == BMI_CHECK ? 0.0D : CONFIG.auraCost;
+    }
+
+    @Override
     public int getModes(ManasSkillInstance instance) {
         return 3;
     }
@@ -174,7 +181,7 @@ public class FatAbsorptionQuirk extends Skill {
         }
 
         double reduction = Math.min(CONFIG.maxDamageReduction, fat / 3.0D * CONFIG.damageReductionPerFat);
-        float reduced = (float) (amount.get() * (1.0D - reduction));
+        float reduced = DamageReduction.reduce(owner, source, amount.get(), reduction);
         amount.set(reduced);
 
         setFat(instance, fat - reduced * CONFIG.damageFatLoss);
@@ -203,7 +210,7 @@ public class FatAbsorptionQuirk extends Skill {
 
     private static void setModifier(LivingEntity entity, Holder<Attribute> attribute, double amount) {
         AttributeInstance attributeInstance = entity.getAttribute(attribute);
-        if (attributeInstance == null) {
+        if (attributeInstance == null || entity.level().isClientSide) {
             return;
         }
 
@@ -232,10 +239,17 @@ public class FatAbsorptionQuirk extends Skill {
 
     @Override
     public void onPressed(ManasSkillInstance instance, LivingEntity entity, int keyNumber, int mode) {
+        if (entity.level().isClientSide) {
+            return;
+        }
+
         switch (mode) {
             case RESTRAIN -> startRestrain(instance, entity);
             case SPEAR -> toggleSpear(instance, entity);
-            case BMI_CHECK -> sendMessage(entity, Component.translatable("tracadamia.skill.fat_absorption.bmi", FAT_FORMAT.format(getFat(instance))).withStyle(ChatFormatting.GOLD));
+            case BMI_CHECK -> {
+                sendMessage(entity, Component.translatable("tracadamia.skill.fat_absorption.bmi", FAT_FORMAT.format(getFat(instance))).withStyle(ChatFormatting.GOLD));
+                instance.setCoolDown(CONFIG.bmiCooldown, mode);
+            }
         }
     }
 
@@ -247,7 +261,7 @@ public class FatAbsorptionQuirk extends Skill {
 
         LivingEntity target = getRestrainTarget(instance, entity);
         if (target == null || getFat(instance) < CONFIG.restrainFat || !isInRestrainRange(entity, target)) {
-            clearRestrain(instance, entity);
+            endRestrain(instance, entity);
             return false;
         }
 
@@ -263,7 +277,15 @@ public class FatAbsorptionQuirk extends Skill {
     @Override
     public void onRelease(ManasSkillInstance instance, LivingEntity entity, int heldTicks, int keyNumber, int mode) {
         if (mode == RESTRAIN) {
+            endRestrain(instance, entity);
+        }
+    }
+
+    private static void endRestrain(ManasSkillInstance instance, LivingEntity entity) {
+        CompoundTag tag = instance.getTag();
+        if (tag != null && tag.hasUUID(RESTRAIN_TARGET_TAG)) {
             clearRestrain(instance, entity);
+            instance.setCoolDown(CONFIG.restrainCooldown, RESTRAIN);
         }
     }
 
@@ -279,6 +301,10 @@ public class FatAbsorptionQuirk extends Skill {
         LivingEntity target = findRestrainTarget(entity);
         if (target == null) {
             sendMessage(entity, Component.translatable("tensura.targeting.not_targeted").withStyle(ChatFormatting.RED));
+            return;
+        }
+
+        if (EnergyHelper.isOutOfEnergy(entity, instance, RESTRAIN)) {
             return;
         }
 
@@ -386,6 +412,10 @@ public class FatAbsorptionQuirk extends Skill {
             return;
         }
 
+        if (EnergyHelper.isOutOfEnergy(entity, instance, SPEAR)) {
+            return;
+        }
+
         setSpearFat(instance, entity, fat);
         setFat(instance, 0.0D);
         updateFatStock(instance, entity);
@@ -401,6 +431,7 @@ public class FatAbsorptionQuirk extends Skill {
 
         setSpearFat(instance, owner, 0.0D);
         instance.addMasteryPoint(owner);
+        instance.setCoolDown(CONFIG.spearCooldown, SPEAR);
         return true;
     }
 
@@ -435,7 +466,7 @@ public class FatAbsorptionQuirk extends Skill {
         instance.markDirty();
 
         AttributeInstance attack = entity.getAttribute(Attributes.ATTACK_DAMAGE);
-        if (attack == null) {
+        if (attack == null || entity.level().isClientSide) {
             return;
         }
 

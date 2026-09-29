@@ -30,6 +30,7 @@ public class ImpactShockwaveParticle extends TextureSheetParticle {
     private final SpriteSet sprites;
     private final Quaternionf front;
     private final Quaternionf back;
+    private final float scale;
 
     private ImpactShockwaveParticle(ClientLevel level, double x, double y, double z, double normalX, double normalY, double normalZ, SpriteSet sprites) {
         super(level, x, y, z);
@@ -45,6 +46,8 @@ public class ImpactShockwaveParticle extends TextureSheetParticle {
         this.bCol = 1.0F;
         this.front = new Quaternionf().rotationTo(0.0F, 0.0F, 1.0F, (float) normalX, (float) normalY, (float) normalZ);
         this.back = new Quaternionf(this.front).rotateY((float) Math.PI);
+        float length = (float) Math.sqrt(normalX * normalX + normalY * normalY + normalZ * normalZ);
+        this.scale = length > 0.0F ? length : 1.0F;
         this.setSpriteFromAge(sprites);
     }
 
@@ -58,7 +61,7 @@ public class ImpactShockwaveParticle extends TextureSheetParticle {
     public void render(VertexConsumer buffer, Camera camera, float partialTicks) {
         float progress = Mth.clamp((this.age + partialTicks) / this.lifetime, 0.0F, 1.0F);
         float eased = 1.0F - (1.0F - progress) * (1.0F - progress);
-        float size = Mth.lerp(eased, SIZE * 0.75F, SIZE);
+        float size = Mth.lerp(eased, SIZE * 0.75F, SIZE) * this.scale;
         this.alpha = START_ALPHA * (1.0F - progress);
 
         renderFace(buffer, camera, partialTicks, this.front, size);
