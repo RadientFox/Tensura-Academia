@@ -9,7 +9,6 @@ import com.radient.tensuraacadamia.regestry.DarkShadowEntities;
 import com.radient.tensuraacadamia.regestry.MHAEffects;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.PlayerModel;
-import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
@@ -20,6 +19,7 @@ import net.minecraft.client.renderer.entity.layers.RenderLayer;
 import net.minecraft.client.renderer.entity.player.PlayerRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.PlayerSkin;
+import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
@@ -27,6 +27,7 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
+import net.neoforged.neoforge.client.event.RenderArmEvent;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
@@ -34,19 +35,29 @@ import org.joml.Vector3f;
 public final class DarkShadowRenderer extends EntityRenderer<DarkShadow> {
     private static final ResourceLocation TEXTURE = ResourceLocation.withDefaultNamespace("textures/block/white_concrete.png");
     private final DarkShadowModel model;
+    private static final java.util.Map<PlayerSkin.Model, BlackAbyssModel> ABYSS_MODELS = new java.util.EnumMap<>(PlayerSkin.Model.class);
     public DarkShadowRenderer(EntityRendererProvider.Context context) {
         super(context);
         model = new DarkShadowModel(context.bakeLayer(DarkShadowModel.LAYER));
     }
     @SubscribeEvent public static void layers(EntityRenderersEvent.RegisterLayerDefinitions event) {
         event.registerLayerDefinition(DarkShadowModel.LAYER, DarkShadowModel::createLayer);
+        event.registerLayerDefinition(BlackAbyssModel.NORMAL, () -> BlackAbyssModel.createLayer(false));
+        event.registerLayerDefinition(BlackAbyssModel.SLIM, () -> BlackAbyssModel.createLayer(true));
     }
     @SubscribeEvent public static void register(EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(DarkShadowEntities.SHADOW.get(), DarkShadowRenderer::new);
     }
     @SubscribeEvent public static void addLayers(EntityRenderersEvent.AddLayers event) {
-        for (PlayerSkin.Model skin : event.getSkins())
-            if (event.getSkin(skin) instanceof PlayerRenderer renderer) renderer.addLayer(new FusedBackLayer(renderer));
+        ABYSS_MODELS.clear();
+        for (PlayerSkin.Model skin : event.getSkins()) {
+            if (event.getSkin(skin) instanceof PlayerRenderer renderer) {
+                BlackAbyssModel armor = new BlackAbyssModel(event.getContext().bakeLayer(
+                        skin == PlayerSkin.Model.SLIM ? BlackAbyssModel.SLIM : BlackAbyssModel.NORMAL));
+                ABYSS_MODELS.put(skin, armor);
+                renderer.addLayer(new BlackAbyssLayer(renderer, armor));
+            }
+        }
     }
     @Override public ResourceLocation getTextureLocation(DarkShadow shadow) { return TEXTURE; }
     @Override public boolean shouldRender(DarkShadow shadow, Frustum frustum, double x, double y, double z) {
@@ -81,9 +92,13 @@ public final class DarkShadowRenderer extends EntityRenderer<DarkShadow> {
         if (owner != null && action >= 0 && action != DarkShadowQuirk.WOMB && action != DarkShadowQuirk.ANGEL) {
             var ownerSkill = owner instanceof net.minecraft.world.entity.LivingEntity living ? DarkShadowQuirk.instance(living) : null;
             boolean mastered = ownerSkill != null && ownerSkill.getMastery() >= 10000;
-            Vec3 origin = (shadow.fused() && !shadow.berserk() ? owner.getPosition(partialTick).add(0, owner.getEyeHeight() - 0.4, 0)
+            Vec3 origin = (hideBody ? owner.getPosition(partialTick).add(0, owner.getBbHeight() * 0.72, 0)
                     : base.add(0, shadow.getBbHeight() * 0.56, 0)).subtract(base);
             Vec3 right = owner.getViewVector(partialTick).cross(new Vec3(0, 1, 0)).normalize();
+            if (hideBody && !firstPerson && owner instanceof net.minecraft.world.entity.LivingEntity living) {
+                float bodyYaw = net.minecraft.util.Mth.rotLerp(partialTick, living.yBodyRotO, living.yBodyRot) * net.minecraft.util.Mth.DEG_TO_RAD;
+                right = new Vec3(-Math.cos(bodyYaw), 0, -Math.sin(bodyYaw));
+            }
             if (right.lengthSqr() < 0.01) right = new Vec3(1, 0, 0);
             Vec3 end = shadow.armEnd().subtract(base);
             if (firstPerson && shadow.fused()) origin = client.gameRenderer.getMainCamera().getPosition().subtract(base)
@@ -99,7 +114,7 @@ public final class DarkShadowRenderer extends EntityRenderer<DarkShadow> {
             boolean single = action == DarkShadowQuirk.COMMAND || action == DarkShadowQuirk.FLEETING
                     || action == DarkShadowQuirk.RAGNAROK || action == DarkShadowQuirk.BALDUR;
             for (int side = single ? 1 : -1; side <= 1; side += 2) {
-                Vec3 from = origin.add(right.scale(side * (firstPerson ? 0.9 : hideBody ? 0.4 : 0.4 * shadow.visualScale())));
+                Vec3 from = origin.add(right.scale(side * (firstPerson ? 0.9 : hideBody ? owner.getBbWidth() * 0.65 : 0.4 * shadow.visualScale())));
                 Vec3 pulledBack = from.subtract(forward.scale(0.5 + progress * 0.6)).add(right.scale(side * 0.25));
                 Vec3 tip = end.add(right.scale(single ? 0 : side * (action == DarkShadowQuirk.CLAWS ? width * 1.65 : 0.5)));
                 Vec3 to = pulledBack.lerp(tip, extension);
@@ -119,7 +134,12 @@ public final class DarkShadowRenderer extends EntityRenderer<DarkShadow> {
                 if (action != DarkShadowQuirk.COMMAND) {
                     int purple = (armColor & 0xFF000000) | 0x291038;
                     Vec3 stripe = from.lerp(to, 0.25).add(right.scale(thickness * 0.4));
-                    arm(model, armVertices, poses, stripe, to.add(right.scale(thickness * 0.4)), thickness * 0.12F, light, purple);
+                    for (int streak = 1; streak <= 3; streak++) {
+                        Vec3 next = from.lerp(to, 0.25 + streak * 0.25)
+                                .add(right.scale(thickness * (streak % 2 == 0 ? 0.4 : 0.28)));
+                        arm(model, armVertices, poses, stripe, next, thickness * 0.1F, light, purple);
+                        stripe = next;
+                    }
                 }
             }
         }
@@ -152,9 +172,15 @@ public final class DarkShadowRenderer extends EntityRenderer<DarkShadow> {
             for (int side = -1; side <= 1; side += 2) {
                 Vec3 elbow = center.add(right.scale(side * 1.25 * unfold)).add(up.scale(Math.sin(age * 0.5) * 0.35)).subtract(forward.scale(0.2));
                 arm(model, armVertices, poses, center, elbow, 0.35F, light, armColor);
-                for (int claw = 0; claw < 3; claw++) arm(model, armVertices, poses, elbow,
-                        elbow.add(right.scale(side * (0.9 - claw * 0.2) * unfold)).add(up.scale(-0.3 - claw * 0.2))
-                                .subtract(forward.scale(0.25 + claw * 0.1)), 0.125F, light, armColor);
+                for (int feather = 0; feather < 5; feather++) {
+                    Vec3 root = center.lerp(elbow, 0.35 + feather * 0.15);
+                    Vec3 tip = elbow.add(right.scale(side * (0.8 - feather * 0.12) * unfold))
+                            .subtract(up.scale((0.3 + feather * 0.17) * unfold))
+                            .subtract(forward.scale((0.2 + feather * 0.18) * unfold));
+                    arm(model, armVertices, poses, root, tip, 0.22F, light, armColor);
+                    arm(model, armVertices, poses, root.subtract(forward.scale(0.09)), tip.subtract(forward.scale(0.09)),
+                            0.08F, light, (armColor & 0xFF000000) | 0x30203E);
+                }
             }
         }
         super.render(shadow, yaw, partialTick, poses, buffers, light);
@@ -187,32 +213,28 @@ public final class DarkShadowRenderer extends EntityRenderer<DarkShadow> {
                     width * 0.1F, light, color);
         }
     }
-    private static final class FusedBackLayer extends RenderLayer<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> {
-        private static final ResourceLocation BLACK = ResourceLocation.withDefaultNamespace("textures/block/white_concrete.png");
-        private FusedBackLayer(PlayerRenderer renderer) { super(renderer); }
+    private static final class BlackAbyssLayer extends RenderLayer<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> {
+        private final BlackAbyssModel armor;
+        private BlackAbyssLayer(PlayerRenderer renderer, BlackAbyssModel armor) { super(renderer); this.armor = armor; }
         @Override public void render(PoseStack poses, MultiBufferSource buffers, int light, AbstractClientPlayer player,
                                      float swing, float amount, float partialTick, float age, float yaw, float pitch) {
             DarkShadow shadow = DarkShadowQuirk.shadow(player);
             if (player.isInvisible() || shadow == null || !shadow.fused() || shadow.berserk()) return;
-            var model = getParentModel();
-            var vertices = buffers.getBuffer(RenderType.entityCutoutNoCull(BLACK));
-            back(poses, vertices, model.head, -4.5F, -8.5F, 4.5F, 0.5F, 4.55F, light);
-            back(poses, vertices, model.body, -4.25F, -0.25F, 4.25F, 12.25F, 2.3F, light);
-            boolean slim = player.getSkin().model() == PlayerSkin.Model.SLIM;
-            back(poses, vertices, model.rightArm, slim ? -2.25F : -3.25F, -2.25F, 1.25F, 10.25F, 2.3F, light);
-            back(poses, vertices, model.leftArm, -1.25F, -2.25F, slim ? 2.25F : 3.25F, 10.25F, 2.3F, light);
-            back(poses, vertices, model.rightLeg, -2.25F, -0.25F, 2.25F, 12.25F, 2.3F, light);
-            back(poses, vertices, model.leftLeg, -2.25F, -0.25F, 2.25F, 12.25F, 2.3F, light);
+            armor.render(poses, buffers, light, getParentModel(), shadow, partialTick);
         }
-        private static void back(PoseStack poses, VertexConsumer vertices, ModelPart part, float x1, float y1,
-                                 float x2, float y2, float z, int light) {
-            poses.pushPose(); part.translateAndRotate(poses);
-            var pose = poses.last();
-            vertices.addVertex(pose, x1 / 16, y1 / 16, z / 16).setColor(0xFF000000).setUv(0, 0).setOverlay(OverlayTexture.NO_OVERLAY).setLight(light).setNormal(pose, 0, 0, 1);
-            vertices.addVertex(pose, x2 / 16, y1 / 16, z / 16).setColor(0xFF000000).setUv(1, 0).setOverlay(OverlayTexture.NO_OVERLAY).setLight(light).setNormal(pose, 0, 0, 1);
-            vertices.addVertex(pose, x2 / 16, y2 / 16, z / 16).setColor(0xFF000000).setUv(1, 1).setOverlay(OverlayTexture.NO_OVERLAY).setLight(light).setNormal(pose, 0, 0, 1);
-            vertices.addVertex(pose, x1 / 16, y2 / 16, z / 16).setColor(0xFF000000).setUv(0, 1).setOverlay(OverlayTexture.NO_OVERLAY).setLight(light).setNormal(pose, 0, 0, 1);
-            poses.popPose();
+    }
+
+    @EventBusSubscriber(modid = TensuraAcadamia.MODID, value = Dist.CLIENT)
+    public static final class FirstPerson {
+        @SubscribeEvent public static void renderArm(RenderArmEvent event) {
+            var player = event.getPlayer();
+            DarkShadow shadow = DarkShadowQuirk.shadow(player);
+            BlackAbyssModel armor = ABYSS_MODELS.get(player.getSkin().model());
+            if (armor == null || player.isInvisible() || shadow == null || !shadow.fused() || shadow.berserk()) return;
+            if (!(Minecraft.getInstance().getEntityRenderDispatcher().getRenderer(player) instanceof PlayerRenderer renderer)) return;
+            armor.renderFirstPersonArm(event.getPoseStack(), event.getMultiBufferSource(), event.getPackedLight(),
+                    event.getArm() == HumanoidArm.RIGHT ? renderer.getModel().rightArm : renderer.getModel().leftArm, event.getArm());
+            event.setCanceled(true);
         }
     }
     private static void arm(DarkShadowModel model, VertexConsumer vertices, PoseStack poses, Vec3 start, Vec3 end,
