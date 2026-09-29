@@ -2,12 +2,14 @@ package com.radient.tensuraacadamia.ability.unique.quirks;
 
 import com.radient.tensuraacadamia.TensuraAcadamia;
 import com.radient.tensuraacadamia.config.skills.QuirkSkillsConfig;
+import com.radient.tensuraacadamia.util.DamageReduction;
 import io.github.manasmods.manascore.config.ConfigRegistry;
 import io.github.manasmods.manascore.network.api.util.Changeable;
 import io.github.manasmods.manascore.skill.api.ManasSkillInstance;
 import io.github.manasmods.tensura.ability.skill.Skill;
 import io.github.manasmods.tensura.damage.TensuraDamageHelper;
 import io.github.manasmods.tensura.damage.TensuraDamageSource;
+import io.github.manasmods.tensura.util.EnergyHelper;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
@@ -47,8 +49,20 @@ public class ImpactRecoilQuirk extends Skill {
     }
 
     @Override
+    public double getAuraCost(LivingEntity entity, ManasSkillInstance instance, int mode) {
+        return CONFIG.auraCost;
+    }
+
+    @Override
     public boolean canBeToggled(ManasSkillInstance instance, LivingEntity living) {
         return instance.getMastery() >= 0.0D;
+    }
+
+    @Override
+    public void onToggleOn(ManasSkillInstance instance, LivingEntity entity) {
+        if (EnergyHelper.isOutOfEnergy(entity, instance, 0)) {
+            instance.setToggled(false);
+        }
     }
 
     @Override
@@ -83,7 +97,7 @@ public class ImpactRecoilQuirk extends Skill {
         }
 
         float damage = amount.get();
-        amount.set((float) (damage * (1.0D - CONFIG.damageReduction)));
+        amount.set(DamageReduction.reduce(owner, source, damage, CONFIG.damageReduction));
         recoil(level, owner, attacker, (float) (damage * CONFIG.recoilPercent));
         spawnShockwave(level, owner, attacker);
 

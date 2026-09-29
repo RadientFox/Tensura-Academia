@@ -13,6 +13,7 @@ import io.github.manasmods.tensura.ability.skill.Skill;
 import io.github.manasmods.tensura.damage.TensuraDamageHelper;
 import io.github.manasmods.tensura.registry.attribute.TensuraAttributes;
 import io.github.manasmods.tensura.registry.sound.TensuraSoundEvents;
+import io.github.manasmods.tensura.util.EnergyHelper;
 import io.github.manasmods.tensura.util.ObjectSelectionHelper;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.Holder;
@@ -62,6 +63,7 @@ public class StrongarmQuirk extends Skill {
     private static final double GROUND_DRAG = 0.454D;
     private static final double CATCH_RANGE = 1.5D;
     private static final double COMBO_RANGE = 6.0D;
+    private static final double TARGET_RAY_OFFSET = 1.0D;
 
     private static final String ROTATIONS_TAG = "rotations";
     private static final String DECAY_TIME_TAG = "rotationDecayTime";
@@ -91,6 +93,7 @@ public class StrongarmQuirk extends Skill {
         private long startTime;
         private int thrown;
         private boolean offHand;
+        private boolean landed;
 
         private Combo(ManasSkillInstance instance, LivingEntity owner, int mode, int punches, int duration, double multiplier, int rotations, long startTime, long lungeEnd) {
             this.instance = instance;
@@ -122,6 +125,11 @@ public class StrongarmQuirk extends Skill {
     @Override
     public int getMaxMastery() {
         return (int) CONFIG.masteryPoints;
+    }
+
+    @Override
+    public double getAuraCost(LivingEntity entity, ManasSkillInstance instance, int mode) {
+        return CONFIG.auraCost;
     }
 
     @Override
@@ -163,6 +171,15 @@ public class StrongarmQuirk extends Skill {
 
     private static boolean isPunch(LivingEntity owner, DamageSource source) {
         return source.getDirectEntity() == owner && hasEmptyHands(owner) && TensuraDamageHelper.isPhysicalAttack(source);
+    }
+
+    private static int getCooldown(int mode) {
+        return switch (mode) {
+            case FLURRY -> CONFIG.flurryCooldown;
+            case BULLET_PUNCHES -> CONFIG.bulletCooldown;
+            case QUICK_DRAW -> CONFIG.quickDrawCooldown;
+            default -> 0;
+        };
     }
 
     private static int secondsToTicks(double seconds) {
@@ -225,7 +242,7 @@ public class StrongarmQuirk extends Skill {
         double perRotation = mastered ? CONFIG.damagePerRotationMastered : CONFIG.damagePerRotation;
 
         setModifier(entity, Attributes.ATTACK_DAMAGE, ENHANCED_PHYSICAL,
-                mastered ? CONFIG.enhancedDamageMastered : CONFIG.enhancedDamage, AttributeModifier.Operation.ADD_VALUE);
+                instance.isToggled() ? (mastered ? CONFIG.enhancedDamageMastered : CONFIG.enhancedDamage) : 0.0D, AttributeModifier.Operation.ADD_VALUE);
         setModifier(entity, Attributes.ATTACK_DAMAGE, ROTATION_INCREASE,
                 instance.isToggled() ? rotations * perRotation : 0.0D, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
         setModifier(entity, TensuraAttributes.PHYSICAL_RESIST_DEGRADATION, ROTATION_BYPASS,
@@ -240,7 +257,7 @@ public class StrongarmQuirk extends Skill {
 
     private static void setModifier(LivingEntity entity, Holder<Attribute> attribute, ResourceLocation id, double amount, AttributeModifier.Operation operation) {
         AttributeInstance attributeInstance = entity.getAttribute(attribute);
-        if (attributeInstance == null) {
+        if (attributeInstance == null || entity.level().isClientSide) {
             return;
         }
 
@@ -287,6 +304,10 @@ public class StrongarmQuirk extends Skill {
 
     @Override
     public void onTick(ManasSkillInstance instance, LivingEntity entity) {
+        if (entity.level().isClientSide) {
+            return;
+        }
+
         getRotations(instance, entity);
         updateModifiers(instance, entity);
 
@@ -352,6 +373,10 @@ public class StrongarmQuirk extends Skill {
 
         if (!hasEmptyHands(entity)) {
             fail(entity, "tracadamia.skill.strongarm.hands_full");
+            return;
+        }
+
+        if (EnergyHelper.isOutOfEnergy(entity, instance, mode)) {
             return;
         }
 
@@ -512,7 +537,7 @@ public class StrongarmQuirk extends Skill {
             return true;
         }
 
-        punch(level, combo, target != null ? target : ObjectSelectionHelper.getTargetingEntity(owner, getReach(owner), false, false));
+        punch(level, combo, target != null ? target : ObjectSelectionHelper.getTargetingEntity(owner, getReach(owner) + TARGET_RAY_OFFSET, false, false));
         combo.thrown++;
         if (combo.thrown < combo.punches) {
             return true;
@@ -586,8 +611,15 @@ public class StrongarmQuirk extends Skill {
         comboHitting = true;
         try {
             target.invulnerableTime = 0;
-            if (target.hurt(source, damage) && combo.rotations > 0) {
-                addRotations(combo.instance, owner, combo.rotations);
+            if (target.hurt(source, damage)) {
+                if (combo.rotations > 0) {
+                    addRotations(combo.instance, owner, combo.rotations);
+                }
+
+                if (!combo.landed) {
+                    combo.landed = true;
+                    combo.instance.setCoolDown(getCooldown(combo.mode), combo.mode);
+                }
             }
         } finally {
             comboHitting = false;

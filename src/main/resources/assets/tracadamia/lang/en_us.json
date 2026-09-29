@@ -24,7 +24,7 @@
   "tracadamia.skill.mode.half_cold_half_hot.phosphor": "Activate Phosphor",
   "tracadamia.skill.half_cold_half_hot.cold": "Cold Half",
   "tracadamia.skill.half_cold_half_hot.hot": "Hot Half",
-  "tracadamia.skill.half_cold_half_hot.phosphor": "Phosphor",
+  "tracadamia.skill.halMf_cold_half_hot.phosphor": "Phosphor",
   "tracadamia.skill.half_cold_half_hot.jet_on": "Jet Kindling enabled",
   "tracadamia.skill.half_cold_half_hot.jet_off": "Jet Kindling disabled",
   "tracadamia.skill.half_cold_half_hot.aegir_ready": "Great Glacial Aegir: next melee attack armed",
@@ -98,8 +98,6 @@
 
   "tracadamia.skill.dangersense": "Danger Sense",
 
-  "tracadamia.skill.danger_sense2": "Danger Sense",
-
   "tracadamia.skill.muscle_augmentation": "Muscle Augmentation",
   "tracadamia.skill.mode.muscle_augmentation.enhancement": "Muscle Enhancement",
   "tracadamia.skill.mode.muscle_augmentation.strike": "Muscle Overload: Strike",
@@ -132,7 +130,6 @@
   "tracadamia.skill.weather_manipulation.needs_rain": "It must be raining",
   "tracadamia.skill.weather_manipulation.needs_thunder": "It must be storming",
 
-
   "tracadamia.skill.strongarm": "Strongarm",
   "tracadamia.skill.mode.strongarm.flurry": "Flurry",
   "tracadamia.skill.mode.strongarm.bullet_punches": "Bullet Punches",
@@ -140,11 +137,9 @@
   "tracadamia.skill.strongarm.rotations": "Rotations: %s/%s",
   "tracadamia.skill.strongarm.hands_full": "Your hands must be empty",
 
-
   "tracadamia.skill.kinetic_booster": "Kinetic Booster",
   "tracadamia.skill.mode.kinetic_booster.increase": "Increase",
   "tracadamia.skill.kinetic_booster.output_level": "Output level: %s/%s",
-
 
   "tracadamia.skill.absorb_and_release": "Absorb and Release",
   "tracadamia.skill.mode.absorb_and_release.release": "Release",
@@ -153,15 +148,112 @@
   "tracadamia.skill.absorb_and_release.nothing_stored": "No stored damage",
   "tracadamia.skill.absorb_and_release.released": "Released %s damage",
 
-
   "tracadamia.skill.rupture": "Rupture",
   "tracadamia.skill.mode.rupture.rupture": "Rupture",
-
 
   "tracadamia.skill.burst": "Burst",
   "tracadamia.skill.mode.burst.burst": "Burst",
 
+  "tracadamia.skill.springlike_limbs": "Springlike Limbs",
+  "tracadamia.skill.mode.springlike_limbs.spring_punch": "Spring punch",
+  "tracadamia.skill.mode.springlike_limbs.super_jump": "Super jump",
+  "tracadamia.skill.mode.springlike_limbs.energy": "Energy",
+  "tracadamia.skill.springlike_limbs.energy": "Arm energy: %s/%s | Leg energy: %s/%s",
+  "tracadamia.skill.springlike_limbs.spring_punch_armed": "Spring punch armed",
+  "tracadamia.skill.springlike_limbs.spring_punch_disarmed": "Spring punch disarmed",
+  "tracadamia.skill.springlike_limbs.super_jump_armed": "Super jump armed",
+  "tracadamia.skill.springlike_limbs.super_jump_disarmed": "Super jump disarmed",
+  "tracadamia.skill.springlike_limbs.not_enough_energy": "Not enough energy",
 
+  "tracadamia.skill.multiplier": "Multiplier",
+  "tracadamia.skill.mode.multiplier.increase": "Increase",
+  "tracadamia.skill.multiplier.output_level": "Multiplier level: %s/%s",
+
+  "tracadamia.skill.mole": "Mole",
+  "tracadamia.skill.mode.mole.tunnel": "Tunnel",
+
+  "tracadamia.skill.shock_absorption": "Shock Absorption",
+
+  "tracadamia.skill.telekinesis": "Telekinesis",
+  "tracadamia.skill.mode.telekinesis.throw": "Throw",
+  "tracadamia.skill.mode.telekinesis.multi_throw": "Multi-Throw",
+  "tracadamia.skill.mode.telekinesis.boulder": "Boulder",
+  "tracadamia.skill.mode.telekinesis.wall": "Wall",
+  "tracadamia.skill.telekinesis.no_blocks": "No blocks to pick up",
+
+  "tracadamia.skill.scanning": "Scanning",
+  "tracadamia.skill.mode.scanning.scan": "Scan",
+  "tracadamia.skill.mode.scanning.lock_on": "Lock On",
+  "tracadamia.skill.scanning.ep": "EP › %s",
+  "tracadamia.skill.scanning.no_quirks": "Quirkless",
+  "tracadamia.skill.scanning.locked": "Locked onto %s",
+  "tracadamia.skill.scanning.lock_released": "Lock on released",
+  "tracadamia.skill.scanning.lock_lost": "Lock on lost",
+
+  "tracadamia.skill.neutralization": "Neutralization",
+  "tracadamia.skill.neutralization.neutralized": "Your quirks are neutralized for %s seconds",
+  "tracadamia.skill.neutralization.blocked": "Your quirks are neutralized",
+  "effect.tracadamia.neutralize": "Neutralize",
+  "entity.tracadamia.telekinesis_block": "Telekinetic Block",
+
+  "tracadamia.skill.infrared": "Infrared",
+  "tracadamia.skill.mode.infrared.infrared": "Infrared",
+
+  "tracadamia.skill.attraction": "Attraction of Small Objects",
+  "tracadamia.skill.mode.attraction.pull": "Pull",
+  "tracadamia.skill.attraction.nothing": "Nothing nearby to pull",
+
+  "tracadamia.skill.vibration_detection": "Vibration Detection",
+  "tracadamia.skill.mode.vibration_detection.detect": "Detect",
+  "tracadamia.skill.vibration_detection.filter": "Detecting: %s",
+  "tracadamia.skill.vibration_detection.filter.all": "All",
+  "tracadamia.skill.vibration_detection.filter.hostile": "Hostile",
+  "tracadamia.skill.vibration_detection.filter.neutral": "Neutral",
+  "tracadamia.skill.vibration_detection.filter.passive": "Passive",
+  "tracadamia.skill.vibration_detection.filter.players": "Players",
+
+  "tracadamia.skill.vibrate": "Vibrate",
+  "tracadamia.skill.mode.vibrate.earthquake": "Earthquake",
+  "tracadamia.skill.mode.vibrate.tremoring_earth": "Tremoring Earth",
+  "tracadamia.skill.mode.vibrate.vibrate": "Vibrate",
+
+  "tracadamia.skill.dupli_arms": "Dupli-Arms",
+  "tracadamia.skill.mode.dupli_arms.arm_growth": "Arm Growth",
+  "tracadamia.skill.mode.dupli_arms.arm_block": "Arm Block",
+  "tracadamia.skill.mode.dupli_arms.octoblow": "Octoblow",
+  "tracadamia.skill.mode.dupli_arms.octospansion": "Octospansion",
+  "tracadamia.skill.mode.dupli_arms.backpack_carry": "Backpack Carry",
+  "tracadamia.skill.dupli_arms.arms": "Extra arms: %s/%s",
+  "tracadamia.skill.dupli_arms.max_arms": "You can't grow any more arms",
+  "tracadamia.skill.dupli_arms.no_arms": "You have no extra arms",
+  "tracadamia.skill.dupli_arms.not_enough_arms": "Needs %s free extra arms",
+  "tracadamia.skill.dupli_arms.too_big": "Too big to carry",
+  "tracadamia.skill.dupli_arms.arms_destroyed": "Your blocking arms were torn off",
+
+  "tracadamia.skill.arms.boss": "Bosses can't be grabbed",
+
+  "tracadamia.skill.body_morph": "Body Morph",
+  "tracadamia.skill.mode.body_morph.smash": "Smash",
+  "tracadamia.skill.mode.body_morph.grab": "Grab",
+  "tracadamia.skill.mode.body_morph.squeeze": "Squeeze",
+  "tracadamia.skill.body_morph.too_big": "Too big to grab",
+  "tracadamia.skill.body_morph.no_rock": "No rock to grab",
+  "tracadamia.skill.body_morph.squeezed": "You can't use skills while being squeezed",
+
+  "tracadamia.skill.extra_arms": "Extra Arms",
+  "tracadamia.skill.mode.extra_arms.wall_climb": "Wall Climb",
+  "tracadamia.skill.extra_arms.wall_climb_on": "Wall Climb on",
+  "tracadamia.skill.extra_arms.wall_climb_off": "Wall Climb off",
+
+  "tracadamia.skill.tail": "Tail",
+  "tracadamia.skill.mode.tail.tail_whip": "Tail Whip",
+  "tracadamia.skill.mode.tail.spiral_hit": "Spiral Hit",
+  "tracadamia.skill.mode.tail.tail_leap": "Tail Leap",
+  "tracadamia.skill.mode.tail.wrap": "Wrap",
+  "tracadamia.skill.tail.too_big": "Too big to wrap",
+  "tracadamia.skill.tail.broken": "Your tail was broken, your tail has to rest for %s seconds",
+
+ 
 
   "tracadamia.skill.copy": "Copy",
   "tracadamia.skill.mode.copy.copy": "§dCopy",
@@ -172,7 +264,6 @@
   "tracadamia.skill.blackwhip": "Blackwhip",
 
   "tracadamia.skill.blackwhip.description": "Quirk: Blackwhip, The user can generate tendrils of black energy from their body capable of swinging around or binding foes can also be used to spear through foes.",
-
 
   "tracadamia.skill.quirk_bestowal": "Quirk Bestowal",
 
@@ -187,15 +278,12 @@
 
 
 
-
-
   "tracadamia.skill.power_stock": "Power Stock",
 
   "tracadamia.skill.power_stock.description": "Quirk: Power Stock, Stockpile power as you grow and release it for a empowered strike",
   "tracadamia.skill.mode.power_stock.output": "Output",
   "tracadamia.skill.mode.power_stock.smash": "Smash",
   "tracadamia.skill.power_stock.ouputamount": "Used Storage: %s",
-
 
 
   "tracadamia.skill.one_for_all_1": "§fOne For All",

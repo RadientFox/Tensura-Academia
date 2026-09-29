@@ -36,9 +36,10 @@ public class StrongarmClient {
             return;
         }
 
-        event.setSwingHand(false);
-        player.swing(offHandNext ? InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND);
+        InteractionHand hand = offHandNext ? InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND;
         offHandNext = !offHandNext;
+        event.setSwingHand(false);
+        minecraft.tell(() -> player.swing(hand));
     }
 
     // First person offhand punch

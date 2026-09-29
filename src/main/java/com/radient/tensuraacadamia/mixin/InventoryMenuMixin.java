@@ -1,6 +1,6 @@
 package com.radient.tensuraacadamia.mixin;
 
-import com.radient.tensuraacadamia.ability.unique.quirks.QuadArmsOffhands;
+import com.radient.tensuraacadamia.ability.unique.quirks.MultiArms;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.InventoryMenu;
@@ -13,16 +13,16 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@Mixin(value = InventoryMenu.class, remap = false)
+@Mixin(value = InventoryMenu.class, priority = 900, remap = false)
 public abstract class InventoryMenuMixin extends RecipeBookMenu<CraftingInput, CraftingRecipe> {
 
     protected InventoryMenuMixin(MenuType<?> menuType, int containerId) {
         super(menuType, containerId);
     }
 
-    // Quad Arms offhand slots
+    // Quad Arms and Dupli-Arms offhand slots
     @Inject(method = "<init>", at = @At("TAIL"), remap = false)
     private void tracadamia$addExtraOffhands(Inventory inventory, boolean active, Player owner, CallbackInfo ci) {
-        QuadArmsOffhands.createSlots(owner).forEach(this::addSlot);
+        MultiArms.createSlots(owner).forEach(this::addSlot);
     }
 }
