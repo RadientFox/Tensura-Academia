@@ -11,6 +11,9 @@ import com.radient.tensuraacadamia.effects.WattageEffect;
 import com.radient.tensuraacadamia.effects.AspersionEffect;
 import com.radient.tensuraacadamia.effects.SmokescreenObscuredEffect;
 import com.radient.tensuraacadamia.effects.BounceEffect;
+import com.radient.tensuraacadamia.effects.SplinterEffect;
+import com.radient.tensuraacadamia.effects.PopEffect;
+import com.radient.tensuraacadamia.effects.TailwindEffect;
 import dev.architectury.registry.registries.RegistrySupplier;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
@@ -38,6 +41,11 @@ public class MHAEffects {
     public static final DeferredHolder<MobEffect, MobEffect> ASPERSION;
     public static final DeferredHolder<MobEffect, MobEffect> SMOKESCREEN_OBSCURED;
     public static final DeferredHolder<MobEffect, MobEffect> BOUNCE;
+    public static final DeferredHolder<MobEffect, MobEffect> SPLINTER;
+    public static final DeferredHolder<MobEffect, MobEffect> POP;
+    public static final DeferredHolder<MobEffect, MobEffect> TAILWIND;
+    public static final DeferredHolder<MobEffect, MobEffect> WIND_FLIGHT;
+    public static final DeferredHolder<MobEffect, MobEffect> DARK_SHADOW_FLIGHT;
 
 
     public MHAEffects() {
@@ -62,6 +70,11 @@ public class MHAEffects {
         ASPERSION = MOB_EFFECTS.register("aspersion", AspersionEffect::new);
         SMOKESCREEN_OBSCURED = MOB_EFFECTS.register("smokescreen_obscured", SmokescreenObscuredEffect::new);
         BOUNCE = MOB_EFFECTS.register("bounce", BounceEffect::new);
+        SPLINTER = MOB_EFFECTS.register("splinter", SplinterEffect::new);
+        POP = MOB_EFFECTS.register("pop", PopEffect::new);
+        TAILWIND = MOB_EFFECTS.register("tailwind", () -> new TailwindEffect(false));
+        WIND_FLIGHT = MOB_EFFECTS.register("wind_flight", () -> new TailwindEffect(true));
+        DARK_SHADOW_FLIGHT = MOB_EFFECTS.register("dark_shadow_flight", com.radient.tensuraacadamia.effects.DarkShadowFlightEffect::new);
     }
 
 }

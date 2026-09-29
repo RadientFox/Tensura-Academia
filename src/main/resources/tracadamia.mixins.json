@@ -4,11 +4,28 @@
   "package": "com.radient.tensuraacadamia.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
-    "ReincarnationSkillPoolMixin"
+    "ReincarnationSkillPoolMixin",
+    "PermeationSkillGateMixin",
+    "PermeationPlayerTickMixin",
+    "PerilDiffusionMeleeMixin",
+    "WoodenSwordsDamageSourceMixin",
+    "MobDoubleHealthMixin",
+    "DoubleCloneEPGainMixin",
+    "LivingEntityDoubleHealthMixin",
+    "TailwindFlightMixin",
+    "HomingArrowAccessor",
+    "VinesMovementMixin",
+    "VinesSkillGateMixin",
+    "DarkShadowMovementMixin"
   ],
   "client": [
     "SkillCreationScreenMixin",
-    "SmokescreenPresenceSenseMixin"
+    "SmokescreenPresenceSenseMixin",
+    "client.AcceleratorRingsFlightMixin",
+    "client.EngineKickMixin",
+    "client.WoodenSwordsFirstPersonMixin",
+    "client.PermeationPhaseMovementMixin",
+    "client.ElasticityJumpKeyMixin"
   ],
   "injectors": {
     "defaultRequire": 1

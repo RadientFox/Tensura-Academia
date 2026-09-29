@@ -21,6 +21,7 @@ import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
 
 public final class EngineQuirk extends Skill {
+    private static final double LEG_ATTACK_DAMAGE_MULTIPLIER = 2.0D;
     private static final int MAX_MASTERY = 5_000;
     private static final int RECIPRO_UNLOCK = 1_250;
     private static final int MAXIMUM_UNLOCK = 2_500;
@@ -159,17 +160,30 @@ public final class EngineQuirk extends Skill {
         LivingEntity target = event.getEntity();
         if (target.level().isClientSide || !event.getSource().is(DamageTypes.PLAYER_ATTACK)
                 || !(event.getSource().getEntity() instanceof Player attacker)) return;
+        if (!hasLegsOverArms(attacker)) return;
+
         ManasSkillInstance instance = SkillAPI.getSkillsFrom(attacker)
                 .getSkill(QuirkSkills.ENGINE.get().getRegistryName()).orElse(null);
-        if (instance == null || !TensuraStorages.getAbilityFrom(attacker)
-                .isAbilityInActivePreset(QuirkSkills.ENGINE.get())) return;
+        if (instance == null) return;
 
-        double speedMultiplier = 2.0D;
+        double engineSpeedMultiplier = 2.0D;
         var tag = instance.getOrCreateTag();
         if (attacker.level() instanceof ServerLevel level && tag.getLong(ACTIVE_UNTIL) > level.getGameTime())
-            speedMultiplier = tag.getDouble("tracadamia_engine_speed_multiplier");
+            engineSpeedMultiplier = tag.getDouble("tracadamia_engine_speed_multiplier");
+        AttributeInstance movement = attacker.getAttribute(Attributes.MOVEMENT_SPEED);
+        double speedMultiplier = engineSpeedMultiplier;
+        if (movement != null && movement.getBaseValue() > 1.0E-6D) {
+            speedMultiplier = Math.max(engineSpeedMultiplier, movement.getValue() / movement.getBaseValue());
+        }
         AttributeInstance attack = attacker.getAttribute(Attributes.ATTACK_DAMAGE);
         double unarmedBaseDamage = attack == null ? 1.0D : attack.getBaseValue();
-        event.setAmount((float) Math.max(1.0D, unarmedBaseDamage * speedMultiplier));
+        event.setAmount((float) Math.max(1.0D,
+                unarmedBaseDamage * speedMultiplier * LEG_ATTACK_DAMAGE_MULTIPLIER));
+    }
+
+    public static boolean hasLegsOverArms(LivingEntity entity) {
+        return SkillAPI.getSkillsFrom(entity)
+                .getSkill(QuirkSkills.ENGINE.get().getRegistryName()).isPresent()
+                && TensuraStorages.getAbilityFrom(entity).isAbilityInActivePreset(QuirkSkills.ENGINE.get());
     }
 }

@@ -19,9 +19,7 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.ScreenEvent;
 
 import java.util.IdentityHashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 /** Tensura's creator screen with only the All For One action and artwork substituted. */
 public final class AllForOneScreen extends SkillCreationScreen {
@@ -37,7 +35,6 @@ public final class AllForOneScreen extends SkillCreationScreen {
     }
 
     private final Map<ManasSkill, Integer> skillCounts = new IdentityHashMap<>();
-    private final Set<ResourceLocation> selectedStockpile = new HashSet<>();
 
     public AllForOneScreen(SkillCreationMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title);
@@ -49,10 +46,6 @@ public final class AllForOneScreen extends SkillCreationScreen {
 
     public int getSkillCount(ManasSkill skill) {
         return skillCounts.getOrDefault(skill, 0);
-    }
-
-    public boolean isStockpileSelection(ManasSkill skill) {
-        return menu.getMode() == 2 && selectedStockpile.contains(skill.getRegistryName());
     }
 
     @Override
@@ -87,7 +80,6 @@ public final class AllForOneScreen extends SkillCreationScreen {
         int x = leftPos + 162;
         int y = topPos + 116;
         boolean hovered = mouseX >= x && mouseX < x + 20 && mouseY >= y && mouseY < y + 20;
-        boolean stockpile = menu.getMode() == 2;
         boolean enabled = selected != null;
         graphics.fill(x, y, x + 20, y + 20, enabled ? hovered ? 0xFF5B1820 : 0xFF2C0B11 : 0xFF18080B);
         graphics.fill(x, y, x + 20, y + 1, enabled ? 0xFFA3313A : 0xFF622029);
@@ -95,17 +87,8 @@ public final class AllForOneScreen extends SkillCreationScreen {
         graphics.fill(x, y, x + 1, y + 20, 0xFF8B252E);
         graphics.fill(x + 19, y, x + 20, y + 20, 0xFF8B252E);
         if (enabled) {
-            String label = stockpile ? isStockpileSelection(selected) ? "-" : "+" : menu.getMode() == 0 ? "S" : "T";
+            String label = menu.getMode() == 3 ? selected == QuirkSkills.PERIL_DIFFUSION.get() ? "U" : "C" : menu.getMode() == 0 ? "S" : "T";
             graphics.drawCenteredString(font, label, x + 10, y + 6, 0xFFEBC9CB);
-        }
-        if (stockpile) {
-            int confirmX = leftPos + 184;
-            boolean confirmEnabled = !selectedStockpile.isEmpty();
-            boolean confirmHovered = mouseX >= confirmX && mouseX < confirmX + 44 && mouseY >= y && mouseY < y + 20;
-            graphics.fill(confirmX, y, confirmX + 44, y + 20,
-                    confirmEnabled ? confirmHovered ? 0xFF7A2914 : 0xFF45160C : 0xFF18080B);
-            graphics.drawCenteredString(font, "FIRE", confirmX + 22, y + 6,
-                    confirmEnabled ? 0xFFFFD7A1 : 0xFF725449);
         }
     }
 
@@ -114,17 +97,14 @@ public final class AllForOneScreen extends SkillCreationScreen {
         if (mouseX >= leftPos + 162 && mouseX < leftPos + 182
                 && mouseY >= topPos + 116 && mouseY < topPos + 136
                 && ((SkillCreationScreenAccess) (Object) this).tracadamia$getSelectedSkill() != null) {
-            if (menu.getMode() == 2) {
-                graphics.renderTooltip(font, Component.literal("Select or remove this ability"), mouseX, mouseY);
-            } else {
-                graphics.renderTooltip(font, Component.translatable(menu.getMode() == 0
-                        ? "tracadamia.menu.all_for_one.steal"
-                        : "tracadamia.menu.all_for_one.transfer"), mouseX, mouseY);
+            if (menu.getMode() == 3) {
+                boolean uncombine = ((SkillCreationScreenAccess) (Object) this).tracadamia$getSelectedSkill() == QuirkSkills.PERIL_DIFFUSION.get();
+                graphics.renderTooltip(font, Component.literal(uncombine ? "Uncombine: restore both quirks and 50,000 max magicules" : "Combine with Permeation: reserve 50,000 max magicules"), mouseX, mouseY);
+                return;
             }
-        }
-        if (menu.getMode() == 2 && mouseX >= leftPos + 184 && mouseX < leftPos + 228
-                && mouseY >= topPos + 116 && mouseY < topPos + 136) {
-            graphics.renderTooltip(font, Component.literal("Consume selected abilities and fire Stockpile Attack"), mouseX, mouseY);
+            graphics.renderTooltip(font, Component.translatable(menu.getMode() == 0
+                    ? "tracadamia.menu.all_for_one.steal"
+                    : "tracadamia.menu.all_for_one.transfer"), mouseX, mouseY);
         }
     }
 
@@ -138,17 +118,6 @@ public final class AllForOneScreen extends SkillCreationScreen {
             if (index < 0 || minecraft == null || minecraft.getConnection() == null) return true;
             minecraft.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
             minecraft.getConnection().send(new ServerboundContainerButtonClickPacket(menu.containerId, index));
-            if (menu.getMode() == 2) {
-                if (!selectedStockpile.add(selected.getRegistryName())) selectedStockpile.remove(selected.getRegistryName());
-            }
-            return true;
-        }
-        if (button == 0 && menu.getMode() == 2 && mouseX >= leftPos + 184 && mouseX < leftPos + 228
-                && mouseY >= topPos + 116 && mouseY < topPos + 136) {
-            if (selectedStockpile.isEmpty() || minecraft == null || minecraft.getConnection() == null) return true;
-            minecraft.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
-            minecraft.getConnection().send(new ServerboundContainerButtonClickPacket(menu.containerId,
-                    AllForOneMenu.CONFIRM_STOCKPILE_BUTTON));
             return true;
         }
         return super.mouseClicked(mouseX, mouseY, button);

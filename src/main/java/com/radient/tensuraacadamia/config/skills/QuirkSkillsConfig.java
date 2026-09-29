@@ -19,6 +19,12 @@ public class QuirkSkillsConfig extends ManasConfig {
     public AbsorbAndRelease AbsorbAndRelease = new AbsorbAndRelease();
     public Rupture Rupture = new Rupture();
     public Burst Burst = new Burst();
+    public Blast Blast = new Blast();
+
+    public static class Blast extends ManasSubConfig {
+        @Comment("Maximum block hardness Big Ass Blast can destroy. Negative-hardness blocks are always protected.")
+        public double maxBlockHardness = 3;
+    }
 
 
     public QuirkSkillsConfig() {

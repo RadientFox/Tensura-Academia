@@ -24,6 +24,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -87,7 +88,10 @@ public class Bloodcurdle extends Skill {
         if (!(attacker instanceof LivingEntity livingAttacker)) return;
 
         Entity direct = event.getSource().getDirectEntity();
-        boolean swordHit = direct == attacker && isSword(livingAttacker.getMainHandItem());
+        boolean swordHit = direct == attacker
+                && (event.getSource().is(DamageTypes.PLAYER_ATTACK)
+                || event.getSource().is(DamageTypes.MOB_ATTACK))
+                && isSword(livingAttacker.getMainHandItem());
         if (!swordHit && !event.getSource().is(BLADE_QUIRK_DAMAGE)
                 && (direct == null || !direct.getType().is(BLADE_QUIRK_ENTITY))) return;
         if (target.getType().is(TensuraEntityTags.NO_BLOOD)

@@ -24,19 +24,14 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.ArrayList;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 
 /** Uses Tensura's skill creation menu and substitutes steal/transfer actions on the server. */
 public final class AllForOneMenu extends SkillCreationMenu {
-    /** Reserved menu action sent by the Stockpile Attack confirm button. */
-    public static final int CONFIRM_STOCKPILE_BUTTON = 10_000;
     private final ServerPlayer owner;
     private final UUID targetId;
-    private final Set<ResourceLocation> selectedStockpile = new LinkedHashSet<>();
 
     private AllForOneMenu(int containerId, ServerPlayer owner, UUID targetId, int mode,
                           List<ResourceLocation> entries) {
@@ -46,20 +41,18 @@ public final class AllForOneMenu extends SkillCreationMenu {
     }
 
     public static void open(ServerPlayer player, LivingEntity target, int mode) {
-        if (mode != 2 && isClone(target)) {
+        if (mode != 0 && mode != 1 && mode != 3) return;
+        if (isClone(target)) {
             player.displayClientMessage(Component.literal("All For One cannot affect clones."), true);
             return;
         }
         LivingEntity source = mode == 0 ? target : player;
         List<ResourceLocation> entries = new ArrayList<>();
-        for (Map.Entry<ResourceLocation, Integer> entry : AllForOneStock.counts(source).entrySet()) {
+        if (mode == 3) entries.addAll(AllForOneCombine.entries(player));
+        else for (Map.Entry<ResourceLocation, Integer> entry : AllForOneStock.counts(source).entrySet()) {
             for (int i = 0; i < entry.getValue(); i++) entries.add(entry.getKey());
         }
-        Component title = Component.literal(switch (mode) {
-            case 0 -> "All For One: Steal";
-            case 1 -> "All For One: Transfer";
-            default -> "All For One: Stockpile Attack";
-        });
+        Component title = Component.literal(mode == 3 ? "All For One: Combine / Uncombine" : mode == 0 ? "All For One: Steal" : "All For One: Transfer");
         UUID targetId = target.getUUID();
         MenuRegistry.openExtendedMenu(player, new SimpleMenuProvider((containerId, inventory, ignored) ->
                 new AllForOneMenu(containerId, player, targetId, mode, entries), title), buffer -> {
@@ -78,39 +71,24 @@ public final class AllForOneMenu extends SkillCreationMenu {
     public boolean stillValid(Player player) {
         LivingEntity target = target();
         return player == owner && target != null && target.isAlive()
-                && (getMode() == 2 || !isClone(target))
+                && (getMode() == 0 || getMode() == 1 || getMode() == 3 && target == owner) && !isClone(target)
                 && owner.distanceToSqr(target) <= AllForOne.TARGET_RANGE * AllForOne.TARGET_RANGE
                 && SkillUtils.hasSkill(owner, QuirkSkills.ALL_FOR_ONE.get());
     }
 
     @Override
     public boolean clickMenuButton(Player player, int button) {
-        if (player != owner || !stillValid(player)) return false;
-        if (getMode() == 2) {
-            if (button == CONFIRM_STOCKPILE_BUTTON) return fireStockpileAttack();
-            if (button < 0 || button >= getSkills().size()) return false;
-            return toggleStockpileSelection(getSkills().get(button).getRegistryName());
-        }
+        if (player != owner || !stillValid(player) || com.radient.tensuraacadamia.ability.unique.quirks.PermeationQuirk.isPhasing(owner)) return false;
         if (button < 0 || button >= getSkills().size()) return false;
         return select(getSkills().get(button).getRegistryName());
     }
 
-    private boolean toggleStockpileSelection(ResourceLocation id) {
-        if (!AllForOneStock.counts(owner).containsKey(id)) return false;
-        if (!selectedStockpile.add(id)) selectedStockpile.remove(id);
-        return true;
-    }
-
-    private boolean fireStockpileAttack() {
-        ManasSkillInstance allForOne = SkillAPI.getSkillsFrom(owner)
-                .getSkill(QuirkSkills.ALL_FOR_ONE.get().getRegistryName()).orElse(null);
-        if (allForOne == null) return false;
-        if (!AllForOne.stockpileAttack(allForOne, owner, List.copyOf(selectedStockpile))) return false;
-        owner.closeContainer();
-        return true;
-    }
-
     private boolean select(ResourceLocation id) {
+        if (getMode() == 3) {
+            if (!AllForOneCombine.select(owner, id)) return false;
+            open(owner, owner, 3);
+            return true;
+        }
         LivingEntity target = target();
         if (target == null || isClone(target)) return false;
         ManasSkillInstance allForOne = SkillAPI.getSkillsFrom(owner).getSkill(QuirkSkills.ALL_FOR_ONE.get()).orElse(null);
@@ -200,6 +178,7 @@ public final class AllForOneMenu extends SkillCreationMenu {
     }
 
     private static boolean isClone(LivingEntity entity) {
-        return entity.getType().is(TensuraEntityTags.CLONES);
+        return entity.getType().is(TensuraEntityTags.CLONES)
+                || com.radient.tensuraacadamia.ability.unique.quirks.DoubleCloneManager.isDoubleDuplicate(entity);
     }
 }

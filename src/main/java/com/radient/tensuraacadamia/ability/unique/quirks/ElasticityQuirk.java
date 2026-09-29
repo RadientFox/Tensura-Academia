@@ -23,8 +23,10 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.neoforge.event.entity.ProjectileImpactEvent;
 import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
 import net.neoforged.neoforge.event.entity.living.LivingEvent.LivingJumpEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
@@ -324,24 +326,35 @@ public final class ElasticityQuirk extends Skill {
         LivingEntity defender = event.getEntity();
         if (defender.level().isClientSide || !slottedElasticity(defender)) return;
         DamageSource source = event.getSource();
-        Entity direct = source.getDirectEntity();
-        if (direct instanceof Projectile projectile) {
-            Entity attacker = source.getEntity();
-            if (attacker == null || attacker == defender) return;
-            Vec3 direction = attacker.getEyePosition().subtract(projectile.position()).normalize();
-            projectile.setDeltaMovement(direction.scale(Math.max(0.8D, projectile.getDeltaMovement().length() * 2.0D)));
-            projectile.setOwner(defender);
-            projectile.hurtMarked = true;
-            REFLECTED.put(projectile.getUUID(), new ReflectedProjectile(defender.getUUID(), defender.level().getGameTime() + 100));
-            event.setCanceled(true);
-            return;
-        }
         if (source.getEntity() instanceof LivingEntity attacker && attacker != defender
                 && TensuraDamageHelper.isPhysicalAttack(source) && defender.getRandom().nextBoolean()) {
             Vec3 push = attacker.position().subtract(defender.position()).normalize();
             attacker.push(push.x * 2.0D, 0.5D, push.z * 2.0D);
             attacker.hurtMarked = true;
         }
+    }
+
+    @SubscribeEvent
+    public static void reflectProjectile(ProjectileImpactEvent event) {
+        Projectile projectile = event.getProjectile();
+        if (projectile.level().isClientSide || !(event.getRayTraceResult() instanceof EntityHitResult hit)
+                || !(hit.getEntity() instanceof LivingEntity defender) || !defender.isAlive()
+                || !slottedElasticity(defender) || projectile.getOwner() == defender) return;
+
+        Entity attacker = projectile.getOwner();
+        Vec3 direction = attacker == null
+                ? projectile.getDeltaMovement().scale(-1.0D)
+                : attacker.getEyePosition().subtract(projectile.position());
+        if (direction.lengthSqr() < 1.0E-5D) direction = projectile.getDeltaMovement().scale(-1.0D);
+        if (direction.lengthSqr() < 1.0E-5D) return;
+
+        double speed = Math.max(0.8D, projectile.getDeltaMovement().length() * 2.0D);
+        projectile.setDeltaMovement(direction.normalize().scale(speed));
+        projectile.setOwner(defender);
+        projectile.hurtMarked = true;
+        REFLECTED.put(projectile.getUUID(), new ReflectedProjectile(defender.getUUID(),
+                defender.level().getGameTime() + 100L));
+        event.setCanceled(true);
     }
 
     @SubscribeEvent
