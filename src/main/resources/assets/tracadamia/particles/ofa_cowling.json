@@ -1,10 +1,11 @@
 {
   "textures": [
-    "tracadamia:1stofaparticles/ofaparticle1",
-    "tracadamia:1stofaparticles/ofaparticle2",
-    "tracadamia:1stofaparticles/ofaparticle3",
-    "tracadamia:1stofaparticles/ofaparticle4",
-    "tracadamia:1stofaparticles/ofaparticle5",
-    "tracadamia:1stofaparticles/ofaparticle6"
+    "tracadamia:1stofaparticles/ofa_1_fullcowl_1",
+    "tracadamia:1stofaparticles/ofa_1_fullcowl_2",
+    "tracadamia:1stofaparticles/ofa_1_fullcowl_3",
+    "tracadamia:1stofaparticles/ofa_1_fullcowl_4",
+    "tracadamia:1stofaparticles/ofa_1_fullcowl_5",
+    "tracadamia:1stofaparticles/ofa_1_fullcowl_6",
+    "tracadamia:1stofaparticles/ofa_1_fullcowl_7"
   ]
 }

@@ -90,10 +90,10 @@ public class OFA1st_Embers extends Skill {
 
 
     private static final int MAX_COWLING_TIME_DRAWBACK = 20 * 15 ;
+    private static final String GEAR_TAG = "tracadamia_gearshift_gear";
 
     private static final ResourceLocation MOVEMENT_MODIFIER = ResourceLocation.fromNamespaceAndPath("tracadamia", "full_cowling_speed");
     private static final ResourceLocation ATTACK_SPEED_MODIFIER = ResourceLocation.fromNamespaceAndPath("tracadamia", "full_cowling_attack_speed");
-    private static final ResourceLocation JUMP_HEIGHT_MODIFIER = ResourceLocation.fromNamespaceAndPath("tracadamia", "full_cowling_jump_height");
     private static final ResourceLocation ATTACK_DAMAGE_MODIFIER = ResourceLocation.fromNamespaceAndPath("tracadamia", "full_cowling_damage");
     private static final ResourceLocation ARMOR_MODIFIER = ResourceLocation.fromNamespaceAndPath("tracadamia", "full_cowling_armor");
 
@@ -108,9 +108,9 @@ public class OFA1st_Embers extends Skill {
         public int nextMode(LivingEntity entity, ManasSkillInstance instance, int mode, boolean reverse) {
 
             if (reverse) {
-                return mode == 0 ? 3 : mode - 1;
+                return mode == 0 ? 2 : mode - 1;
             } else {
-                return mode == 3 ? 0 : mode + 1;
+                return mode == 2 ? 0 : mode + 1;
             }
         }
 
@@ -132,7 +132,6 @@ public class OFA1st_Embers extends Skill {
                 case 0 -> var10000 = "one_for_all_1.output";
                 case 1 -> var10000 = "one_for_all_1.smash";
                 case 2 -> var10000 = "one_for_all_1.cowling";
-                case 3 -> var10000 = "one_for_all_1.bestow";
                 default -> var10000 = super.getModeId(instance, mode);
             }
 
@@ -404,7 +403,7 @@ public class OFA1st_Embers extends Skill {
 
                 }else {
                     switch (smashMode){
-/*
+
                         case 1 -> detroitSmash(instance, entity);
 
                         case 2 -> carolinaSmash(instance, entity);
@@ -415,7 +414,7 @@ public class OFA1st_Embers extends Skill {
 
 
 
- */
+
                     }
                 }
 
@@ -429,15 +428,6 @@ public class OFA1st_Embers extends Skill {
 
 
 
-            case 3->{
-                LivingEntity target = ObjectSelectionHelper.getTargetingEntity(entity, 5.0, false);
-
-
-
-
-
-
-            }
 
 
 

@@ -102,7 +102,7 @@ public class OFA2nd extends Skill {
 
 
     public int getModes(ManasSkillInstance instance) {
-            return 3;
+            return 4;
         }
 
         public int nextMode(LivingEntity entity, ManasSkillInstance instance, int mode, boolean reverse) {
@@ -428,6 +428,38 @@ public class OFA2nd extends Skill {
 
 
             case 3->{
+
+                LivingEntity target = ObjectSelectionHelper.getTargetingEntity(entity, 5.0, false);
+
+
+                if (entity instanceof Player){
+                    if (target instanceof Player){
+
+                        if ((!SkillUtils.hasSkill(target, (ManasSkill) QuirkSkills.OFA_1ST.get()))
+                                && (!SkillUtils.hasSkill(target, (ManasSkill) QuirkSkills.OFA_2ND.get()))) {
+                            if (!(instance.getMastery() < (double) 0.0F) && !instance.isTemporarySkill()) {
+                                TensuraSkillInstance eye = new TensuraSkillInstance(QuirkSkills.OFA_2ND.get());
+                             //   TensuraSkillInstance eye2 = new TensuraSkillInstance(QuirkSkills.GEARSHIFT.get());
+                                TensuraSkillInstance eye3 = new TensuraSkillInstance(QuirkSkills.OFA1st_Embers.get());
+                                eye.getOrCreateTag().putBoolean("NoMagiculeCost", true);
+                             //   eye2.getOrCreateTag().putBoolean("NoMagiculeCost", true);
+                                eye3.getOrCreateTag().putBoolean("NoMagiculeCost", true);
+                                SkillHelper.learnSkill(target, eye);
+                             //   SkillHelper.learnSkill(target, eye2);
+                                SkillHelper.learnSkill(entity, eye3);
+                                SkillAPI.getSkillsFrom(entity).forgetSkill(QuirkSkills.OFA_1ST.get());
+                                if (entity instanceof ServerPlayer player) {
+                                    player.displayClientMessage(Component.translatable("tracadamia.skill.quirk_bestowal.pass").setStyle(Style.EMPTY.withColor(ChatFormatting.RED)), false);
+                                }
+                                if (target instanceof ServerPlayer player) {
+                                    player.displayClientMessage(Component.translatable("tracadamia.skill.quirk_bestowal.passed").setStyle(Style.EMPTY.withColor(ChatFormatting.RED)), false);
+                                }
+                            }
+                        }
+
+                    }
+
+                }
 
 
 

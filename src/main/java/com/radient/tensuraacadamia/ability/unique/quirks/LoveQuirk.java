@@ -2,6 +2,7 @@ package com.radient.tensuraacadamia.ability.unique.quirks;
 
 import com.mojang.authlib.GameProfile;
 import com.radient.tensuraacadamia.config.skills.QuirkSkillsConfig;
+import com.radient.tensuraacadamia.regestry.MHAEffects;
 import com.radient.tensuraacadamia.regestry.skills.QuirkSkills;
 import io.github.manasmods.manascore.config.ConfigRegistry;
 import io.github.manasmods.manascore.skill.api.ManasSkill;
@@ -20,7 +21,9 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
@@ -67,24 +70,35 @@ public class LoveQuirk extends Skill {
 
     public void onPressed(ManasSkillInstance instance, LivingEntity entity, int keyNumber, int mode) {
 
-        Minecraft mc = Minecraft.getInstance();
-        GameProfile playerProfile = mc.getGameProfile();
         IExistence existence = TensuraStorages.getExistenceFrom(entity);
-
         UUID uuid = entity.getUUID();
-        Level level = entity.level();
+        MinecraftServer server = Minecraft.getInstance().level.getServer();
 
         if (existence.getPermanentOwner() != null) {
-            UUID uuid2 = existence.getPermanentOwner();
             if (Objects.equals(existence.getPermanentOwner(), uuid)) {
 
                 if (entity instanceof ServerPlayer player) {
                     player.displayClientMessage(Component.translatable("tracadamia.skill.love.no_buff").setStyle(Style.EMPTY.withColor(ChatFormatting.RED)), false);
                 }
             }else {
+                Player owner = server.getPlayerList().getPlayer(existence.getPermanentOwner());
+                owner.addEffect(new MobEffectInstance(MHAEffects.AFFECTION, 300, 0, false, false, false));
 
 
             }
+        }else if (existence.getTemporaryOwner() != null){
+
+            if (Objects.equals(existence.getTemporaryOwner(), uuid)) {
+
+                if (entity instanceof ServerPlayer player) {
+                    player.displayClientMessage(Component.translatable("tracadamia.skill.love.no_buff").setStyle(Style.EMPTY.withColor(ChatFormatting.RED)), false);
+                }
+            }else {
+                Player owner = server.getPlayerList().getPlayer(existence.getTemporaryOwner());
+                owner.addEffect(new MobEffectInstance(MHAEffects.AFFECTION, 300, 0, false, false, false));
+
+            }
+
         }
 
 
