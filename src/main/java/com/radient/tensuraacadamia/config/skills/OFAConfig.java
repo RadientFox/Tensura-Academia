@@ -74,10 +74,7 @@ public class OFAConfig extends ManasConfig {
         @Comment("Full cowling Armor increase")
         public double fullcowlarmor = 120.0;
         @Comment("Full cowling Speed")
-        public double fullcowlSpeed = 0.3;
-        @Comment("Full cowling Jump Height")
-        public double fullcowlJump = 0.3;
-
+        public double fullcowlSpeed = 0.5;
 
         public OFA1st() {
         }

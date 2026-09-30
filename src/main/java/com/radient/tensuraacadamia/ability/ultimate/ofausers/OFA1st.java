@@ -2,6 +2,7 @@ package com.radient.tensuraacadamia.ability.ultimate.ofausers;
 
 import com.github.hvnbael.trnightmare.compat.TextAnimatorCompat;
 import com.github.hvnbael.trnightmare.util.SkillIconFrames;
+import com.radient.tensuraacadamia.ability.unique.quirks.GearshiftQuirk;
 import com.radient.tensuraacadamia.config.skills.OFAConfig;
 import com.radient.tensuraacadamia.regestry.MHAEffects;
 import com.radient.tensuraacadamia.regestry.MHAParticles;
@@ -65,6 +66,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 
 public class OFA1st extends Skill {
         private static final OFAConfig.OFA1st CONFIG = ConfigRegistry.getConfig(OFAConfig.class).OFA1st;
@@ -97,8 +99,6 @@ public class OFA1st extends Skill {
     private static final int MAX_COWLING_TIME_DRAWBACK = 20 * 15 ;
 
     private static final ResourceLocation MOVEMENT_MODIFIER = ResourceLocation.fromNamespaceAndPath("tracadamia", "full_cowling_speed");
-    private static final ResourceLocation ATTACK_SPEED_MODIFIER = ResourceLocation.fromNamespaceAndPath("tracadamia", "full_cowling_attack_speed");
-    private static final ResourceLocation JUMP_HEIGHT_MODIFIER = ResourceLocation.fromNamespaceAndPath("tracadamia", "full_cowling_jump_height");
     private static final ResourceLocation ATTACK_DAMAGE_MODIFIER = ResourceLocation.fromNamespaceAndPath("tracadamia", "full_cowling_damage");
     private static final ResourceLocation ARMOR_MODIFIER = ResourceLocation.fromNamespaceAndPath("tracadamia", "full_cowling_armor");
 
@@ -107,7 +107,7 @@ public class OFA1st extends Skill {
 
 
     public int getModes(ManasSkillInstance instance) {
-            return 3;
+            return 4;
         }
 
         public int nextMode(LivingEntity entity, ManasSkillInstance instance, int mode, boolean reverse) {
@@ -161,18 +161,17 @@ public class OFA1st extends Skill {
         boolean fullCowlingOn = tag.getBoolean("fullCowling");
 
         if (var6 instanceof ServerLevel serverLevel) {
-            if (entity.isAlive() && entity.tickCount % 10 == 0
-                    && (entity.getPersistentData().getBoolean("fullCowling")
+                if (entity.isAlive() && entity.tickCount % 10 == 0
+                        && (entity.getPersistentData().getBoolean("fullCowling")
                         || instance.getOrCreateTag().getBoolean("cowlingParticles"))) {
-                for (int i = 0; i < 5; i++) {
-                    serverLevel.sendParticles(MHAParticles.OFA_COWLING.get(),
-                            entity.getRandomX(1.0D), entity.getRandomY(), entity.getRandomZ(1.0D), 0,
-                            entity.getRandom().nextGaussian() * 0.02D,
-                            entity.getRandom().nextGaussian() * 0.02D,
-                            entity.getRandom().nextGaussian() * 0.02D, 1.0D);
+                    for (int i = 0; i < 5; i++) {
+                        serverLevel.sendParticles(MHAParticles.OFA_COWLING.get(),
+                                entity.getRandomX(1.0D), entity.getRandomY(), entity.getRandomZ(1.0D), 0,
+                                entity.getRandom().nextGaussian() * 0.02D,
+                                entity.getRandom().nextGaussian() * 0.02D,
+                                entity.getRandom().nextGaussian() * 0.02D, 1.0D);
+                    }
                 }
-            }
-            if (instance.isToggled()) {
 
                 float radius = 30.0F;
                 List<LivingEntity> list = entity.level().getEntitiesOfClass(LivingEntity.class, entity.getBoundingBox().inflate(radius), (living) -> {
@@ -192,7 +191,8 @@ public class OFA1st extends Skill {
 
                     }
                 }
-            }
+
+
 
             if (fullCowlingOn){
                 Player player = (Player) entity;
@@ -203,29 +203,49 @@ public class OFA1st extends Skill {
                 double y = entity.getY() + entity.getBbHeight() * 0.5D;
                 double z = entity.getZ();
 
-                int time = data.getInt("activatedTimes");
-                if (time % BASE_CONFIG.Mastery.masteryActivateTime == 0) {
-                    TensuraParticleHelper.spawnServerParticles(entity.level(), MHAParticles.OFA_1_COWL.get(), x, y, z, 15, 0.1D, 0.1D, 0.1D, 0.1D, true);
-                }
 
-                data.putInt("activatedTimes", time + 1);
+
+
 
 
                 addDamageModifier(entity, (CONFIG.fullcowldamage * percentUsed));
+                addArmorModifier(entity, (CONFIG.fullcowlarmor * percentUsed));
+                addspeedModifier(entity, (CONFIG.fullcowlSpeed * percentUsed));
 
+                if (percentUsed == 1){
+                    colorName = true;
+                }else if ((percentUsed >= 0.45) && SkillUtils.hasSkill(entity, QuirkSkills.GEARSHIFT.get())){
+
+                        Optional<ManasSkillInstance> opt = SkillAPI.getSkillsFrom(entity).getSkill((ManasSkill) QuirkSkills.GEARSHIFT.get());
+                        ManasSkillInstance inst = (ManasSkillInstance) opt.get();
+                    if (inst.getTag().getBoolean("tracadamia_gearshift_overdrive")) {
+                        colorName = true;
+                    }
+
+                }
+                else {
+                    colorName = false;
+                }
 
             }else {
 
+                colorName = false;
                 AttributeInstance attribute = entity.getAttribute(Attributes.ATTACK_DAMAGE);
-
+                AttributeInstance attribute2 = entity.getAttribute(Attributes.ARMOR);
+                AttributeInstance attribute3 = entity.getAttribute(Attributes.MOVEMENT_SPEED);
 
                 if (attribute != null) {
                     attribute.removeModifier(ATTACK_DAMAGE_MODIFIER);
                 }
+                if (attribute2 != null) {
+                    attribute2.removeModifier(ARMOR_MODIFIER);
+                }
+                if (attribute3 != null) {
+                    attribute.removeModifier(MOVEMENT_MODIFIER);
+                }
             }
         }
     }
-
 
     private static void addDamageModifier(LivingEntity entity, double amount) {
         AttributeInstance attribute = entity.getAttribute(Attributes.ATTACK_DAMAGE);
@@ -235,6 +255,27 @@ public class OFA1st extends Skill {
         }
 
         attribute.addOrUpdateTransientModifier(new AttributeModifier(ATTACK_DAMAGE_MODIFIER, amount, AttributeModifier.Operation.ADD_VALUE));
+    }
+
+    private static void addspeedModifier(LivingEntity entity, double amount) {
+        AttributeInstance attribute = entity.getAttribute(Attributes.MOVEMENT_SPEED);
+
+        if (attribute == null) {
+            return;
+        }
+
+        attribute.addOrUpdateTransientModifier(new AttributeModifier(MOVEMENT_MODIFIER, amount, AttributeModifier.Operation.ADD_VALUE));
+    }
+
+
+    private static void addArmorModifier(LivingEntity entity, double amount) {
+        AttributeInstance attribute = entity.getAttribute(Attributes.ARMOR);
+
+        if (attribute == null) {
+            return;
+        }
+
+        attribute.addOrUpdateTransientModifier(new AttributeModifier(ARMOR_MODIFIER, amount, AttributeModifier.Operation.ADD_VALUE));
     }
 
     public boolean onDamageEntity(ManasSkillInstance instance, LivingEntity attacker, LivingEntity target, DamageSource source, Changeable<Float> amount) {
@@ -490,7 +531,9 @@ public class OFA1st extends Skill {
 
 
             case 3->{
+
                 LivingEntity target = ObjectSelectionHelper.getTargetingEntity(entity, 5.0, false);
+
 
                 if (entity instanceof Player){
                     if (target instanceof Player){
@@ -565,11 +608,10 @@ public class OFA1st extends Skill {
     private void texaSmash(ManasSkillInstance instance, LivingEntity entity){
         Player player = (Player) entity;
         CompoundTag tag = instance.getOrCreateTag();
-        var data = player.getPersistentData();
-        boolean SmashActive = data.getBoolean("texasActive");
+        boolean SmashActive = tag.getBoolean("texasActive");
 
 
-        double percentUsed =  (data.getDouble("outputPercent"));
+        double percentUsed =  (tag.getDouble("outputPercent"));
         if (percentUsed > 0.2) {
             if (SmashActive) {
                 if (entity instanceof Player) {

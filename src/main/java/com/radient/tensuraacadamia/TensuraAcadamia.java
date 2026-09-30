@@ -1,12 +1,7 @@
 package com.radient.tensuraacadamia;
 
 import com.radient.tensuraacadamia.config.AcadamiaConfigs;
-import com.radient.tensuraacadamia.regestry.MHAEffects;
-import com.radient.tensuraacadamia.regestry.MHASounds;
-import com.radient.tensuraacadamia.regestry.MHAParticles;
-import com.radient.tensuraacadamia.regestry.QuirkVisualItems;
-import com.radient.tensuraacadamia.regestry.QueenBeamEntities;
-import com.radient.tensuraacadamia.regestry.PopOffEntities;
+import com.radient.tensuraacadamia.regestry.*;
 import com.radient.tensuraacadamia.ability.unique.quirks.PopOffQuirk;
 import com.radient.tensuraacadamia.ability.unique.quirks.DoubleMenus;
 import com.radient.tensuraacadamia.ability.unique.quirks.DoubleCloneManager;
@@ -89,7 +84,7 @@ public class TensuraAcadamia {
         com.radient.tensuraacadamia.regestry.BlastEntities.register(modEventBus);
         com.radient.tensuraacadamia.regestry.DarkShadowEntities.register(modEventBus);
         com.radient.tensuraacadamia.ability.unique.quirks.WoodenSwordsQuirk.registerSkillEvents();
-      //  OFAEntitys.ENTITY_TYPES.register(modEventBus);
+        OFAEntitys.ENTITY_TYPES.register(modEventBus);
         AcadamiaConfigs.init();
     }
 

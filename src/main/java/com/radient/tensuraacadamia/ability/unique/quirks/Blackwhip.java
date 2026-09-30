@@ -1,6 +1,7 @@
 package com.radient.tensuraacadamia.ability.unique.quirks;
 
 import com.radient.tensuraacadamia.config.skills.QuirkSkillsConfig;
+import com.radient.tensuraacadamia.entity.BlackwhipProjectile;
 import io.github.manasmods.manascore.config.ConfigRegistry;
 import io.github.manasmods.manascore.skill.api.ManasSkillInstance;
 import io.github.manasmods.tensura.ability.skill.Skill;
@@ -25,7 +26,7 @@ import org.jetbrains.annotations.Nullable;
 
 public class Blackwhip extends Skill {
     private static final QuirkSkillsConfig.Power_Stock CONFIG = ConfigRegistry.getConfig(QuirkSkillsConfig.class).Power_Stock;
-    public static final ResourceLocation BLACKWHIP = ResourceLocation.fromNamespaceAndPath("tracadamia", "power_stock");
+    public static final ResourceLocation BLACKWHIP = ResourceLocation.fromNamespaceAndPath("tracadamia", "blackwip");
 
     public Blackwhip() {
         super(SkillType.UNIQUE);
@@ -67,10 +68,11 @@ public class Blackwhip extends Skill {
 
             switch (mode){
                 case 0 ->{
-/*
+
+
 
                     Entity oldBullet = entity.level().getEntity(tag.getInt("BulletID"));
-                    if (oldBullet instanceof BlackwhipProjectile) {
+                    if (oldBullet instanceof WebBulletProjectile) {
                         oldBullet.discard();
                     }
 
@@ -78,7 +80,8 @@ public class Blackwhip extends Skill {
                         return;
                     }
 
-                    BlackwhipProjectile bullet = new BlackwhipProjectile(level, 1, 1, 1);
+                    ItemStack stack = ((Item)TensuraToolItems.WEB_CARTRIDGE.get()).getDefaultInstance();
+                    WebBulletProjectile bullet = new WebBulletProjectile(level, entity, true, stack);
                     bullet.setSlinger(true);
                     Vec3 vector = entity.getViewVector(1.0F);
                     bullet.shoot(vector.x(), vector.y(), vector.z(), 2.0F, 0.0F);
@@ -86,11 +89,9 @@ public class Blackwhip extends Skill {
                     level.addFreshEntity(bullet);
                     tag.putInt("BulletID", bullet.getId());
                     entity.swing(InteractionHand.MAIN_HAND, true);
-                    level.playSound((Player)null, entity.getX(), entity.getY(), entity.getZ(), (SoundEvent) TensuraSoundEvents.STICKY_STEEL_THREAD.get(), SoundSource.PLAYERS, 1.0F, 1.0F);
+                    level.playSound((Player)null, entity.getX(), entity.getY(), entity.getZ(), (SoundEvent)TensuraSoundEvents.STICKY_STEEL_THREAD.get(), SoundSource.PLAYERS, 1.0F, 1.0F);
 
 
-
- */
 
                 }
 
