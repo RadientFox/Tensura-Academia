@@ -23,6 +23,8 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MoverType;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.level.ClipContext;
@@ -34,6 +36,7 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
 import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
 import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
+import net.neoforged.neoforge.event.entity.living.LivingEvent.LivingJumpEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.tick.EntityTickEvent;
 
@@ -48,6 +51,7 @@ public final class DarkShadowQuirk extends Skill {
     public static final int[] COOLDOWN = {0, 0, 10, 15, 0, 5, 30, 120, 120, 45, 300, 0};
     public static final String SHADOW = "DarkShadowEntity", SNAPSHOT = "DarkShadowSnapshot", FUSED = "DarkShadowFused",
             DEATH_READY = "DarkShadowDeathReady";
+    private static final ResourceLocation ABYSS_SPEED = ResourceLocation.fromNamespaceAndPath("tracadamia", "black_abyss_speed");
     public DarkShadowQuirk() { super(SkillType.UNIQUE); }
     @Override public int getMaxMastery() { return 10000; }
     @Override public ResourceLocation getSkillIcon() { return ResourceLocation.fromNamespaceAndPath("tracadamia", "textures/skill/unique/darkshadowicon.png"); }
@@ -133,10 +137,12 @@ public final class DarkShadowQuirk extends Skill {
         dismiss(instance, owner, false);
     }
     @Override public void onForgetSkill(ManasSkillInstance instance, LivingEntity owner) {
+        fusionMovement(owner, false);
         DarkShadow shadow = shadow(owner);
         if (shadow == null || !shadow.berserk()) dismiss(instance, owner, false);
     }
     public static void dismiss(ManasSkillInstance instance, LivingEntity owner, boolean save) {
+        fusionMovement(owner, false);
         DarkShadow shadow = shadow(owner);
         if (shadow != null) {
             instance.getOrCreateTag().put(SNAPSHOT, shadow.session());
@@ -148,6 +154,7 @@ public final class DarkShadowQuirk extends Skill {
         instance.markDirty();
     }
     public static void shadowDied(DarkShadow shadow, LivingEntity owner) {
+        fusionMovement(owner, false);
         ManasSkillInstance instance = instance(owner);
         if (instance == null) return;
         instance.getOrCreateTag().putLong(DEATH_READY, owner.level().getGameTime() + 2400);
@@ -179,6 +186,7 @@ public final class DarkShadowQuirk extends Skill {
             message(owner, "command." + shadow.command()); return;
         }
         if (mode == ABYSS && fused(instance)) {
+            fusionMovement(owner, false);
             instance.getOrCreateTag().putBoolean(FUSED, false);
             shadow.setFused(false); shadow.releaseCaptive(); shadow.stopFlight(); resetPool(instance, owner); instance.markDirty(); return;
         }
@@ -195,7 +203,7 @@ public final class DarkShadowQuirk extends Skill {
         if ((mode == ARMS || mode == WOMB) && DarkShadow.binding(target) != null) { message(owner, "already_bound"); return; }
         shadow.cancelNormalPunch();
         switch (mode) {
-            case ABYSS -> { instance.getOrCreateTag().putBoolean(FUSED, true); shadow.setFused(true); resetPool(instance, owner); }
+            case ABYSS -> { instance.getOrCreateTag().putBoolean(FUSED, true); shadow.setFused(true); fusionMovement(owner, true); resetPool(instance, owner); }
             case CLAWS, ANGEL, SABBATH, WOMB, FLEETING, BALDUR -> shadow.queueAttack(mode, target);
             case ARMS -> shadow.grab(target);
             case RELEASE -> shadow.totalRelease();
@@ -322,11 +330,43 @@ public final class DarkShadowQuirk extends Skill {
     @SubscribeEvent public static void ownerTick(EntityTickEvent.Post event) {
         if (!(event.getEntity() instanceof LivingEntity owner) || owner instanceof DarkShadow || !(owner.level() instanceof ServerLevel)) return;
         ManasSkillInstance instance = instance(owner);
-        if (instance == null || !instance.isToggled() || !owner.isAlive()) return;
+        if (instance == null || !instance.isToggled() || !owner.isAlive()) { fusionMovement(owner, false); return; }
         QuirkSkills.DARK_SHADOW.get().refreshCooldowns(instance, owner);
         DarkShadow shadow = shadow(owner);
         if (shadow == null && owner.level().getGameTime() >= instance.getOrCreateTag().getLong(DEATH_READY)) summon(instance, owner);
         else if (shadow != null) shadow.clampTether();
+        fusionMovement(owner, shadow != null && shadow.fused());
+    }
+    private static void fusionMovement(LivingEntity owner, boolean active) {
+        var speed = owner.getAttribute(Attributes.MOVEMENT_SPEED);
+        if (speed == null) return;
+        if (active && speed.getModifier(ABYSS_SPEED) == null)
+            speed.addTransientModifier(new AttributeModifier(ABYSS_SPEED, 1, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));
+        else if (!active) speed.removeModifier(ABYSS_SPEED);
+    }
+    @SubscribeEvent public static void abyssJump(LivingJumpEvent event) {
+        LivingEntity owner = event.getEntity(); var instance = instance(owner);
+        if (instance == null || !instance.isToggled() || !fused(instance)) return;
+        Vec3 motion = owner.getDeltaMovement();
+        owner.setDeltaMovement(motion.x, abyssJumpVelocity(motion.y, owner.getGravity()), motion.z);
+        owner.hurtMarked = true;
+    }
+    public static double abyssJumpVelocity(double velocity, double gravity) {
+        if (velocity <= 0 || gravity <= 0) return velocity;
+        // Include vanilla gravity and drag: tripling launch velocity would produce roughly nine times the height.
+        double height = jumpHeight(velocity, gravity) * 3, low = velocity, high = velocity * 3;
+        for (int i = 0; i < 20; i++) {
+            double mid = (low + high) / 2;
+            if (jumpHeight(mid, gravity) < height) low = mid; else high = mid;
+        }
+        return (low + high) / 2;
+    }
+    private static double jumpHeight(double velocity, double gravity) {
+        double height = 0;
+        for (int tick = 0; velocity > 0 && tick < 10000; tick++) {
+            height += velocity; velocity = (velocity - gravity) * 0.98;
+        }
+        return height;
     }
     @SubscribeEvent(priority = EventPriority.LOW) public static void attackBonus(LivingIncomingDamageEvent event) {
         if (!(event.getSource().getEntity() instanceof LivingEntity attacker) || attacker instanceof DarkShadow) return;
@@ -362,6 +402,7 @@ public final class DarkShadowQuirk extends Skill {
     }
     @SubscribeEvent public static void dimension(PlayerEvent.PlayerChangedDimensionEvent event) {
         LivingEntity owner = event.getEntity(); ManasSkillInstance instance = instance(owner);
+        fusionMovement(owner, false);
         if (instance == null || !instance.getOrCreateTag().hasUUID(SHADOW)) return;
         for (ServerLevel level : ((ServerLevel) owner.level()).getServer().getAllLevels()) {
             Entity entity = level.getEntity(instance.getOrCreateTag().getUUID(SHADOW));

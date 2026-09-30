@@ -13,6 +13,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class VinesMovementMixin {
     @Inject(method = "move", at = @At("HEAD"), cancellable = true)
     private void tracadamia$holdVineCaptive(MoverType type, Vec3 movement, CallbackInfo callback) {
-        if (VineConstruct.blocksMovement((Entity) (Object) this)) callback.cancel();
+        if (VineConstruct.blocksMovement((Entity) (Object) this)
+                || com.radient.tensuraacadamia.ability.unique.quirks.AlchemyQuirk.ironLocked((Entity) (Object) this)) callback.cancel();
     }
 }

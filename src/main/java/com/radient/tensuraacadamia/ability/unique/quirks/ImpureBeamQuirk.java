@@ -200,6 +200,7 @@ public final class ImpureBeamQuirk extends Skill {
             BlockHitResult hit = level.clip(new ClipContext(origin, baseEnd,
                     ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, player));
             Vec3 visibleEnd = hit.getType() == BlockHitResult.Type.MISS ? baseEnd : hit.getLocation();
+            visibleEnd = com.radient.tensuraacadamia.entity.MoltenShield.clipBeam(level, origin, visibleEnd, BEAM_HITBOX, player);
             BeamClashManager.publish(player, instance, BeamClashManager.BeamType.IMPURE_FULL_POWER,
                     mode, origin, visibleEnd, BEAM_HITBOX, currentAp);
         }
@@ -335,6 +336,7 @@ public final class ImpureBeamQuirk extends Skill {
                     ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, owner));
             Vec3 baseVisibleEnd = baseBlockHit.getType() == BlockHitResult.Type.MISS
                     ? baseEnd : baseBlockHit.getLocation();
+            baseVisibleEnd = com.radient.tensuraacadamia.entity.MoltenShield.clipBeam(level, origin, baseVisibleEnd, BEAM_HITBOX, owner);
             if (beam.mode == FULL_POWER) {
                 BeamClashManager.publish(owner, beam.instance, BeamClashManager.BeamType.IMPURE_FULL_POWER,
                         beam.mode, origin, baseVisibleEnd, BEAM_HITBOX, beam.clashPower);
@@ -372,18 +374,22 @@ public final class ImpureBeamQuirk extends Skill {
                             ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, owner));
             Vec3 end = pushing ? control.clashPoint()
                     : blockHit.getType() == BlockHitResult.Type.MISS ? requestedEnd : blockHit.getLocation();
-            double visibleLength = origin.distanceTo(end);
             double sizeMultiplier = overpowering ? control.sizeMultiplier() : 1.0D;
             double effectiveHitbox = BEAM_HITBOX * sizeMultiplier;
+            double clashDamageMultiplier = beam.damageMultiplier * (overpowering ? 5.0D : 1.0D);
+            end = com.radient.tensuraacadamia.entity.MoltenShield.clipBeam(level, origin, end, effectiveHitbox, owner,
+                    pushing ? null : beamSource(owner, beam, TensuraDamageTypes.LIGHT_ELEMENTAL, Element.LIGHT),
+                    (float) ((LIGHT_DAMAGE_PER_TICK + HOLY_DAMAGE_PER_TICK) * clashDamageMultiplier));
+            double visibleLength = origin.distanceTo(end);
             Vec3 right = BeamGeometry.perpendicular(direction);
             Vec3 up = right.cross(direction).normalize();
             AABB candidates = new AABB(origin, end).inflate(effectiveHitbox);
-            double clashDamageMultiplier = beam.damageMultiplier * (overpowering ? 5.0D : 1.0D);
             boolean clashTargetHit = false;
 
             if (!pushing) {
                 for (LivingEntity target : level.getEntitiesOfClass(LivingEntity.class, candidates,
-                        candidate -> candidate != owner && candidate.isAlive() && !candidate.isRemoved())) {
+                        candidate -> candidate != owner && !(candidate instanceof com.radient.tensuraacadamia.entity.MoltenShield)
+                                && candidate.isAlive() && !candidate.isRemoved())) {
                     boolean lockedClashTarget = overpowering && target == clashTarget;
                     if (!lockedClashTarget && !BeamGeometry.intersects(target.getBoundingBox(), origin, direction,
                             right, up, visibleLength, effectiveHitbox, effectiveHitbox)) continue;
@@ -394,7 +400,7 @@ public final class ImpureBeamQuirk extends Skill {
                     if (lockedClashTarget) clashTargetHit = true;
                 }
                 if (overpowering && !clashTargetHit && clashTarget != null
-                        && blockHit.getType() == BlockHitResult.Type.MISS) {
+                        && blockHit.getType() == BlockHitResult.Type.MISS && end.equals(requestedEnd)) {
                     damageTarget(owner, beam, clashTarget, TensuraDamageTypes.LIGHT_ELEMENTAL,
                             Element.LIGHT, LIGHT_DAMAGE_PER_TICK * clashDamageMultiplier);
                     damageTarget(owner, beam, clashTarget, TensuraDamageTypes.HOLY_DAMAGE,
@@ -455,6 +461,13 @@ public final class ImpureBeamQuirk extends Skill {
     private static void damageTarget(ServerPlayer owner, ActiveBeam beam, LivingEntity target,
                                      net.minecraft.resources.ResourceKey<net.minecraft.world.damagesource.DamageType> damageType,
                                      Element element, double damage) {
+        target.invulnerableTime = 0;
+        target.hurt(beamSource(owner, beam, damageType, element), (float) damage);
+    }
+
+    private static DamageSource beamSource(ServerPlayer owner, ActiveBeam beam,
+                                          net.minecraft.resources.ResourceKey<net.minecraft.world.damagesource.DamageType> damageType,
+                                          Element element) {
         DamageSource source = owner.serverLevel().damageSources().source(damageType, owner);
         TensuraDamageSource tensuraSource = (TensuraDamageSource) source;
         tensuraSource.tensura$setSkillType(SkillType.UNIQUE);
@@ -462,8 +475,7 @@ public final class ImpureBeamQuirk extends Skill {
         tensuraSource.tensura$setAbilityMode(beam.mode);
         tensuraSource.tensura$setElement(element);
         if (beam.resistanceBypass) tensuraSource.tensura$setResistanceBypassLevel(2.0F);
-        target.invulnerableTime = 0;
-        target.hurt(source, (float) damage);
+        return source;
     }
 
     private static Vec3 beamOrigin(LivingEntity owner) {

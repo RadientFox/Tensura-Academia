@@ -59,6 +59,10 @@ public class TensuraAcadamia {
         com.radient.tensuraacadamia.ability.unique.quirks.VinesQuirk.registerSkillEvents();
         NeoForge.EVENT_BUS.register(com.radient.tensuraacadamia.ability.unique.quirks.DarkShadowQuirk.class);
         com.radient.tensuraacadamia.ability.unique.quirks.DarkShadowQuirk.registerSkillEvents();
+        NeoForge.EVENT_BUS.register(com.radient.tensuraacadamia.ability.unique.quirks.AlchemyQuirk.class);
+        NeoForge.EVENT_BUS.register(com.radient.tensuraacadamia.ability.unique.quirks.TapeQuirk.class);
+        NeoForge.EVENT_BUS.register(com.radient.tensuraacadamia.ability.unique.quirks.CloudQuirk.class);
+        NeoForge.EVENT_BUS.register(com.radient.tensuraacadamia.ability.unique.quirks.HellflameQuirk.class);
         NeoForge.EVENT_BUS.register(ElectrificationQuirk.class);
         NeoForge.EVENT_BUS.register(SmokescreenQuirk.class);
         NeoForge.EVENT_BUS.register(ExplosionQuirk.class);
@@ -88,6 +92,9 @@ public class TensuraAcadamia {
         com.radient.tensuraacadamia.regestry.VinesEntities.register(modEventBus);
         com.radient.tensuraacadamia.regestry.BlastEntities.register(modEventBus);
         com.radient.tensuraacadamia.regestry.DarkShadowEntities.register(modEventBus);
+        com.radient.tensuraacadamia.regestry.AlchemyEntities.register(modEventBus);
+        com.radient.tensuraacadamia.regestry.CloudEntities.register(modEventBus);
+        com.radient.tensuraacadamia.regestry.GreyTornadoEntities.register(modEventBus);
         com.radient.tensuraacadamia.ability.unique.quirks.WoodenSwordsQuirk.registerSkillEvents();
       //  OFAEntitys.ENTITY_TYPES.register(modEventBus);
         AcadamiaConfigs.init();

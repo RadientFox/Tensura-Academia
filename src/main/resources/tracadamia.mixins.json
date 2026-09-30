@@ -22,6 +22,9 @@
     "LivingEntityDoubleHealthMixin",
     "TailwindFlightMixin",
     "HomingArrowAccessor",
+    "AlchemyProjectileImpactInvoker",
+    "TapeDisplayAccessor",
+    "TapeBlockDisplayAccessor",
     "VinesMovementMixin",
     "VinesSkillGateMixin",
     "DarkShadowMovementMixin"

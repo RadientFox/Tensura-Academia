@@ -22,6 +22,11 @@ public abstract class ReincarnationSkillPoolMixin {
         addIfMissing(expanded, QuirkSkills.VINES.get());
         addIfMissing(expanded, QuirkSkills.BLAST.get());
         addIfMissing(expanded, QuirkSkills.DARK_SHADOW.get());
+        addIfMissing(expanded, QuirkSkills.ALCHEMY.get());
+        addIfMissing(expanded, QuirkSkills.IQ.get());
+        addIfMissing(expanded, QuirkSkills.TAPE.get());
+        addIfMissing(expanded, QuirkSkills.CLOUD.get());
+        addIfMissing(expanded, QuirkSkills.HELLFLAME.get());
         return expanded;
     }
 

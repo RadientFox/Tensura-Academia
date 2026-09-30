@@ -79,6 +79,11 @@ public class QuirkSkills {
     public static final RegistrySupplier<VinesQuirk> VINES = register("vines", VinesQuirk::new);
     public static final RegistrySupplier<BlastQuirk> BLAST = register("blast", BlastQuirk::new);
     public static final RegistrySupplier<DarkShadowQuirk> DARK_SHADOW = register("dark_shadow", DarkShadowQuirk::new);
+    public static final RegistrySupplier<AlchemyQuirk> ALCHEMY = register("alchemy", AlchemyQuirk::new);
+    public static final RegistrySupplier<IQQuirk> IQ = register("iq", IQQuirk::new);
+    public static final RegistrySupplier<TapeQuirk> TAPE = register("tape", TapeQuirk::new);
+    public static final RegistrySupplier<CloudQuirk> CLOUD = register("cloud", CloudQuirk::new);
+    public static final RegistrySupplier<HellflameQuirk> HELLFLAME = register("hellflame", HellflameQuirk::new);
 
 
 

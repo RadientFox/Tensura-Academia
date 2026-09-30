@@ -277,6 +277,7 @@ public final class BeamsFromHisEyesQuirk extends Skill {
             BlockHitResult hit = level.clip(new ClipContext(origin, baseEnd,
                     ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, owner));
             Vec3 visibleEnd = hit.getType() == BlockHitResult.Type.MISS ? baseEnd : hit.getLocation();
+            visibleEnd = com.radient.tensuraacadamia.entity.MoltenShield.clipBeam(level, origin, visibleEnd, width, owner);
             BeamClashManager.publish(owner, instance, BeamClashManager.BeamType.EVERY_LAST_DROP,
                     mode, origin, visibleEnd, width, currentAura);
         }
@@ -315,6 +316,7 @@ public final class BeamsFromHisEyesQuirk extends Skill {
                     ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, owner));
             Vec3 baseVisibleEnd = baseBlockHit.getType() == BlockHitResult.Type.MISS
                     ? baseEnd : baseBlockHit.getLocation();
+            baseVisibleEnd = com.radient.tensuraacadamia.entity.MoltenShield.clipBeam(level, origin, baseVisibleEnd, beam.width, owner);
             if (beam.mode == EVERY_LAST_DROP) {
                 BeamClashManager.publish(owner, beam.instance, BeamClashManager.BeamType.EVERY_LAST_DROP,
                         beam.mode, origin, baseVisibleEnd, beam.width, beam.clashPower);
@@ -362,9 +364,11 @@ public final class BeamsFromHisEyesQuirk extends Skill {
                             ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, owner));
             Vec3 end = pushing ? control.clashPoint()
                     : blockHit.getType() == BlockHitResult.Type.MISS ? requestedEnd : blockHit.getLocation();
-            double beamLength = origin.distanceTo(end);
             double sizeMultiplier = overpowering ? control.sizeMultiplier() : 1.0D;
             double effectiveWidth = beam.width * sizeMultiplier;
+            end = com.radient.tensuraacadamia.entity.MoltenShield.clipBeam(level, origin, end, effectiveWidth, owner,
+                    pushing ? null : beamSource(owner, beam), beam.damagePerTick * (overpowering ? 5.0F : 1.0F));
+            double beamLength = origin.distanceTo(end);
             WhirlwindQuirk.igniteBeam(level, origin, direction, beamLength, effectiveWidth);
             Vec3 right = BeamGeometry.perpendicular(direction);
             Vec3 up = right.cross(direction).normalize();
@@ -373,7 +377,8 @@ public final class BeamsFromHisEyesQuirk extends Skill {
 
             if (!pushing) {
                 for (LivingEntity target : level.getEntitiesOfClass(LivingEntity.class, candidates,
-                        candidate -> candidate != owner && candidate.isAlive() && !candidate.isRemoved())) {
+                        candidate -> candidate != owner && !(candidate instanceof com.radient.tensuraacadamia.entity.MoltenShield)
+                                && candidate.isAlive() && !candidate.isRemoved())) {
                     boolean lockedClashTarget = overpowering && target == clashTarget;
                     if (!lockedClashTarget && !BeamGeometry.intersects(target.getBoundingBox(), origin,
                             direction, right, up, beamLength, effectiveWidth, effectiveWidth)) {
@@ -383,7 +388,7 @@ public final class BeamsFromHisEyesQuirk extends Skill {
                     if (lockedClashTarget) clashTargetHit = true;
                 }
                 if (overpowering && !clashTargetHit && clashTarget != null
-                        && blockHit.getType() == BlockHitResult.Type.MISS) {
+                        && blockHit.getType() == BlockHitResult.Type.MISS && end.equals(requestedEnd)) {
                     damageTarget(owner, beam, clashTarget, 5.0F);
                 }
             }
@@ -444,6 +449,11 @@ public final class BeamsFromHisEyesQuirk extends Skill {
 
     private static void damageTarget(LivingEntity owner, ActiveBeam beam, LivingEntity target,
                                      float damageMultiplier) {
+        target.invulnerableTime = 0;
+        target.hurt(beamSource(owner, beam), beam.damagePerTick * damageMultiplier);
+    }
+
+    private static DamageSource beamSource(LivingEntity owner, ActiveBeam beam) {
         DamageSource source = owner.damageSources().source(TensuraDamageTypes.HEAT_WAVE, owner);
         TensuraDamageSource tensuraSource = (TensuraDamageSource) source;
         tensuraSource.tensura$setSkillType(SkillType.UNIQUE);
@@ -453,8 +463,7 @@ public final class BeamsFromHisEyesQuirk extends Skill {
         if (beam.mastered) {
             tensuraSource.tensura$setResistanceBypassLevel(1.0F);
         }
-        target.invulnerableTime = 0;
-        target.hurt(source, beam.damagePerTick * damageMultiplier);
+        return source;
     }
 
 }

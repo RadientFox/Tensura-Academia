@@ -46,6 +46,7 @@ public class MHAEffects {
     public static final DeferredHolder<MobEffect, MobEffect> TAILWIND;
     public static final DeferredHolder<MobEffect, MobEffect> WIND_FLIGHT;
     public static final DeferredHolder<MobEffect, MobEffect> DARK_SHADOW_FLIGHT;
+    public static final DeferredHolder<MobEffect, MobEffect> IRON_LOCK;
 
 
     public MHAEffects() {
@@ -75,6 +76,7 @@ public class MHAEffects {
         TAILWIND = MOB_EFFECTS.register("tailwind", () -> new TailwindEffect(false));
         WIND_FLIGHT = MOB_EFFECTS.register("wind_flight", () -> new TailwindEffect(true));
         DARK_SHADOW_FLIGHT = MOB_EFFECTS.register("dark_shadow_flight", com.radient.tensuraacadamia.effects.DarkShadowFlightEffect::new);
+        IRON_LOCK = MOB_EFFECTS.register("iron_lock", com.radient.tensuraacadamia.effects.IronLockEffect::new);
     }
 
 }
