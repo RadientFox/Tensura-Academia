@@ -60,6 +60,8 @@ public class DupliArmsQuirk extends Skill {
     public static final int OCTOSPANSION_TICKS = 22;
     private static final int BLOCK_ARMS = 2;
     private static final int CARRY_ARMS = 2;
+    private static final double CARRY_BACK_HEIGHT = 0.5625D;
+    private static final double CARRY_BACK_DEPTH = 0.21D;
 
     private static final String ARMS_TAG = "arms";
     private static final String GUARD_TAG = "armGuard";
@@ -470,6 +472,18 @@ public class DupliArmsQuirk extends Skill {
         });
     }
 
+    @SubscribeEvent(priority = EventPriority.HIGH)
+    public static void onCarrierAttack(LivingIncomingDamageEvent event) {
+        LivingEntity target = event.getEntity();
+        if (target.level().isClientSide || !(event.getSource().getEntity() instanceof LivingEntity carrier)) {
+            return;
+        }
+
+        if (getDupliArms(carrier).filter(DupliArmsQuirk::isCarrying).filter(instance -> MultiArms.getHeldTarget(instance, carrier, CARRY_TAG) == target).isPresent()) {
+            event.setCanceled(true);
+        }
+    }
+
     private static boolean absorb(ManasSkillInstance instance, LivingEntity entity, LivingIncomingDamageEvent event, String healthTag, String timeTag, double health) {
         float amount = event.getAmount();
         if (amount < health) {
@@ -624,7 +638,7 @@ public class DupliArmsQuirk extends Skill {
             return;
         }
 
-        LivingEntity target = MultiArms.getTarget(entity, CONFIG.carryRange);
+        LivingEntity target = MultiArms.getNearbyTarget(entity, CONFIG.carryRange + entity.getBbWidth());
         if (target == null) {
             fail(entity, "tensura.targeting.not_targeted");
             return;
@@ -663,7 +677,8 @@ public class DupliArmsQuirk extends Skill {
     }
 
     private static Vec3 getCarryOffset(LivingEntity owner, LivingEntity target) {
-        return new Vec3(0.0D, owner.getBbHeight() * 0.3D, -(owner.getBbWidth() * 0.5D + target.getBbWidth() * 0.5D + 0.05D));
+        double height = Math.max(0.0D, owner.getBbHeight() * CARRY_BACK_HEIGHT - target.getBbHeight() * 0.5D);
+        return new Vec3(0.0D, height, -(owner.getBbWidth() * CARRY_BACK_DEPTH + target.getBbWidth() * 0.5D));
     }
 
     private static void stopCarry(ManasSkillInstance instance, LivingEntity entity) {

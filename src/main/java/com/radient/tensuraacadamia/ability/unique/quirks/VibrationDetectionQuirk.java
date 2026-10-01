@@ -10,9 +10,12 @@ import io.github.manasmods.manascore.skill.api.SkillAPI;
 import io.github.manasmods.tensura.ability.skill.Skill;
 import io.github.manasmods.tensura.data.TensuraEntityTags;
 import io.github.manasmods.tensura.registry.attribute.TensuraAttributes;
+import io.github.manasmods.tensura.registry.sound.TensuraSoundEvents;
 import io.github.manasmods.tensura.util.EnergyHelper;
+import io.github.manasmods.tensura.util.ObjectSelectionHelper;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.VibrationParticleOption;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
@@ -25,6 +28,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.GameEventTags;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
@@ -34,7 +38,9 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.gameevent.EntityPositionSource;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -44,6 +50,7 @@ import net.neoforged.neoforge.event.server.ServerStoppingEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -59,6 +66,10 @@ public class VibrationDetectionQuirk extends Skill {
     private static final QuirkSkillsConfig.VibrationDetection CONFIG = ConfigRegistry.getConfig(QuirkSkillsConfig.class).VibrationDetection;
 
     private static final int DETECT = 0;
+    private static final int VIBRATION_CHECK = 1;
+    private static final int MAX_MARKS = 256;
+    private static final int MARK_TRAILS = 32;
+    private static final double SENSED_AIM = 0.9D;
     private static final String ACTIVE_TAG = "detectActive";
     private static final String FILTER_TAG = "detectFilter";
     private static final int FILTER_ALL = 0;
@@ -79,6 +90,8 @@ public class VibrationDetectionQuirk extends Skill {
     private static final ResourceLocation EARTH_AFFINITY = ResourceLocation.fromNamespaceAndPath(TensuraAcadamia.MODID, "vibration_earth_affinity");
 
     private static final Map<UUID, Listener> LISTENERS = new HashMap<>();
+    private static final Map<UUID, Map<Integer, Long>> MARKS = new HashMap<>();
+    private static final Map<Integer, Long> CLIENT_MARKS = new HashMap<>();
 
     // Seen on the client, used by VibrationDetectionClient
     private static final Map<Integer, Long> CLIENT_MOVING = new HashMap<>();
@@ -115,18 +128,41 @@ public class VibrationDetectionQuirk extends Skill {
 
     @Override
     public double getAuraCost(LivingEntity entity, ManasSkillInstance instance, int mode) {
-        return CONFIG.auraCost;
+        return mode == VIBRATION_CHECK ? CONFIG.checkAuraCost : CONFIG.auraCost;
+    }
+
+    @Override
+    public int getModes(ManasSkillInstance instance) {
+        return 2;
+    }
+
+    @Override
+    public int nextMode(LivingEntity entity, ManasSkillInstance instance, int mode, boolean reverse) {
+        return mode == DETECT && hasVibrate(entity) ? VIBRATION_CHECK : DETECT;
+    }
+
+    private static boolean hasVibrate(LivingEntity entity) {
+        return SkillAPI.getSkillsFrom(entity).getSkill(QuirkSkills.VIBRATE.get()).filter(instance -> instance.getMastery() >= 0.0D).isPresent();
     }
 
     @Override
     public String getModeId(ManasSkillInstance instance, int mode) {
-        return mode == DETECT ? "vibration_detection.detect" : super.getModeId(instance, mode);
+        return switch (mode) {
+            case DETECT -> "vibration_detection.detect";
+            case VIBRATION_CHECK -> "vibration_detection.vibration_check";
+            default -> super.getModeId(instance, mode);
+        };
     }
 
     // Detect
     @Override
     public void onPressed(ManasSkillInstance instance, LivingEntity entity, int keyNumber, int mode) {
-        if (mode != DETECT || !(entity.level() instanceof ServerLevel)) {
+        if (!(entity.level() instanceof ServerLevel level)) {
+            return;
+        }
+
+        if (mode == VIBRATION_CHECK) {
+            vibrationCheck(level, instance, entity);
             return;
         }
 
@@ -163,6 +199,103 @@ public class VibrationDetectionQuirk extends Skill {
         instance.addMasteryPoint(entity);
     }
 
+    private static void vibrationCheck(ServerLevel level, ManasSkillInstance instance, LivingEntity entity) {
+        if (!hasVibrate(entity)) {
+            fail(entity, "tracadamia.skill.vibration_detection.needs_vibrate");
+            return;
+        }
+
+        if (EnergyHelper.isOutOfEnergy(entity, instance, VIBRATION_CHECK)) {
+            return;
+        }
+
+        double half = (instance.isMastered(entity) ? CONFIG.checkSizeMastered : CONFIG.checkSize) * 0.5D;
+        AABB area = new AABB(entity.getX() - half, entity.getY() - half, entity.getZ() - half, entity.getX() + half, entity.getY() + half, entity.getZ() + half);
+        List<LivingEntity> caught = level.getEntitiesOfClass(LivingEntity.class, area, target -> target != entity && target.isAlive() && !target.isSpectator());
+        int duration = CONFIG.markSeconds * 20;
+        long until = level.getGameTime() + duration;
+        Map<Integer, Long> marks = MARKS.computeIfAbsent(entity.getUUID(), uuid -> new HashMap<>());
+        List<Integer> ids = new ArrayList<>();
+        for (LivingEntity target : caught) {
+            marks.put(target.getId(), until);
+            if (ids.size() < MAX_MARKS) {
+                ids.add(target.getId());
+            }
+
+            if (ids.size() <= MARK_TRAILS) {
+                int travel = Math.max(4, (int) (target.distanceTo(entity) * 0.6D));
+                level.sendParticles(new VibrationParticleOption(new EntityPositionSource(target, target.getBbHeight() * 0.5F), travel), entity.getX(), entity.getY() + 0.1D, entity.getZ(), 1, 0.0D, 0.0D, 0.0D, 0.0D);
+            }
+        }
+
+        if (entity instanceof ServerPlayer player) {
+            PacketDistributor.sendToPlayer(player, new MarkPayload(ids, duration));
+        }
+
+        VibrateQuirk.shakeGround(level, entity.position(), Math.min(half, 6.0D), 8);
+        level.sendParticles(ImpactRecoilQuirk.IMPACT_SHOCKWAVE, entity.getX(), entity.getY() + 0.1D, entity.getZ(), 0, 0.0D, 1.0D, 0.0D, half / 1.5D);
+        level.playSound(null, entity.getX(), entity.getY(), entity.getZ(), SoundEvents.WARDEN_HEARTBEAT, SoundSource.PLAYERS, 2.0F, 0.8F);
+        level.playSound(null, entity.getX(), entity.getY(), entity.getZ(), SoundEvents.SCULK_SHRIEKER_SHRIEK, SoundSource.PLAYERS, 1.0F, 1.4F);
+        entity.swing(InteractionHand.MAIN_HAND, true);
+        instance.setCoolDown(CONFIG.checkCooldown, VIBRATION_CHECK);
+        instance.addMasteryPoint(entity);
+    }
+
+    public static boolean isMarked(LivingEntity user, Entity target) {
+        Map<Integer, Long> marks = MARKS.get(user.getUUID());
+        Long until = marks == null ? null : marks.get(target.getId());
+        return until != null && user.level().getGameTime() <= until;
+    }
+
+    public static boolean isSensed(LivingEntity user, Entity target) {
+        return isFelt(user, target) || isMarked(user, target);
+    }
+
+    public static @Nullable LivingEntity getSensedTarget(LivingEntity user) {
+        ManasSkillInstance detection = SkillAPI.getSkillsFrom(user).getSkill(QuirkSkills.VIBRATION_DETECTION.get()).orElse(null);
+        double range = detection != null && detection.isMastered(user) ? CONFIG.rangeMastered : CONFIG.range;
+        LivingEntity aimed = ObjectSelectionHelper.getTargetingEntity(LivingEntity.class, user, range, 0.5D, false, false, false);
+        if (aimed != null && aimed.isAlive() && isSensed(user, aimed)) {
+            return aimed;
+        }
+
+        Set<Integer> sensed = new HashSet<>();
+        Listener listener = LISTENERS.get(user.getUUID());
+        if (listener != null) {
+            sensed.addAll(listener.felt.keySet());
+        }
+
+        Map<Integer, Long> marks = MARKS.get(user.getUUID());
+        if (marks != null) {
+            sensed.addAll(marks.keySet());
+        }
+
+        Vec3 eye = user.getEyePosition();
+        Vec3 look = user.getLookAngle();
+        LivingEntity best = null;
+        double bestAim = SENSED_AIM;
+        for (int id : sensed) {
+            if (!(user.level().getEntity(id) instanceof LivingEntity target) || target == user || !target.isAlive() || target.distanceTo(user) > range || !isSensed(user, target)) {
+                continue;
+            }
+
+            double aim = target.getBoundingBox().getCenter().subtract(eye).normalize().dot(look);
+            if (aim > bestAim) {
+                bestAim = aim;
+                best = target;
+            }
+        }
+
+        return best;
+    }
+
+    private static void fail(LivingEntity entity, String key) {
+        entity.level().playSound(null, entity.getX(), entity.getY(), entity.getZ(), TensuraSoundEvents.GENERIC_CAST_FAIL.get(), SoundSource.PLAYERS, 1.0F, 1.0F);
+        if (entity instanceof Player player) {
+            player.displayClientMessage(Component.translatable(key).withStyle(ChatFormatting.RED), true);
+        }
+    }
+
     private static boolean isActive(ManasSkillInstance instance) {
         CompoundTag tag = instance.getTag();
         return tag != null && tag.getBoolean(ACTIVE_TAG);
@@ -189,7 +322,6 @@ public class VibrationDetectionQuirk extends Skill {
         updateEarthBoost(entity);
     }
 
-    // Added after every multiplier so it stacks with Earth Manipulation and Domination
     public static void updateEarthBoost(LivingEntity entity) {
         AdditiveBoost.apply(entity, TensuraAttributes.EARTH_BOOST, EARTH_AFFINITY, getAddedEarthBoost(entity));
     }
@@ -281,6 +413,15 @@ public class VibrationDetectionQuirk extends Skill {
         }
 
         updateEarthBoost(player);
+        Map<Integer, Long> marks = MARKS.get(player.getUUID());
+        if (marks != null && player.tickCount % 20 == 0) {
+            long time = player.level().getGameTime();
+            marks.values().removeIf(until -> until < time);
+            if (marks.isEmpty()) {
+                MARKS.remove(player.getUUID());
+            }
+        }
+
         Listener listener = LISTENERS.get(player.getUUID());
         if (!player.isAlive() || !isActive(player)) {
             if (listener != null) {
@@ -379,11 +520,13 @@ public class VibrationDetectionQuirk extends Skill {
     @SubscribeEvent
     public static void onLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {
         LISTENERS.remove(event.getEntity().getUUID());
+        MARKS.remove(event.getEntity().getUUID());
     }
 
     @SubscribeEvent
     public static void onServerStopping(ServerStoppingEvent event) {
         LISTENERS.clear();
+        MARKS.clear();
     }
 
     public static Map<Integer, Long> getClientMoving() {
@@ -398,9 +541,37 @@ public class VibrationDetectionQuirk extends Skill {
         return clientRange;
     }
 
+    public static Map<Integer, Long> getClientMarks() {
+        return CLIENT_MARKS;
+    }
+
+    public static boolean isMarkedOnClient(Entity entity) {
+        if (CLIENT_MARKS.isEmpty()) {
+            return false;
+        }
+
+        Long until = CLIENT_MARKS.get(entity.getId());
+        return until != null && entity.level().getGameTime() <= until;
+    }
+
     public static void clearClient() {
         CLIENT_MOVING.clear();
         CLIENT_RIPPLES.clear();
+        CLIENT_MARKS.clear();
+    }
+
+    public record MarkPayload(List<Integer> ids, int duration) implements CustomPacketPayload {
+        public static final Type<MarkPayload> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(TensuraAcadamia.MODID, "vibration_mark"));
+        public static final StreamCodec<RegistryFriendlyByteBuf, MarkPayload> STREAM_CODEC = StreamCodec.composite(
+                ByteBufCodecs.VAR_INT.apply(ByteBufCodecs.list(MAX_MARKS)), MarkPayload::ids,
+                ByteBufCodecs.VAR_INT, MarkPayload::duration,
+                MarkPayload::new
+        );
+
+        @Override
+        public Type<? extends CustomPacketPayload> type() {
+            return TYPE;
+        }
     }
 
     public record VibrationPayload(List<Integer> moving, List<Ripple> ripples, float range) implements CustomPacketPayload {
@@ -441,6 +612,12 @@ public class VibrationDetectionQuirk extends Skill {
 
             while (CLIENT_RIPPLES.size() > CLIENT_MAX_RIPPLES) {
                 CLIENT_RIPPLES.remove(0);
+            }
+        }));
+        event.registrar("1").playToClient(MarkPayload.TYPE, MarkPayload.STREAM_CODEC, (payload, context) -> context.enqueueWork(() -> {
+            long until = context.player().level().getGameTime() + payload.duration();
+            for (int id : payload.ids()) {
+                CLIENT_MARKS.put(id, until);
             }
         }));
     }

@@ -71,6 +71,7 @@ public class TelekinesisBlockEntity extends Entity {
     private static final double HOLD_DELAY = 0.4D;
     private static final int MAX_IDLE_TICKS = 100;
     private static final double RENDER_DISTANCE = 256.0D;
+    private static final double STILL_SPEED = 1.0E-7D;
 
     public static final List<Vec3> BOULDER_SHAPE = buildBoulderShape();
 
@@ -277,7 +278,6 @@ public class TelekinesisBlockEntity extends Entity {
 
     @Override
     public void tick() {
-        super.tick();
         if (level().isClientSide) {
             LivingEntity owner = getHoldOwner();
             if (owner != null) {
@@ -312,13 +312,21 @@ public class TelekinesisBlockEntity extends Entity {
             return;
         }
 
+        if (getY() < level().getMinBuildHeight() - 64) {
+            discard();
+            return;
+        }
+
         if (++this.idleTicks > MAX_IDLE_TICKS) {
             level().levelEvent(2001, blockPosition(), Block.getId(getBlockState()));
             discard();
             return;
         }
 
-        move(MoverType.SELF, getDeltaMovement());
+        Vec3 motion = getDeltaMovement();
+        if (motion.lengthSqr() > STILL_SPEED) {
+            move(MoverType.SELF, motion);
+        }
     }
 
     @Override

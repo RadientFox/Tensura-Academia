@@ -5,6 +5,7 @@ import com.radient.tensuraacadamia.config.skills.QuirkSkillsConfig;
 import com.radient.tensuraacadamia.entity.TelekinesisBlockEntity;
 import com.radient.tensuraacadamia.regestry.skills.QuirkSkills;
 import com.radient.tensuraacadamia.util.GroundBlocks;
+import com.radient.tensuraacadamia.util.SizeReach;
 import dev.architectury.event.EventResult;
 import io.github.manasmods.manascore.config.ConfigRegistry;
 import io.github.manasmods.manascore.skill.api.ManasSkillInstance;
@@ -183,6 +184,8 @@ public class BodyMorphQuirk extends Skill {
         applyBody(entity, false);
         release(instance, entity);
         TelekinesisQuirk.dropRock(entity);
+        SizeReach.update(entity, this);
+
     }
 
     // Increased stats
@@ -190,8 +193,10 @@ public class BodyMorphQuirk extends Skill {
         setModifier(entity, Attributes.SCALE, on ? CONFIG.sizeBonus : 0.0D);
         setModifier(entity, Attributes.ARMOR, on ? CONFIG.armorBonus : 0.0D);
         setModifier(entity, Attributes.ATTACK_DAMAGE, on ? CONFIG.meleeBonus : 0.0D);
-        setModifier(entity, Attributes.BLOCK_INTERACTION_RANGE, on ? CONFIG.sizeBonus * 2.0D : 0.0D);
-        setModifier(entity, Attributes.ENTITY_INTERACTION_RANGE, on ? CONFIG.sizeBonus * 2.0D : 0.0D);
+//        setModifier(entity, Attributes.BLOCK_INTERACTION_RANGE, on ? CONFIG.sizeBonus * 2.0D : 0.0D);
+//        setModifier(entity, Attributes.ENTITY_INTERACTION_RANGE, on ? CONFIG.sizeBonus * 2.0D : 0.0D);
+        SizeReach.update(entity);
+
     }
 
     private static void setModifier(LivingEntity entity, Holder<Attribute> attribute, double amount) {
@@ -245,7 +250,7 @@ public class BodyMorphQuirk extends Skill {
         float damage = (float) (mastered ? CONFIG.smashDamageMastered : CONFIG.smashDamage);
         AABB area = new AABB(owner.getX() - half, owner.getY() - 1.0D, owner.getZ() - half, owner.getX() + half, owner.getY() + 2.0D, owner.getZ() + half);
         for (LivingEntity target : level.getEntitiesOfClass(LivingEntity.class, area, target -> target != owner && target.isAlive())) {
-            hit(smash.instance(), owner, target, damage, SMASH);
+            hit(smash.instance(), owner, target, damage + getBonusDamage(owner, CONFIG.smashDamagePercent), SMASH); // add physical damage % here
             target.push(0.0D, 0.4D, 0.0D);
             target.hurtMarked = true;
         }
@@ -441,7 +446,7 @@ public class BodyMorphQuirk extends Skill {
         target.getPersistentData().putLong(SQUEEZED_UNTIL_TAG, level.getGameTime() + 2L);
 
         if (heldTicks > 0 && heldTicks % 20 == 0) {
-            hit(instance, entity, target, (float) (instance.isMastered(entity) ? CONFIG.squeezeDamageMastered : CONFIG.squeezeDamage), SQUEEZE);
+            hit(instance, entity, target, (float) (instance.isMastered(entity) ? CONFIG.squeezeDamageMastered : CONFIG.squeezeDamage) + getBonusDamage(entity, CONFIG.squeezeDamagePercent), SQUEEZE);
             playSound(level, target, SoundEvents.PLAYER_ATTACK_CRIT, 1.0F, 0.5F);
             level.sendParticles(ParticleTypes.CRIT, target.getX(), target.getY(0.5D), target.getZ(), 8, 0.3D, 0.3D, 0.3D, 0.2D);
             instance.addMasteryPoint(entity);
@@ -517,6 +522,12 @@ public class BodyMorphQuirk extends Skill {
     private static void hit(ManasSkillInstance instance, LivingEntity owner, LivingEntity target, float damage, int mode) {
         target.invulnerableTime = 0;
         target.hurt(((Skill) instance.getSkill()).createSource(instance, owner, owner instanceof Player ? DamageTypes.PLAYER_ATTACK : DamageTypes.MOB_ATTACK, mode), damage);
+    }
+
+    private static float getBonusDamage(LivingEntity owner, double percent) //gets physical damage % increase from configs
+    {
+        AttributeInstance attack = owner.getAttribute(Attributes.ATTACK_DAMAGE);
+        return attack == null ? 0.0F : (float) (attack.getValue() * percent);
     }
 
     private static void playSound(ServerLevel level, LivingEntity entity, SoundEvent sound, float volume, float pitch) {

@@ -3,6 +3,7 @@ package com.radient.tensuraacadamia.ability.unique.quirks;
 import com.radient.tensuraacadamia.TensuraAcadamia;
 import com.radient.tensuraacadamia.config.skills.QuirkSkillsConfig;
 import com.radient.tensuraacadamia.entity.StormBoltEntity;
+import com.radient.tensuraacadamia.entity.TornadoEntity;
 import com.radient.tensuraacadamia.util.DamageReduction;
 import io.github.manasmods.manascore.config.ConfigRegistry;
 import io.github.manasmods.manascore.network.api.util.Changeable;
@@ -66,6 +67,7 @@ public class WeatherManipulationQuirk extends Skill {
     private static final int LIGHTNING_STRIKE = 0;
     private static final int SUMMON_STORM = 1;
     private static final int BOLT_CHARGE = 2;
+    private static final int SUMMON_TORNADO = 3;
 
     private static final float BOLT_RADIUS = 1.5F;
     private static final SoundSource ABILITY_SOUND = Arrays.stream(SoundSource.values()).filter(source -> source.getName().equals("ability")).findFirst().orElse(SoundSource.PLAYERS);
@@ -105,16 +107,16 @@ public class WeatherManipulationQuirk extends Skill {
 
     @Override
     public int getModes(ManasSkillInstance instance) {
-        return 3;
+        return 4;
     }
 
     @Override
     public int nextMode(LivingEntity entity, ManasSkillInstance instance, int mode, boolean reverse) {
         if (reverse) {
-            return mode == LIGHTNING_STRIKE ? BOLT_CHARGE : mode - 1;
+            return mode == LIGHTNING_STRIKE ? SUMMON_TORNADO : mode - 1;
         }
 
-        return mode == BOLT_CHARGE ? LIGHTNING_STRIKE : mode + 1;
+        return mode == SUMMON_TORNADO ? LIGHTNING_STRIKE : mode + 1;
     }
 
     @Override
@@ -123,6 +125,7 @@ public class WeatherManipulationQuirk extends Skill {
             case LIGHTNING_STRIKE -> "weather_manipulation.lightning_strike";
             case SUMMON_STORM -> "weather_manipulation.summon_storm";
             case BOLT_CHARGE -> "weather_manipulation.bolt_charge";
+            case SUMMON_TORNADO -> "weather_manipulation.summon_tornado";
             default -> super.getModeId(instance, mode);
         };
     }
@@ -269,6 +272,7 @@ public class WeatherManipulationQuirk extends Skill {
         switch (mode) {
             case LIGHTNING_STRIKE -> lightningStrike(level, instance, entity);
             case SUMMON_STORM -> summonStorm(level, instance, entity);
+            case SUMMON_TORNADO -> summonTornado(level, instance, entity);
         }
     }
 
@@ -325,6 +329,31 @@ public class WeatherManipulationQuirk extends Skill {
         playSound(entity, TensuraSoundEvents.CAST_LIGHTNING.get(), 1.0F, 1.0F);
         instance.addMasteryPoint(entity);
         instance.setCoolDown(CONFIG.stormCooldown, SUMMON_STORM);
+    }
+
+    private void summonTornado(ServerLevel level, ManasSkillInstance instance, LivingEntity entity) {
+        if (EnergyHelper.isOutOfEnergy(entity, instance, SUMMON_TORNADO)) {
+            return;
+        }
+
+        Vec3 forward = Vec3.directionFromRotation(0.0F, entity.getYRot());
+        Vec3 side = new Vec3(-forward.z, 0.0D, forward.x);
+        Vec3 drift = forward.scale(CONFIG.tornadoSpeed);
+        boolean mastered = instance.isMastered(entity);
+        float damage = (float) (mastered ? CONFIG.tornadoDamageMastered : CONFIG.tornadoDamage);
+        int count = Math.max(1, mastered ? CONFIG.tornadoCountMastered : CONFIG.tornadoCount);
+        for (int i = 0; i < count; i++) {
+            Vec3 spot = entity.position().add(forward.scale(CONFIG.tornadoDistance)).add(side.scale((i - (count - 1) * 0.5D) * CONFIG.tornadoSpacing));
+            TornadoEntity tornado = TornadoEntity.create(level, entity, instance, SUMMON_TORNADO, spot, drift, CONFIG.tornadoSeconds * 20, (float) CONFIG.tornadoSize);
+            tornado.setHarm(damage, CONFIG.tornadoPullRadius, CONFIG.tornadoCoreRadius, CONFIG.tornadoPull);
+            level.addFreshEntity(tornado);
+        }
+
+        entity.swing(InteractionHand.MAIN_HAND, true);
+        playSound(entity, TensuraSoundEvents.CAST_WIND.get(), 1.0F, 0.8F);
+        playSound(entity, SoundEvents.ELYTRA_FLYING, 0.6F, 0.6F);
+        instance.addMasteryPoint(entity);
+        instance.setCoolDown(CONFIG.tornadoCooldown, SUMMON_TORNADO);
     }
 
     // Bolt Charge

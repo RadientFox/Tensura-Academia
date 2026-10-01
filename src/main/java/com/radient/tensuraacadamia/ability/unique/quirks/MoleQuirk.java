@@ -3,6 +3,7 @@ package com.radient.tensuraacadamia.ability.unique.quirks;
 import com.radient.tensuraacadamia.TensuraAcadamia;
 import com.radient.tensuraacadamia.config.skills.QuirkSkillsConfig;
 import com.radient.tensuraacadamia.regestry.skills.QuirkSkills;
+import com.radient.tensuraacadamia.util.GroundBlocks;
 import io.github.manasmods.manascore.config.ConfigRegistry;
 import io.github.manasmods.manascore.skill.api.ManasSkillInstance;
 import io.github.manasmods.manascore.skill.api.SkillAPI;
@@ -164,7 +165,7 @@ public class MoleQuirk extends Skill {
             return;
         }
 
-        // The tunnel digs with the hands, whatever is held
+        // The tunnel digs with the hand
         getMole(player).filter(instance -> tunneling || QuirkSkills.MOLE.get().hasStrongHands(instance, player)).ifPresent(instance -> {
             if (canHandsHarvest(event.getTargetBlock(), instance.isMastered(player))) {
                 event.setCanHarvest(true);
@@ -297,6 +298,10 @@ public class MoleQuirk extends Skill {
         boolean mastered = instance.isMastered(entity);
         boolean dug = false;
 
+        if (!GroundBlocks.canGrief(level, entity)) {
+            return false;
+        }
+
         tunneling = true;
         try {
             for (BlockPos pos : getDigArea(entity, mastered ? TUNNEL_SIZE_MASTERED : TUNNEL_SIZE)) {
@@ -310,6 +315,9 @@ public class MoleQuirk extends Skill {
                 }
 
                 boolean broken = entity instanceof ServerPlayer player ? player.gameMode.destroyBlock(pos) : level.destroyBlock(pos, true, entity);
+                if (broken) {
+                    GroundBlocks.griefed(level, instance, entity, pos);
+                }
                 dug |= broken;
             }
         } finally {

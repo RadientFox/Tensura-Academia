@@ -292,16 +292,31 @@ public final class MultiArms {
         }
 
         Vec3 eye = entity.getEyePosition();
-        Vec3 look = entity.getLookAngle();
+//        Vec3 look = entity.getLookAngle();
+        Vec3 look = Vec3.directionFromRotation(0.0F, entity.getYHeadRot()); // look
+
         double best = NEARBY_AIM;
-        for (LivingEntity candidate : entity.level().getEntitiesOfClass(LivingEntity.class, entity.getBoundingBox().inflate(range + 1.0D), candidate -> candidate != entity && candidate.isAlive() && !candidate.isSpectator())) {
-            Vec3 toward = candidate.getBoundingBox().getCenter().subtract(eye);
+
+        for (LivingEntity candidate : entity.level().getEntitiesOfClass
+                (LivingEntity.class, entity.getBoundingBox().inflate(range + 1.0D), candidate -> candidate != entity && candidate.isAlive() && !candidate.isSpectator()))
+
+        {
             if (candidate.distanceTo(entity) > range + candidate.getBbWidth() + entity.getBbWidth() * 0.5D) {
                 continue;
             }
 
-            double aim = toward.normalize().dot(look);
-            if (aim > best && entity.hasLineOfSight(candidate)) {
+//            double aim = toward.normalize().dot(look);
+//            if (aim > best && entity.hasLineOfSight(candidate)) {
+//                best = aim;
+//                target = candidate;
+//            }
+
+            Vec3 toward = candidate.position().subtract(entity.position()); // fixes large sizes breaking grabs
+            Vec3 flat = new Vec3(toward.x, 0.0D, toward.z);
+
+            double aim = flat.lengthSqr() < 1.0E-4D ? 1.0D : flat.normalize().dot(look); // test
+            if (aim > best && entity.hasLineOfSight(candidate))
+            {
                 best = aim;
                 target = candidate;
             }
@@ -309,6 +324,7 @@ public final class MultiArms {
 
         return target;
     }
+
 
     public static boolean canGrab(LivingEntity target) {
         return !target.getType().is(Tags.EntityTypes.BOSSES) && !target.getType().is(TensuraEntityTags.HERO_BOSS);
@@ -331,8 +347,12 @@ public final class MultiArms {
         return flung;
     }
 
+    private static boolean isWeightless(@Nullable Entity entity) {
+        return entity instanceof LivingEntity living && ZeroGravityQuirk.isFloating(living);
+    }
+
     private static void flyThrown(LivingEntity target, Vec3 velocity) {
-        target.setDeltaMovement(velocity.x, velocity.y - THROW_GRAVITY * 0.5D, velocity.z);
+        target.setDeltaMovement(velocity.x, isWeightless(target) ? velocity.y : velocity.y - THROW_GRAVITY * 0.5D, velocity.z);
         target.resetFallDistance();
         target.hurtMarked = true;
     }
@@ -347,7 +367,9 @@ public final class MultiArms {
         boolean ceiling = flung.velocity != null && target.verticalCollision && !target.onGround();
         if (!target.horizontalCollision && !landed && !ceiling) {
             if (flung.velocity != null) {
-                flung.velocity = flung.velocity.subtract(0.0D, THROW_GRAVITY, 0.0D);
+                if (!isWeightless(target)) {
+                    flung.velocity = flung.velocity.subtract(0.0D, THROW_GRAVITY, 0.0D);
+                }
                 flyThrown(target, flung.velocity);
             }
             return false;
@@ -394,6 +416,10 @@ public final class MultiArms {
         double distance = Math.sqrt(offset.x * offset.x + offset.z * offset.z);
         if (distance < 0.1D) {
             return thrower.getLookAngle().scale(speed);
+        }
+
+        if (isWeightless(thrown)) {
+            return offset.normalize().scale(speed);
         }
 
         double height = offset.y;
@@ -500,6 +526,20 @@ public final class MultiArms {
         });
     }
 
+    public static boolean isHoldPair(Entity first, Entity second) {
+        return isHolding(first, second) || isHolding(second, first);
+    }
+
+    private static boolean isHolding(Entity holder, Entity target) {
+        if (target.level().isClientSide) {
+            ClientHold hold = CLIENT_HOLDS.get(target.getId());
+            return hold != null && hold.holderId() == holder.getId();
+        }
+
+        Hold hold = HOLDS.get(target.getId());
+        return hold != null && hold.holder() == holder;
+    }
+
     // used by MultiArmsClient
     public static Map<Integer, ClientHold> getClientHolds() {
         return CLIENT_HOLDS;
@@ -527,13 +567,16 @@ public final class MultiArms {
         }
     }
 
+    //HELD TARGET MY BELOVED
     public static @Nullable LivingEntity getHeldTarget(ManasSkillInstance instance, LivingEntity entity, String key) {
         CompoundTag tag = instance.getTag();
         if (tag == null || !tag.hasUUID(key) || !(entity.level() instanceof ServerLevel level)) {
             return null;
         }
 
-        if (!(level.getEntity(tag.getUUID(key)) instanceof LivingEntity target) || !target.isAlive() || target.distanceToSqr(entity) > HOLD_BREAK_DISTANCE) {
+        double scale = Math.max(1.0D, entity.getScale());
+
+        if (!(level.getEntity(tag.getUUID(key)) instanceof LivingEntity target) || !target.isAlive() || target.distanceToSqr(entity) > HOLD_BREAK_DISTANCE * scale * scale) { // scale fixes distance check
             return null;
         }
 
@@ -598,7 +641,7 @@ public final class MultiArms {
         entity.getData(OFFHANDS).items.set(slot, stack);
     }
 
-    // Items in slots the arms can't hold anymore go back to the inventory
+    // Items in slots the arms can't hold go back to the inventory
     private static void returnInactiveOffhands(Player player) {
         for (int slot = getSlotCount(player); slot < SLOTS; slot++) {
             ItemStack stack = getExtraOffhand(player, slot);

@@ -208,6 +208,10 @@ public class TailQuirk extends Skill {
 
 
     private static void tailWhip(ServerLevel level, ManasSkillInstance instance, LivingEntity entity) {
+        if (!entity.onGround()) {
+            return;
+        }
+
         LivingEntity target = MultiArms.getTarget(entity, CONFIG.whipRange);
         if (target == null) {
             fail(entity, "tensura.targeting.not_targeted");

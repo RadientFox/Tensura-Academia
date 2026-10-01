@@ -58,6 +58,11 @@ public class QuirkSkills {
     public static final RegistrySupplier<BodyMorphQuirk> BODY_MORPH = register("body_morph", BodyMorphQuirk::new);
     public static final RegistrySupplier<ExtraArmsQuirk> EXTRA_ARMS = register("extra_arms", ExtraArmsQuirk::new);
     public static final RegistrySupplier<TailQuirk> TAIL = register("tail", TailQuirk::new);
+    public static final RegistrySupplier<ZeroGravityQuirk> ZERO_GRAVITY = register("zero_gravity", ZeroGravityQuirk::new);
+    public static final RegistrySupplier<BodyBulkQuirk> BODY_BULK = register("body_bulk", BodyBulkQuirk::new);
+    public static final RegistrySupplier<BruiserQuirk> BRUISER = register("bruiser", BruiserQuirk::new);
+    public static final RegistrySupplier<EnduranceQuirk> ENDURANCE = register("endurance", EnduranceQuirk::new);
+//    public static final RegistrySupplier<AcceleratorRingsQuirk> TAIL = register("tail", TailQuirk::new);
 
 
 

@@ -13,7 +13,8 @@
     "FallingBlockEntityInvoker",
     "LivingEntityClimbMixin",
     "LightningBoltAccessor",
-    "LivingEntityFloatMixin"
+    "LivingEntityFloatMixin",
+    "EntityPushMixin"
   ],
   "client": [
     "SkillCreationScreenMixin",
@@ -23,7 +24,8 @@
     "client.AcceleratorRingsFlightMixin",
     "client.PermeationPhaseMovementMixin",
     "client.LevelRendererAccessor",
-    "client.PlayerModelMixin"
+    "client.PlayerModelMixin",
+    "client.MinecraftMarkGlowMixin"
   ],
   "injectors": {
     "defaultRequire": 1

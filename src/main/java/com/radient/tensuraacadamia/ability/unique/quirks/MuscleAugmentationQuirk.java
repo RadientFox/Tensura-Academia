@@ -2,6 +2,8 @@ package com.radient.tensuraacadamia.ability.unique.quirks;
 
 import com.radient.tensuraacadamia.config.skills.QuirkSkillsConfig;
 import com.radient.tensuraacadamia.util.DamageReduction;
+import com.radient.tensuraacadamia.util.Modifiers;
+import com.radient.tensuraacadamia.util.SizeReach;
 import io.github.manasmods.manascore.config.ConfigRegistry;
 import io.github.manasmods.manascore.network.api.util.Changeable;
 import io.github.manasmods.manascore.skill.api.ManasSkillInstance;
@@ -47,6 +49,7 @@ public class MuscleAugmentationQuirk extends Skill {
     private static final String SIZE_TAG = "size";
     private static final String STRIKE_READY_TAG = "strikeReady";
     private static final String STRIKE_OUTPUT_TAG = "strikeOutput";
+
     private static final String GREW_TAG = "grew";
 
     private static final ResourceLocation MUSCLE = ResourceLocation.fromNamespaceAndPath("tracadamia", "muscle_augmentation");
@@ -113,6 +116,11 @@ public class MuscleAugmentationQuirk extends Skill {
     @Override
     public void onTick(ManasSkillInstance instance, LivingEntity entity) {
         updateMuscles(instance, entity);
+        //mastery test for size
+        if (getSize(instance) > 1.0D)
+        {
+            instance.addMasteryPoint(entity);
+        }
     }
 
     @Override
@@ -126,27 +134,34 @@ public class MuscleAugmentationQuirk extends Skill {
 
 
         setModifier(entity, Attributes.SCALE, MUSCLE, 0.0D, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
-        setModifier(entity, Attributes.ATTACK_DAMAGE, MUSCLE, 0.0D, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
+        setModifier(entity, Attributes.ATTACK_DAMAGE, MUSCLE, 0.0D, AttributeModifier.Operation.ADD_VALUE);
         setModifier(entity, Attributes.ARMOR, MUSCLE, 0.0D, AttributeModifier.Operation.ADD_VALUE);
         setModifier(entity, Attributes.KNOCKBACK_RESISTANCE, MUSCLE, 0.0D, AttributeModifier.Operation.ADD_VALUE);
-        setModifier(entity, Attributes.MAX_HEALTH, MUSCLE, 0.0D, AttributeModifier.Operation.ADD_MULTIPLIED_BASE);
+        Modifiers.set(entity, Attributes.MAX_HEALTH, MUSCLE, 0.0D, AttributeModifier.Operation.ADD_MULTIPLIED_BASE);
         setModifier(entity, Attributes.MOVEMENT_SPEED, STRIKE_SLOW, 0.0D, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
         setModifier(entity, Attributes.BLOCK_INTERACTION_RANGE, MUSCLE, 0.0D, AttributeModifier.Operation.ADD_VALUE);
         setModifier(entity, Attributes.ENTITY_INTERACTION_RANGE, MUSCLE, 0.0D, AttributeModifier.Operation.ADD_VALUE);
+        SizeReach.update(entity, this);
     }
 
     private static void updateMuscles(ManasSkillInstance instance, LivingEntity entity) {
         double sizeGained = getSize(instance) - 1.0D;
-        setModifier(entity, Attributes.SCALE, MUSCLE, sizeGained, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
-        setModifier(entity, Attributes.ATTACK_DAMAGE, MUSCLE, sizeGained * CONFIG.damagePerSize, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
-
-        setModifier(entity, Attributes.BLOCK_INTERACTION_RANGE, MUSCLE, sizeGained * 2.0, AttributeModifier.Operation.ADD_VALUE);
-        setModifier(entity, Attributes.ENTITY_INTERACTION_RANGE, MUSCLE, sizeGained * 2.0, AttributeModifier.Operation.ADD_VALUE);
-
         double mass = Math.max(0.0D, entity.getAttributeValue(Attributes.SCALE) - 1.0D);
-        setModifier(entity, Attributes.ARMOR, MUSCLE, mass * CONFIG.armorPerSize, AttributeModifier.Operation.ADD_VALUE);
+
+        // damage was multiplied not added
+        // stacking with any buff creates crazy combos
+        // EX: Strong arm and muscle aug = 15000 damage max
+        setModifier(entity, Attributes.SCALE, MUSCLE, sizeGained, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
+        setModifier(entity, Attributes.ATTACK_DAMAGE, MUSCLE, sizeGained * CONFIG.damagePerSize, AttributeModifier.Operation.ADD_VALUE);
+
+        // change to mass to account for player's entire size
+        // change to sizeGained to account for sizeGained from muscle aug
+        // mass is better because it accounts for races that are taller
+        SizeReach.update(entity);
+
+        setModifier(entity, Attributes.ARMOR, MUSCLE, sizeGained * CONFIG.armorPerSize, AttributeModifier.Operation.ADD_VALUE);
         setModifier(entity, Attributes.KNOCKBACK_RESISTANCE, MUSCLE, mass * CONFIG.knockbackResistancePerSize, AttributeModifier.Operation.ADD_VALUE);
-        setModifier(entity, Attributes.MAX_HEALTH, MUSCLE, mass * CONFIG.healthPerSize, AttributeModifier.Operation.ADD_MULTIPLIED_BASE);
+        Modifiers.set(entity, Attributes.MAX_HEALTH, MUSCLE, sizeGained * CONFIG.healthPerSize, AttributeModifier.Operation.ADD_MULTIPLIED_BASE);
 
         setModifier(entity, Attributes.MOVEMENT_SPEED, STRIKE_SLOW, isStrikeReady(instance) ? -CONFIG.strikeSpeedPenalty : 0.0D, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
     }

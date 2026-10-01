@@ -163,6 +163,7 @@ public class FatAbsorptionQuirk extends Skill {
         instance.addMasteryPoint(entity);
         SkillAPI.getSkillsFrom(entity).markDirty();
 
+
         sendMessage(entity, Component.translatable("tracadamia.skill.fat_absorption.fat_gained", FAT_FORMAT.format(getFat(instance)), FAT_FORMAT.format(gained)).withStyle(ChatFormatting.GOLD));
     }
 

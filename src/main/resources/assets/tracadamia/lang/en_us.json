@@ -120,6 +120,7 @@
   "tracadamia.skill.mode.weather_manipulation.bolt_charge": "Bolt Charge",
   "tracadamia.skill.weather_manipulation.needs_rain": "It must be raining",
   "tracadamia.skill.weather_manipulation.needs_thunder": "It must be storming",
+  "tracadamia.skill.mode.weather_manipulation.summon_tornado": "Summon Tornado",
 
   "tracadamia.skill.strongarm": "Strongarm",
   "tracadamia.skill.mode.strongarm.flurry": "Flurry",
@@ -196,6 +197,8 @@
 
   "tracadamia.skill.vibration_detection": "Vibration Detection",
   "tracadamia.skill.mode.vibration_detection.detect": "Detect",
+  "tracadamia.skill.mode.vibration_detection.vibration_check": "Vibration Check",
+  "tracadamia.skill.vibration_detection.needs_vibrate": "Needs the Vibrate quirk",
   "tracadamia.skill.vibration_detection.filter": "Detecting: %s",
   "tracadamia.skill.vibration_detection.filter.all": "All",
   "tracadamia.skill.vibration_detection.filter.hostile": "Hostile",
@@ -207,6 +210,7 @@
   "tracadamia.skill.mode.vibrate.earthquake": "Earthquake",
   "tracadamia.skill.mode.vibrate.tremoring_earth": "Tremoring Earth",
   "tracadamia.skill.mode.vibrate.vibrate": "Vibrate",
+  "tracadamia.skill.mode.vibrate.targeted_tremor": "Targeted Tremor",
 
   "tracadamia.skill.dupli_arms": "Dupli-Arms",
   "tracadamia.skill.mode.dupli_arms.arm_growth": "Arm Growth",
@@ -244,7 +248,40 @@
   "tracadamia.skill.tail.too_big": "Too big to wrap",
   "tracadamia.skill.tail.broken": "Your tail was broken, your tail has to rest for %s seconds",
 
- 
+  "tracadamia.skill.zero_gravity": "Zero Gravity",
+  "tracadamia.skill.mode.zero_gravity.zero_gravity": "Zero Gravity",
+  "tracadamia.skill.mode.zero_gravity.self_gravity": "Self Gravity",
+  "tracadamia.skill.mode.zero_gravity.meteor_shower": "Meteor Shower",
+  "tracadamia.skill.mode.zero_gravity.devastation": "Devastation",
+  "tracadamia.skill.zero_gravity.max_floats": "Only %s things can float at once",
+  "tracadamia.skill.zero_gravity.already_floating": "Already floating",
+  "tracadamia.skill.zero_gravity.sky_busy": "Nothing else can float while meteor shower is active",
+  "tracadamia.skill.zero_gravity.no_blocks": "No block to lift",
+  "tracadamia.skill.zero_gravity.shower_up": "Meteor Shower is active",
+  "tracadamia.skill.zero_gravity.meteor_up": "A meteor is already in the sky",
+  "tracadamia.skill.zero_gravity.nothing_up": "Nothing is in the sky",
+
+  "tracadamia.skill.body_bulk": "Body Bulk",
+  "tracadamia.skill.mode.body_bulk.body_bulk": "Body Bulk",
+  "tracadamia.skill.body_bulk.max_size": "Already at max size",
+  "tracadamia.skill.body_bulk.stress_overload": "Stress Overload",
+
+  "tracadamia.skill.bruiser": "Bruiser",
+  "tracadamia.skill.mode.bruiser.power_up": "Power Up",
+  "tracadamia.skill.mode.bruiser.power_move": "Power Move",
+  "tracadamia.skill.bruiser.part.right_arm": "Right Arm",
+  "tracadamia.skill.bruiser.part.left_arm": "Left Arm",
+  "tracadamia.skill.bruiser.part.right_leg": "Right Leg",
+  "tracadamia.skill.bruiser.part.left_leg": "Left Leg",
+  "tracadamia.skill.bruiser.powering": "Power Up: %s",
+  "tracadamia.skill.bruiser.not_powered": "Power up a body part first",
+  "tracadamia.skill.bruiser.not_on_ground": "Must be on the ground",
+  "tracadamia.skill.bruiser.arm_broken": "Your arm is damaged, it has to rest for %s seconds",
+
+  "tracadamia.skill.endurance": "Endurance",
+  "tracadamia.skill.mode.endurance.enhance": "Enhance",
+  "tracadamia.skill.endurance.speed_taken": "%s%% speed converted",
+  "tracadamia.skill.endurance.max": "Can't convert any more speed",
 
   "tracadamia.skill.copy": "Copy",
   "tracadamia.skill.mode.copy.copy": "§dCopy",

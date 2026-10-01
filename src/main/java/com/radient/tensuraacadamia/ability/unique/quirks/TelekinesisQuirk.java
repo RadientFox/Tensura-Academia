@@ -8,7 +8,6 @@ import io.github.manasmods.manascore.config.ConfigRegistry;
 import io.github.manasmods.manascore.skill.api.ManasSkillInstance;
 import io.github.manasmods.tensura.ability.skill.Skill;
 import io.github.manasmods.tensura.damage.TensuraDamageSource;
-import io.github.manasmods.tensura.event.TensuraSkillEvents;
 import io.github.manasmods.tensura.registry.sound.TensuraSoundEvents;
 import io.github.manasmods.tensura.util.EnergyHelper;
 import io.github.manasmods.tensura.util.ObjectSelectionHelper;
@@ -249,7 +248,7 @@ public class TelekinesisQuirk extends Skill {
 
         float scale = mode == BOULDER || mode == WALL ? 1.0F : SMALL_SCALE;
         List<Float> hardness = new ArrayList<>();
-        List<TelekinesisBlockEntity> lifted = liftBlocks(level, chosen, scale, mode == WALL, hardness);
+        List<TelekinesisBlockEntity> lifted = liftBlocks(level, instance, entity, chosen, scale, mode == WALL, hardness);
 
         List<Integer> order = new ArrayList<>();
         for (int i = 0; i < lifted.size(); i++) {
@@ -273,12 +272,13 @@ public class TelekinesisQuirk extends Skill {
         instance.addMasteryPoint(entity);
     }
 
-    private static List<TelekinesisBlockEntity> liftBlocks(ServerLevel level, List<BlockPos> chosen, float scale, boolean shield, List<Float> hardness) {
+    private static List<TelekinesisBlockEntity> liftBlocks(ServerLevel level, ManasSkillInstance instance, LivingEntity entity, List<BlockPos> chosen, float scale, boolean shield, List<Float> hardness) {
         List<TelekinesisBlockEntity> lifted = new ArrayList<>();
         for (BlockPos pos : chosen) {
             BlockState state = level.getBlockState(pos);
             hardness.add(state.getDestroySpeed(level, pos));
             level.removeBlock(pos, false);
+            GroundBlocks.griefed(level, instance, entity, pos);
             level.levelEvent(2001, pos, Block.getId(state));
 
             TelekinesisBlockEntity block = TelekinesisBlockEntity.create(level, state, scale, Vec3.atCenterOf(pos));
@@ -329,7 +329,7 @@ public class TelekinesisQuirk extends Skill {
         }
 
         List<Float> hardness = new ArrayList<>();
-        List<TelekinesisBlockEntity> lifted = liftBlocks(level, chosen, 1.0F, false, hardness);
+        List<TelekinesisBlockEntity> lifted = liftBlocks(level, instance, entity, chosen, 1.0F, false, hardness);
         List<Integer> used = new ArrayList<>();
         List<Lifted> blocks = new ArrayList<>();
         for (int i = 0; i < lifted.size(); i++) {
@@ -454,15 +454,7 @@ public class TelekinesisQuirk extends Skill {
     }
 
     private static boolean canLift(ServerLevel level, ManasSkillInstance instance, LivingEntity entity, BlockPos pos, BlockState state) {
-        if (state.hasBlockEntity() || !state.getFluidState().isEmpty() || state.getDestroySpeed(level, pos) < 0.0F || state.getCollisionShape(level, pos).isEmpty()) {
-            return false;
-        }
-
-        if (entity instanceof Player player && !level.mayInteract(player, pos)) {
-            return false;
-        }
-
-        return !TensuraSkillEvents.SKILL_GRIEF_PRE.invoker().grief(instance, level, entity, pos.getX(), pos.getY(), pos.getZ()).isFalse();
+        return state.getFluidState().isEmpty() && !state.getCollisionShape(level, pos).isEmpty() && GroundBlocks.canBreak(level, instance, entity, pos);
     }
 
 
