@@ -2,6 +2,7 @@ package com.radient.tensuraacadamia.ability.unique.quirks;
 
 import io.github.manasmods.manascore.skill.api.ManasSkillInstance;
 import io.github.manasmods.tensura.ability.skill.Skill;
+import io.github.manasmods.tensura.util.ObjectSelectionHelper;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
@@ -9,7 +10,6 @@ import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
-import io.github.manasmods.tensura.util.ObjectSelectionHelper;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import org.jetbrains.annotations.Nullable;
@@ -36,6 +36,80 @@ public final class DoubleQuirk extends Skill {
 
     public DoubleQuirk() {
         super(SkillType.UNIQUE);
+    }
+
+    private static void summonSelected(ManasSkillInstance instance, ServerPlayer creator) {
+        DoubleResearchData.ensurePlayerEntry(creator);
+        UUID selectedId = DoubleResearchData.selected(creator);
+        boolean self = creator.getUUID().equals(selectedId);
+        if (!DoubleResearchData.isUnlocked(creator, selectedId)) {
+            creator.displayClientMessage(Component.translatable("tracadamia.skill.double.no_selection"), true);
+            return;
+        }
+        var snapshot = DoubleResearchData.snapshot(creator, selectedId);
+        if (snapshot == null) {
+            creator.displayClientMessage(Component.translatable("tracadamia.skill.double.no_selection"), true);
+            return;
+        }
+        double cost = DoubleCloneManager.auraCost(creator, NORMAL_AURA_FRACTION);
+        if (DoubleCloneManager.summonOne(creator, snapshot, selectedId, self, cost)) {
+            instance.addMasteryPoint(creator);
+            instance.markDirty();
+        }
+    }
+
+    private static void openSelectionMenu(ServerPlayer player) {
+        DoubleResearchData.ensurePlayerEntry(player);
+        String researchName = DoubleResearchData.researchName(player);
+        int stacks = DoubleResearchData.researchStacks(player);
+        int percent = DoubleResearchData.progressPercent(player);
+        var entries = DoubleResearchData.entries(player);
+        UUID selected = DoubleResearchData.selected(player);
+        int living = DoubleCloneManager.countNonSelf(player);
+        player.openMenu(new SimpleMenuProvider((containerId, inventory, ignored) ->
+                        new DoubleMenu(containerId, inventory, player, entries, selected,
+                                researchName, stacks, percent, living),
+                        Component.translatable("tracadamia.skill.double.menu.title")),
+                buffer -> {
+                    DoubleMenu menu = new DoubleMenu(0, player.getInventory(), player, entries,
+                            selected, researchName, stacks, percent, living);
+                    menu.writeOpenData(buffer);
+                });
+    }
+
+    @Nullable
+    private static LivingEntity lookedAtLivingEntity(ServerPlayer player) {
+        double reach = player.getAttributeValue(Attributes.ENTITY_INTERACTION_RANGE);
+        if (!Double.isFinite(reach) || reach <= 0.0D) reach = INTERACTION_REACH_FALLBACK;
+        LivingEntity target = ObjectSelectionHelper.getTargetingEntity(player, reach, false);
+        return target != null && target != player && target.isAlive() && !target.isSpectator()
+                && player.hasLineOfSight(target) ? target : null;
+    }
+
+    public static boolean hasMastery(ServerPlayer player) {
+        ManasSkillInstance instance = io.github.manasmods.manascore.skill.api.SkillAPI.getSkillsFrom(player)
+                .getSkill(com.radient.tensuraacadamia.regestry.skills.QuirkSkills.DOUBLE.get().getRegistryName())
+                .orElse(null);
+        return instance != null && instance.isMastered(player);
+    }
+
+    public static int duplicateLimit(ServerPlayer player) {
+        return hasMastery(player) ? MASTERED_DUPLICATE_LIMIT : NORMAL_DUPLICATE_LIMIT;
+    }
+
+    @SubscribeEvent
+    public static void onRespawn(PlayerEvent.Clone event) {
+        DoubleResearchData.copyOnRespawn(event.getOriginal(), event.getEntity());
+    }
+
+    @SubscribeEvent
+    public static void onLogout(PlayerEvent.PlayerLoggedOutEvent event) {
+        if (event.getEntity() instanceof ServerPlayer player) DoubleResearchData.clearStudy(player);
+    }
+
+    @SubscribeEvent
+    public static void onLogin(PlayerEvent.PlayerLoggedInEvent event) {
+        if (event.getEntity() instanceof ServerPlayer player) DoubleResearchData.clearStudy(player);
     }
 
     @Override
@@ -156,79 +230,5 @@ public final class DoubleQuirk extends Skill {
     public void onForgetSkill(ManasSkillInstance instance, LivingEntity entity) {
         if (entity instanceof ServerPlayer player) DoubleResearchData.clearStudy(player);
         super.onForgetSkill(instance, entity);
-    }
-
-    private static void summonSelected(ManasSkillInstance instance, ServerPlayer creator) {
-        DoubleResearchData.ensurePlayerEntry(creator);
-        UUID selectedId = DoubleResearchData.selected(creator);
-        boolean self = creator.getUUID().equals(selectedId);
-        if (!DoubleResearchData.isUnlocked(creator, selectedId)) {
-            creator.displayClientMessage(Component.translatable("tracadamia.skill.double.no_selection"), true);
-            return;
-        }
-        var snapshot = DoubleResearchData.snapshot(creator, selectedId);
-        if (snapshot == null) {
-            creator.displayClientMessage(Component.translatable("tracadamia.skill.double.no_selection"), true);
-            return;
-        }
-        double cost = DoubleCloneManager.auraCost(creator, NORMAL_AURA_FRACTION);
-        if (DoubleCloneManager.summonOne(creator, snapshot, selectedId, self, cost)) {
-            instance.addMasteryPoint(creator);
-            instance.markDirty();
-        }
-    }
-
-    private static void openSelectionMenu(ServerPlayer player) {
-        DoubleResearchData.ensurePlayerEntry(player);
-        String researchName = DoubleResearchData.researchName(player);
-        int stacks = DoubleResearchData.researchStacks(player);
-        int percent = DoubleResearchData.progressPercent(player);
-        var entries = DoubleResearchData.entries(player);
-        UUID selected = DoubleResearchData.selected(player);
-        int living = DoubleCloneManager.countNonSelf(player);
-        player.openMenu(new SimpleMenuProvider((containerId, inventory, ignored) ->
-                        new DoubleMenu(containerId, inventory, player, entries, selected,
-                                researchName, stacks, percent, living),
-                        Component.translatable("tracadamia.skill.double.menu.title")),
-                buffer -> {
-                    DoubleMenu menu = new DoubleMenu(0, player.getInventory(), player, entries,
-                            selected, researchName, stacks, percent, living);
-                    menu.writeOpenData(buffer);
-                });
-    }
-
-    @Nullable
-    private static LivingEntity lookedAtLivingEntity(ServerPlayer player) {
-        double reach = player.getAttributeValue(Attributes.ENTITY_INTERACTION_RANGE);
-        if (!Double.isFinite(reach) || reach <= 0.0D) reach = INTERACTION_REACH_FALLBACK;
-        LivingEntity target = ObjectSelectionHelper.getTargetingEntity(player, reach, false);
-        return target != null && target != player && target.isAlive() && !target.isSpectator()
-                && player.hasLineOfSight(target) ? target : null;
-    }
-
-    public static boolean hasMastery(ServerPlayer player) {
-        ManasSkillInstance instance = io.github.manasmods.manascore.skill.api.SkillAPI.getSkillsFrom(player)
-                .getSkill(com.radient.tensuraacadamia.regestry.skills.QuirkSkills.DOUBLE.get().getRegistryName())
-                .orElse(null);
-        return instance != null && instance.isMastered(player);
-    }
-
-    public static int duplicateLimit(ServerPlayer player) {
-        return hasMastery(player) ? MASTERED_DUPLICATE_LIMIT : NORMAL_DUPLICATE_LIMIT;
-    }
-
-    @SubscribeEvent
-    public static void onRespawn(PlayerEvent.Clone event) {
-        DoubleResearchData.copyOnRespawn(event.getOriginal(), event.getEntity());
-    }
-
-    @SubscribeEvent
-    public static void onLogout(PlayerEvent.PlayerLoggedOutEvent event) {
-        if (event.getEntity() instanceof ServerPlayer player) DoubleResearchData.clearStudy(player);
-    }
-
-    @SubscribeEvent
-    public static void onLogin(PlayerEvent.PlayerLoggedInEvent event) {
-        if (event.getEntity() instanceof ServerPlayer player) DoubleResearchData.clearStudy(player);
     }
 }

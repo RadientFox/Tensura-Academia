@@ -25,12 +25,12 @@ public class DelaySpotQuirk extends Skill {
 
     private final Map<UUID, Set<UUID>> affectedEntities = new HashMap<>();
 
-    public @Nullable ResourceLocation getSkillIcon() {
-        return ResourceLocation.fromNamespaceAndPath("tracadamia", "textures/skill/unique/delayspot.png");
-    }
-
     public DelaySpotQuirk() {
         super(SkillType.UNIQUE);
+    }
+
+    public @Nullable ResourceLocation getSkillIcon() {
+        return ResourceLocation.fromNamespaceAndPath("tracadamia", "textures/skill/unique/delayspot.png");
     }
 
     @Override

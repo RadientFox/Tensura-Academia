@@ -27,7 +27,7 @@ import net.minecraft.world.phys.Vec3;
 import java.util.List;
 
 public class AllForOne extends Skill {
-    public static final double TARGET_RANGE = 2.0D;
+    public static final double TARGET_RANGE = 8.0D;
     private static final int MAX_MASTERY = 2_500;
     private static final String STOCKPILE_LEVEL = "StockpileOutputLevel";
 
@@ -118,7 +118,6 @@ public class AllForOne extends Skill {
     @Override
     public void onTick(ManasSkillInstance instance, LivingEntity entity) {
         if (instance.isToggled()) AllForOneTheme.tick(entity);
-        // The skill framework invokes onTick once every five seconds.
         if (!entity.level().isClientSide && entity.isAlive() && isInSlot(entity, instance)) instance.addMasteryPoint(entity, 1);
     }
 
