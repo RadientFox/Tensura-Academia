@@ -38,6 +38,11 @@ public class QuirkSkillsConfig extends ManasConfig {
     public BodyBulk BodyBulk = new BodyBulk();
     public Bruiser Bruiser = new Bruiser();
     public Endurance Endurance = new Endurance();
+    public Jet Jet = new Jet();
+    public Gigantification Gigantification = new Gigantification();
+    public TransformingArms TransformingArms = new TransformingArms();
+    public Landmine Landmine = new Landmine();
+    public Grabbing Grabbing = new Grabbing();
 
 
     public QuirkSkillsConfig() {
@@ -1319,6 +1324,10 @@ public class QuirkSkillsConfig extends ManasConfig {
         public double leapSpeedMastered = 8.0;
         @Comment("Left Leg: Up tilt added to leap")
         public double leapLift = 0.1;
+        @Comment("Left Leg: Radius of the shockwave, grows with the user's size")
+        public double leapShockwaveRadius = 4.0;
+        @Comment("Left Leg: Landing shockwave damage, dealt as this * size / 2")
+        public double leapShockwaveDamage = 100.0;
 
         public Bruiser() {
         }
@@ -1346,6 +1355,400 @@ public class QuirkSkillsConfig extends ManasConfig {
         public int cooldown = 0;
 
         public Endurance() {
+        }
+    }
+
+    public static class Jet extends ManasSubConfig {
+        @Comment("Skill Mastery Points")
+        public double masteryPoints = 2_500.0;
+
+        @Comment("Boost: Extra % damage for each block per second the user moves at while propelled by jet")
+        public double boostDamagePerSpeed = 0.01;
+        @Comment("Wind Boost: Wind boost added while toggled on")
+        public double windBoost = 1.0;
+
+        @Comment("Slow Fall: Seconds the user can slow activate slow fall")
+        public double slowFallSeconds = 3.0;
+        @Comment("Slow Fall: Falling speed while slowed")
+        public double slowFallSpeed = 2.0;
+
+        @Comment("Jet Boost: Aura cost")
+        public double boostAuraCost = 100.0;
+        @Comment("Jet Boost: Cooldown in seconds")
+        public int boostCooldown = 3;
+        @Comment("Jet Boost: Uses before it goes on cooldown")
+        public int boostCharges = 4;
+        @Comment("Jet Boost: Boost distance")
+        public double boostDistance = 15.0;
+        @Comment("Jet Boost: Boost distance with mastery")
+        public double boostDistanceMastered = 25.0;
+        @Comment("Jet Boost: Up tilt added to the boost")
+        public double boostLift = 0.2;
+        @Comment("Jet Boost: Damage to anything the caster crashes into")
+        public double boostDamage = 25.0;
+        @Comment("Jet Boost: Damage with mastery")
+        public double boostDamageMastered = 50.0;
+        @Comment("Jet Boost: % of physical damage added")
+        public double boostDamagePercent = 0.5;
+        @Comment("Jet Boost: Speed gained each time the user boosts off a wall or ceiling")
+        public double chainSpeed = 4.5;
+        @Comment("Jet Boost: Speed gained each time with mastery")
+        public double chainSpeedMastered = 5.0;
+        @Comment("Jet Boost: Seconds without boosting before the built up speed is lost")
+        public int chainSeconds = 10;
+        @Comment("Jet Boost: Fastest a boost can go")
+        public double maxBoostSpeed = 90.0;
+        @Comment("Jet Boost: Speed the user pushes off a wall or ceiling with")
+        public double pushOffSpeed = 12.0;
+
+        @Comment("Jet Kick: Aura cost")
+        public double kickAuraCost = 300.0;
+        @Comment("Jet Kick: Cooldown in seconds")
+        public int kickCooldown = 6;
+        @Comment("Jet Kick: Range the user can rush a target from")
+        public double kickRange = 24.0;
+        @Comment("Jet Kick: Speed the user rushes at")
+        public double rushSpeed = 35.0;
+        @Comment("Jet Kick: Damage")
+        public double kickDamage = 50.0;
+        @Comment("Jet Kick: Damage with mastery")
+        public double kickDamageMastered = 100.0;
+        @Comment("Jet Kick: % of physical damage added")
+        public double kickDamagePercent = 1.0;
+        @Comment("Jet Kick: % of physical damage added with mastery")
+        public double kickDamagePercentMastered = 1.5;
+        @Comment("Jet Kick: Blocks the target is knocked back")
+        public double kickKnockback = 15.0;
+        @Comment("Jet Kick: Radius of the shockwave")
+        public double kickShockwaveRadius = 4.0;
+
+        @Comment("Jet Push: Aura cost")
+        public double pushAuraCost = 500.0;
+        @Comment("Jet Push: Cooldown in seconds")
+        public int pushCooldown = 15;
+        @Comment("Jet Push: Seconds it lasts")
+        public int pushSeconds = 7;
+        @Comment("Jet Push: Range")
+        public double pushRange = 3.0;
+        @Comment("Jet Push: How much larger than the user a target can be")
+        public double pushMaxSize = 1.5;
+        @Comment("Jet Push: Speed")
+        public double pushSpeed = 25.0;
+        @Comment("Jet Push: Damage when the target is pushed through blocks")
+        public double pushDamage = 100.0;
+        @Comment("Jet Push: Damage with mastery")
+        public double pushDamageMastered = 200.0;
+        @Comment("Jet Push: Damage added per point of hardness of the blocks broken")
+        public double pushHardnessDamage = 2.0;
+        @Comment("Jet Push: Hardest block that can be broken through")
+        public double pushMaxHardness = 20.0;
+
+        @Comment("Jet Counter: Aura cost")
+        public double counterAuraCost = 300.0;
+        @Comment("Jet Counter: Cooldown in seconds")
+        public int counterCooldown = 10;
+        @Comment("Jet Counter: Seconds the counter window lasts")
+        public double counterSeconds = 1.5;
+        @Comment("Jet Counter: Seconds the counter window lasts with mastery")
+        public double counterSecondsMastered = 3.0;
+        @Comment("Jet Counter: Damage")
+        public double counterDamage = 100.0;
+        @Comment("Jet Counter: Damage with mastery")
+        public double counterDamageMastered = 200.0;
+        @Comment("Jet Counter: % of physical damage added")
+        public double counterDamagePercent = 1.0;
+        @Comment("Jet Counter: Seconds the target is stunned")
+        public int counterStunSeconds = 3;
+        @Comment("Jet Counter: Blocks the user rises before dropping")
+        public double counterHeight = 6.0;
+
+        @Comment("Jet Dodge: Aura cost")
+        public double dodgeAuraCost = 50.0;
+        @Comment("Jet Dodge: Cooldown in seconds")
+        public int dodgeCooldown = 1;
+        @Comment("Jet Dodge: Distance")
+        public double dodgeDistance = 5.0;
+        @Comment("Jet Dodge: Distance with mastery")
+        public double dodgeDistanceMastered = 10.0;
+        @Comment("Jet Dodge: Speed ")
+        public double dodgeSpeed = 35.0;
+        @Comment("Jet Dodge: Speed the user bounces off a wall they dodge into")
+        public double dodgeBounceSpeed = 12.0;
+        @Comment("Jet Dodge: Upward speed of that bounce")
+        public double dodgeBounceUp = 10.0;
+
+        public Jet() {
+        }
+    }
+
+    public static class Gigantification extends ManasSubConfig {
+        @Comment("Skill Mastery Points")
+        public double masteryPoints = 2_500.0;
+
+        @Comment("Grow: Aura cost per block of height grown")
+        public double growAuraCost = 60.0;
+        @Comment("Grow: Blocks of height gained each tick")
+        public double growthPerTick = 0.05;
+        @Comment("Grow: Blocks of height gained each tick with mastery")
+        public double growthPerTickMastered = 0.10;
+        @Comment("Grow: Biggest size the user can grow to")
+        public double maxSize = 4.5;
+        @Comment("Grow: Biggest size the user can grow to with mastery")
+        public double maxSizeMastered = 6.5;
+        @Comment("Grow: Armor gained per size gained")
+        public double armorPerSize = 7.0;
+        @Comment("Grow: Damage gained per size gained")
+        public double damagePerSize = 7.0;
+        @Comment("Grow: % of movement speed lost per size gained")
+        public double speedLostPerSize = 0.075;
+        @Comment("Grow: Reach per size of height")
+        public double reachPerSize = 1.0;
+        @Comment("Kick, Grab, Swat and Crush: Size the user has to gain before they can be used")
+        public double minSize = 1.0;
+
+        @Comment("Kick: Aura cost")
+        public double kickAuraCost = 2000.0;
+        @Comment("Kick: Cooldown in seconds")
+        public int kickCooldown = 10;
+        @Comment("Kick: Ticks the kick takes to land")
+        public int kickWindup = 8;
+        @Comment("Kick: Ticks added per size gained")
+        public int kickWindupPerSize = 6;
+        @Comment("Kick: Damage per size gained")
+        public double kickSizeDamage = 7.0;
+        @Comment("Kick: Damage per size gained with mastery")
+        public double kickSizeDamageMastered = 6.0;
+        @Comment("Kick: % of physical damage added")
+        public double kickDamagePercent = 1.0;
+        @Comment("Kick: % of physical damage added with mastery")
+        public double kickDamagePercentMastered = 1.1;
+        @Comment("Kick: Blocks a kicked target is knocked back")
+        public double kickKnockback = 6.0;
+        @Comment("Kick: Blocks of knockback added per size gained")
+        public double kickKnockbackPerSize = 3.0;
+        @Comment("Kick: Blocks kicked up at normal size")
+        public int kickBlocks = 8;
+        @Comment("Kick: Blocks kicked up per size gained")
+        public double kickBlocksPerSize = 12.0;
+        @Comment("Kick: Width of the wall the kick breaks through at normal size")
+        public double kickWallWidth = 3.0;
+        @Comment("Kick: Height of the wall the kick breaks through at normal size")
+        public double kickWallHeight = 2.0;
+        @Comment("Kick: Depth of the wall the kick breaks through at normal size")
+        public double kickWallDepth = 2.0;
+        @Comment("Kick: Blocks added to the wall's width and height per size gained")
+        public double kickWallPerSize = 2.0;
+        @Comment("Kick: Most blocks one kick can break out of a wall")
+        public int kickWallMaxBlocks = 128;
+        @Comment("Kick: Hardest block the kick can break or kick up")
+        public double kickMaxHardness = 20.0;
+        @Comment("Kick: Speed of kicked blocks")
+        public double kickBlockSpeed = 30.0;
+        @Comment("Kick: Damage per block a kicked block hits with")
+        public double kickSpeedDamage = 2.0;
+        @Comment("Kick: Damage per block with mastery")
+        public double kickSpeedDamageMastered = 3.0;
+        @Comment("Kick: Damage per point of hardness of a kicked block")
+        public double kickHardnessDamage = 2.0;
+
+        @Comment("Stomp: Aura cost")
+        public double stompAuraCost = 600.0;
+        @Comment("Stomp: Cooldown in seconds")
+        public int stompCooldown = 5;
+        @Comment("Stomp: Width at normal size")
+        public double stompSize = 5.0;
+        @Comment("Stomp: Width added per size gained")
+        public double stompSizePerSize = 2.0;
+        @Comment("Stomp: Damage per size gained")
+        public double stompDamage = 15.0;
+        @Comment("Stomp: Damage per size gained with mastery")
+        public double stompDamageMastered = 20.0;
+        @Comment("Stomp: % of physical damage added")
+        public double stompDamagePercent = 0.5;
+        @Comment("Stomp: Width of the shockwave multiplied by the stomp's")
+        public double stompShockwaveScale = 2.0;
+        @Comment("Stomp: % of the stomp's damage the shockwave deals")
+        public double stompShockwaveDamage = 0.5;
+        @Comment("Stomp: Blocks shot up at normal size")
+        public int stompBlocks = 6;
+        @Comment("Stomp: Blocks shot up per size gained")
+        public double stompBlocksPerSize = 3.0;
+        @Comment("Stomp: Damage per point of hardness of a block that hits something")
+        public double stompHardnessDamage = 2.0;
+
+        @Comment("Grab: Aura cost")
+        public double grabAuraCost = 500.0;
+        @Comment("Grab: Cooldown in seconds")
+        public int grabCooldown = 6;
+        @Comment("Grab: Blocks a thrown target flies at normal size")
+        public double throwDistance = 24.0;
+        @Comment("Grab: Blocks added to the throw per size gained")
+        public double throwDistancePerSize = 12.0;
+        @Comment("Grab: Blocks added to the throw per point of physical damage")
+        public double throwDistancePercent = 0.3;
+        @Comment("Grab: Farthest a target can be thrown")
+        public double throwMaxDistance = 1000.0;
+        @Comment("Grab: Damage when a target lands or hits a wall")
+        public double throwImpactDamage = 50.0;
+        @Comment("Grab: Blocks in the boulder at normal size")
+        public int rockBlocks = 4;
+        @Comment("Grab: Blocks added to the boulder per size gained")
+        public double rockBlocksPerSize = 6.0;
+        @Comment("Grab: Boulder damage")
+        public double rockDamage = 200.0;
+        @Comment("Grab: Boulder damage per point of hardness of its blocks")
+        public double rockHardnessDamage = 2.0;
+        @Comment("Grab: Range the boulder is thrown at")
+        public double rockThrowRange = 48.0;
+        @Comment("Grab: Boulder speed per tick")
+        public double rockThrowSpeed = 2.0;
+
+        @Comment("Swat: Aura cost")
+        public double swatAuraCost = 1000.0;
+        @Comment("Swat: Cooldown in seconds")
+        public int swatCooldown = 12;
+        @Comment("Swat: Blocks the target is knocked away")
+        public double swatKnockback = 50.0;
+        @Comment("Swat: Blocks the target is knocked away with mastery")
+        public double swatKnockbackMastered = 100.0;
+        @Comment("Swat: % of physical damage dealt, multiplied by size gained / swatSizeDivisor")
+        public double swatDamagePercent = 1.0;
+        @Comment("Swat: Size gained is divided by this for the damage")
+        public double swatSizeDivisor = 2.5;
+
+        @Comment("Crush: Aura cost")
+        public double crushAuraCost = 1000.0;
+        @Comment("Crush: Cooldown in seconds")
+        public int crushCooldown = 12;
+        @Comment("Crush: Seconds it can be held for")
+        public int crushSeconds = 3;
+        @Comment("Crush: Seconds it can be held for with mastery")
+        public int crushSecondsMastered = 5;
+        @Comment("Crush: % of physical damage dealt every second, multiplied by size gained / crushSizeDivisor")
+        public double crushDamagePercent = 1.0;
+        @Comment("Crush: Size gained is divided by this for the damage")
+        public double crushSizeDivisor = 2.5;
+
+        public Gigantification() {
+        }
+    }
+
+    public static class TransformingArms extends ManasSubConfig {
+        @Comment("Skill Mastery Points")
+        public double masteryPoints = 2_500.0;
+
+        @Comment("Transform: Aura cost")
+        public double transformAuraCost = 100.0;
+        @Comment("Transform: Cooldown in seconds")
+        public int transformCooldown = 0;
+
+        @Comment("Claws: Damage added")
+        public double clawDamage = 25.0;
+        @Comment("Claws: Damage added with mastery")
+        public double clawDamageMastered = 50.0;
+
+        @Comment("Axe: Damage added")
+        public double axeDamage = 50.0;
+        @Comment("Axe: Damage added with mastery")
+        public double axeDamageMastered = 100.0;
+        @Comment("Axe: Attacks per second")
+        public double axeAttackSpeed = 1.0;
+        @Comment("Axe: Axe breaking speed")
+        public double axeBreakSpeed = 8.0;
+
+        @Comment("Spear: Damage added")
+        public double spearDamage = 35.0;
+        @Comment("Spear: Damage added with mastery")
+        public double spearDamageMastered = 70.0;
+        @Comment("Spear: Attack range added")
+        public double spearReach = 5.0;
+
+        @Comment("Axe and Spear: % of a melee hit dealt to everything around the target")
+        public double sweepDamage = 0.5;
+
+        public TransformingArms() {
+        }
+    }
+
+    public static class Landmine extends ManasSubConfig {
+        @Comment("Skill Mastery Points")
+        public double masteryPoints = 2_500.0;
+        @Comment("Landmine, Detonation and Remote Detonation explosions break blocks")
+        public boolean explosionsBreakBlocks = true;
+
+        @Comment("Projectile Bombs: Width of the explosion a projectile makes")
+        public double projectileSize = 1.0;
+        @Comment("Projectile Bombs: Width of the explosion with mastery")
+        public double projectileSizeMastered = 2.0;
+        @Comment("Projectile Bombs: Explosion damage")
+        public double projectileDamage = 25.0;
+        @Comment("Projectile Bombs: Explosion damage with mastery")
+        public double projectileDamageMastered = 50.0;
+
+        @Comment("Landmine: Aura cost")
+        public double mineAuraCost = 100.0;
+        @Comment("Landmine: Cooldown in seconds")
+        public int mineCooldown = 2;
+        @Comment("Landmine: Range to place a landmine on the block being looked at")
+        public double mineRange = 5.0;
+        @Comment("Landmine: Most landmines a user can have placed")
+        public int maxMines = 10;
+        @Comment("Landmine: Width of the explosion")
+        public double mineSize = 3.0;
+        @Comment("Landmine: Width of the explosion with mastery")
+        public double mineSizeMastered = 6.0;
+        @Comment("Landmine: Explosion damage")
+        public double mineDamage = 150.0;
+        @Comment("Landmine: Explosion damage with mastery")
+        public double mineDamageMastered = 300.0;
+
+        @Comment("Detonation: Aura cost")
+        public double bombAuraCost = 200.0;
+        @Comment("Detonation: Cooldown in seconds")
+        public int bombCooldown = 2;
+        @Comment("Detonation and Remote Detonation: Range to place a bomb on a target")
+        public double bombRange = 5.0;
+        @Comment("Detonation: Most bombs one user can place")
+        public int maxBombs = 5;
+        @Comment("Detonation: Most bombs with mastery")
+        public int maxBombsMastered = 10;
+        @Comment("Detonation: Width of the explosion when the target dies")
+        public double bombSize = 10.0;
+        @Comment("Detonation: Width of the explosion with mastery")
+        public double bombSizeMastered = 15.0;
+        @Comment("Detonation: Explosion damage")
+        public double bombDamage = 200.0;
+        @Comment("Detonation: Explosion damage with mastery")
+        public double bombDamageMastered = 400.0;
+        @Comment("Detonation: % of the target's max health added to the damage")
+        public double bombHealthPercent = 0.15;
+        @Comment("Detonation: % of the target's max health added with mastery")
+        public double bombHealthPercentMastered = 0.3;
+
+        @Comment("Remote Detonation: Aura cost")
+        public double remoteAuraCost = 200.0;
+        @Comment("Remote Detonation: Cooldown in seconds")
+        public int remoteCooldown = 2;
+        @Comment("Remote Detonation: Most remote bombs a user can have placed")
+        public int maxRemoteBombs = 5;
+        @Comment("Remote Detonation: Width of the explosion")
+        public double remoteSize = 4.0;
+        @Comment("Remote Detonation: Width of the explosion with mastery")
+        public double remoteSizeMastered = 8.0;
+        @Comment("Remote Detonation: Explosion damage")
+        public double remoteDamage = 250.0;
+        @Comment("Remote Detonation: Explosion damage with mastery")
+        public double remoteDamageMastered = 500.0;
+
+        public Landmine() {
+        }
+    }
+
+    public static class Grabbing extends ManasSubConfig {
+        @Comment("Seconds a grab can hold a mob that's hostile")
+        public int hostileHoldSeconds = 7;
+
+        public Grabbing() {
         }
     }
 }

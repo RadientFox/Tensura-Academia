@@ -2,6 +2,8 @@ package com.radient.tensuraacadamia.ability.unique.quirks;
 
 import com.mojang.datafixers.util.Pair;
 import com.radient.tensuraacadamia.TensuraAcadamia;
+import com.radient.tensuraacadamia.config.skills.QuirkSkillsConfig;
+import io.github.manasmods.manascore.config.ConfigRegistry;
 import io.github.manasmods.manascore.skill.api.ManasSkillInstance;
 import io.github.manasmods.manascore.skill.api.SkillAPI;
 import io.github.manasmods.tensura.ability.skill.Skill;
@@ -32,10 +34,13 @@ import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.NeutralMob;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.inventory.InventoryMenu;
@@ -89,7 +94,9 @@ public final class MultiArms {
     public static final int HOLD_BODY = 0;
     public static final int HOLD_LOOK = 1;
 
-    private record Hold(LivingEntity holder, Vec3 offset, int frame, long time) {}
+    private record Hold(LivingEntity holder, Vec3 offset, int frame, long time, long start, boolean ownRules) {}
+
+    private static final QuirkSkillsConfig.Grabbing GRAB_CONFIG = ConfigRegistry.getConfig(QuirkSkillsConfig.class).Grabbing;
 
     public record ClientHold(int holderId, Vec3 offset, int frame) {}
 
@@ -282,7 +289,7 @@ public final class MultiArms {
 
     public static @Nullable LivingEntity getTarget(LivingEntity entity, double range) {
         LivingEntity target = ObjectSelectionHelper.getTargetingEntity(entity, range + TARGET_RAY_OFFSET, false, true);
-        return target == null || target == entity || target.distanceTo(entity) > range + target.getBbWidth() ? null : target;
+        return target == null || target == entity || !target.isAlive() || target.distanceTo(entity) > range + target.getBbWidth() ? null : target;
     }
 
     public static @Nullable LivingEntity getNearbyTarget(LivingEntity entity, double range) {
@@ -489,6 +496,10 @@ public final class MultiArms {
     }
 
     public static void holdAt(LivingEntity holder, LivingEntity target, Vec3 offset, int frame) {
+        holdAt(holder, target, offset, frame, false);
+    }
+
+    public static void holdAt(LivingEntity holder, LivingEntity target, Vec3 offset, int frame, boolean ownRules) {
         Vec3 pos = getHoldPos(holder, offset, frame, 1.0F);
         if (target.position().distanceToSqr(pos) > 0.0025D) {
             target.teleportTo(pos.x, pos.y, pos.z);
@@ -504,7 +515,8 @@ public final class MultiArms {
             syncHold(holder, target, new HoldPayload(target.getId(), holder.getId(), offset, frame));
         }
 
-        HOLDS.put(target.getId(), new Hold(holder, offset, frame, target.level().getGameTime()));
+        long time = target.level().getGameTime();
+        HOLDS.put(target.getId(), new Hold(holder, offset, frame, time, last != null && last.holder() == holder ? last.start() : time, ownRules));
     }
 
     private static void syncHold(LivingEntity holder, LivingEntity target, HoldPayload payload) {
@@ -580,7 +592,17 @@ public final class MultiArms {
             return null;
         }
 
+        Hold hold = HOLDS.get(target.getId());
+        if (hold != null && hold.holder() == entity && !hold.ownRules() && (target instanceof Player && target.isShiftKeyDown()
+                || isHostile(target, entity) && level.getGameTime() - hold.start() > GRAB_CONFIG.hostileHoldSeconds * 20L)) {
+            return null;
+        }
+
         return target;
+    }
+
+    private static boolean isHostile(LivingEntity target, LivingEntity holder) {
+        return target instanceof Enemy || target instanceof NeutralMob neutral && neutral.isAngryAt(holder) || target instanceof Mob mob && mob.getTarget() == holder;
     }
 
     public static void clearHeld(ManasSkillInstance instance, LivingEntity entity, String key) {

@@ -90,13 +90,15 @@ public class BruiserQuirk extends Skill {
     private static final List<Leap> LEAPS = new ArrayList<>();
 
     private static final class Leap {
+        private final ManasSkillInstance instance;
         private final LivingEntity owner;
         private final long start;
         private boolean airborne;
         private Vec3 lastPos;
         private Vec3 motion;
 
-        private Leap(LivingEntity owner, long start, Vec3 motion) {
+        private Leap(ManasSkillInstance instance, LivingEntity owner, long start, Vec3 motion) {
+            this.instance = instance;
             this.owner = owner;
             this.start = start;
             this.lastPos = owner.position();
@@ -418,7 +420,7 @@ public class BruiserQuirk extends Skill {
 
         entity.resetFallDistance();
         LEAPS.removeIf(leap -> leap.owner == entity);
-        LEAPS.add(new Leap(entity, level.getGameTime(), velocity));
+        LEAPS.add(new Leap(instance, entity, level.getGameTime(), velocity));
 
         level.sendParticles(ImpactRecoilQuirk.IMPACT_SHOCKWAVE, entity.getX(), entity.getY() + 0.1D, entity.getZ(), 0, 0.0D, 1.0D, 0.0D, 2.0D);
         level.sendParticles(ParticleTypes.POOF, entity.getX(), entity.getY(), entity.getZ(), 16, 0.5D, 0.05D, 0.5D, 0.05D);
@@ -445,7 +447,7 @@ public class BruiserQuirk extends Skill {
         }
 
         if (owner.onGround() && leap.airborne) {
-            land(level, owner);
+            land(level, leap.instance, owner);
             return true;
         }
 
@@ -474,12 +476,24 @@ public class BruiserQuirk extends Skill {
         return false;
     }
 
-    private static void land(ServerLevel level, LivingEntity owner) {
+    // Landing shockwave grows with the user's size
+    private static void land(ServerLevel level, ManasSkillInstance instance, LivingEntity owner) {
         owner.resetFallDistance();
         Vec3 feet = owner.position();
         BlockHitResult floor = level.clip(new ClipContext(feet.add(0.0D, 0.5D, 0.0D), feet.subtract(0.0D, 2.0D, 0.0D), ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, owner));
         double ground = floor.getType() == HitResult.Type.BLOCK ? floor.getLocation().y : feet.y;
-        level.sendParticles(ImpactRecoilQuirk.IMPACT_SHOCKWAVE, feet.x, ground + 0.1D, feet.z, 0, 0.0D, 1.0D, 0.0D, 2.5D);
+        double size = owner.getScale();
+        double radius = CONFIG.leapShockwaveRadius * size;
+        float damage = (float) (CONFIG.leapShockwaveDamage * size / 2.0D);
+        for (LivingEntity other : level.getEntitiesOfClass(LivingEntity.class, owner.getBoundingBox().inflate(radius, 2.0D, radius),
+                other -> other != owner && other.isAlive() && !other.isSpectator() && !MultiArms.isHoldPair(owner, other) && other.position().subtract(feet).horizontalDistance() <= radius)) {
+            hit(instance, owner, other, damage);
+            Vec3 away = other.position().subtract(feet);
+            other.knockback(0.8D, -away.x, -away.z);
+            other.hurtMarked = true;
+        }
+
+        level.sendParticles(ImpactRecoilQuirk.IMPACT_SHOCKWAVE, feet.x, ground + 0.1D, feet.z, 0, 0.0D, 1.0D, 0.0D, radius / 1.5D);
         BlockPos below = BlockPos.containing(feet.x, ground - 0.5D, feet.z);
         GroundBlocks.dust(level, below, level.getBlockState(below), 12);
         playSound(level, owner, SoundEvents.MACE_SMASH_GROUND, 1.2F, 0.7F);

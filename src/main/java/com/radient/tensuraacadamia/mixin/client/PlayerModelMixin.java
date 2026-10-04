@@ -1,6 +1,8 @@
 package com.radient.tensuraacadamia.mixin.client;
 
 import com.radient.tensuraacadamia.client.BruiserClient;
+import com.radient.tensuraacadamia.client.GigantificationClient;
+import com.radient.tensuraacadamia.client.JetClient;
 import com.radient.tensuraacadamia.client.MultiArmsClient;
 import net.minecraft.client.model.PlayerModel;
 import net.minecraft.world.entity.LivingEntity;
@@ -17,6 +19,8 @@ public abstract class PlayerModelMixin {
     private void tracadamia$quirkPoses(LivingEntity entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch, CallbackInfo ci) {
         MultiArmsClient.poseModel((PlayerModel<?>) (Object) this, entity, ageInTicks, netHeadYaw, headPitch);
         BruiserClient.poseModel((PlayerModel<?>) (Object) this, entity);
+        GigantificationClient.poseModel((PlayerModel<?>) (Object) this, entity, ageInTicks);
+        JetClient.poseModel((PlayerModel<?>) (Object) this, entity, ageInTicks);
     }
 
 }

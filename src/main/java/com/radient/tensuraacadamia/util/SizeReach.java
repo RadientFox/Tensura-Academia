@@ -57,8 +57,10 @@ public final class SizeReach {
                 Math.max(getRate(entity, QuirkSkills.MUSCLE_AUGMENTATION.get(), leaving, CONFIG.MuscleAugmentation.reachPerSize),
                         Math.max(getRate(entity, QuirkSkills.BODY_MORPH.get(), leaving, CONFIG.BodyMorph.reachPerSize),
                         Math.max(getRate(entity, QuirkSkills.BODY_BULK.get(), leaving, CONFIG.BodyBulk.reachPerSize),
-                                (getRate(entity, QuirkSkills.ENDURANCE.get(), leaving, CONFIG.Endurance.reachPerSize)
+                        Math.max(getRate(entity, QuirkSkills.ENDURANCE.get(), leaving, CONFIG.Endurance.reachPerSize),
+                                (getRate(entity, QuirkSkills.GIGANTIFICATION.get(), leaving, CONFIG.Gigantification.reachPerSize)
                                         )
+                                )
                                 )
                         )
                 );

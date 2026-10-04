@@ -336,7 +336,7 @@ public class TailQuirk extends Skill {
         tag.putDouble(TAIL_HEALTH_TAG, entity.getMaxHealth() * CONFIG.tailHealth);
         instance.markDirty();
         WRAPS.add(new Wrap(instance, entity));
-        MultiArms.holdAt(entity, target, getWrapOffset(entity, target), MultiArms.HOLD_BODY);
+        MultiArms.holdAt(entity, target, getWrapOffset(entity, target), MultiArms.HOLD_BODY, true);
         playSound(level, entity, SoundEvents.ARMOR_EQUIP_LEATHER.value(), 1.0F, 0.6F);
         instance.addMasteryPoint(entity);
     }
@@ -364,7 +364,7 @@ public class TailQuirk extends Skill {
             return true;
         }
 
-        MultiArms.holdAt(owner, target, getWrapOffset(owner, target), MultiArms.HOLD_BODY);
+        MultiArms.holdAt(owner, target, getWrapOffset(owner, target), MultiArms.HOLD_BODY, true);
         if (owner.tickCount % BASE_CONFIG.Mastery.masteryHoldTick == 0) {
             instance.addMasteryPoint(owner);
         }

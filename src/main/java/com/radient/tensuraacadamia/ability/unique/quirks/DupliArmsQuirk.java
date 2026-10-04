@@ -309,7 +309,7 @@ public class DupliArmsQuirk extends Skill {
         });
     }
 
-    // Weapons in the extra arms follow up each hit
+    // Weapons in the extra arms follow up each hit, transformed arms count as weapons
     @Override
     public boolean onDamageEntity(ManasSkillInstance instance, LivingEntity owner, LivingEntity target, DamageSource source, Changeable<Float> amount) {
         if (!instance.isToggled() || skillHitting || MultiArms.isArmHitting() || owner.level().isClientSide) {
@@ -323,7 +323,7 @@ public class DupliArmsQuirk extends Skill {
         int queued = 0;
         for (int slot = 0; slot < getFreeArms(instance) && slot < MultiArms.SLOTS; slot++) {
             ItemStack weapon = MultiArms.getExtraOffhand(owner, slot);
-            if (MultiArms.isWeapon(weapon)) {
+            if (MultiArms.isWeapon(weapon) || TransformingArmsQuirk.getForm(owner) != TransformingArmsQuirk.NONE) {
                 queued++;
                 float damage = (float) (MultiArms.getArmDamage(owner, weapon) * CONFIG.armDamage);
                 MultiArms.queueImpact(instance, owner, target, damage, CONFIG.weaponAssistDelay * queued, SWING_TAG + slot);
@@ -671,7 +671,7 @@ public class DupliArmsQuirk extends Skill {
         if (target instanceof Mob mob && (mob instanceof Enemy || mob instanceof NeutralMob)) {
             mob.setTarget(entity);
         }
-        MultiArms.holdAt(entity, target, getCarryOffset(entity, target), MultiArms.HOLD_BODY);
+        MultiArms.holdAt(entity, target, getCarryOffset(entity, target), MultiArms.HOLD_BODY, true);
         playSound(level, entity, SoundEvents.ARMOR_EQUIP_LEATHER.value(), 1.0F, 0.8F);
         instance.addMasteryPoint(entity);
     }
@@ -714,7 +714,7 @@ public class DupliArmsQuirk extends Skill {
             return true;
         }
 
-        MultiArms.holdAt(owner, target, getCarryOffset(owner, target), MultiArms.HOLD_BODY);
+        MultiArms.holdAt(owner, target, getCarryOffset(owner, target), MultiArms.HOLD_BODY, true);
         target.setYRot(owner.yBodyRot);
         target.setYBodyRot(owner.yBodyRot);
         target.setYHeadRot(owner.yBodyRot);

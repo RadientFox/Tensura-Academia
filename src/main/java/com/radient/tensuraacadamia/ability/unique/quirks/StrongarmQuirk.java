@@ -562,7 +562,7 @@ public class StrongarmQuirk extends Skill {
     }
 
     // Stun, no moving or using skills
-    private static void stun(LivingEntity target, int ticks) {
+    public static void stun(LivingEntity target, int ticks) {
         long until = target.level().getGameTime() + ticks;
         Stun current = STUNNED.get(target);
         STUNNED.put(target, current == null ? new Stun(target.position(), until) : new Stun(current.pos(), Math.max(current.until(), until)));
