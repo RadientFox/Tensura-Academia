@@ -60,6 +60,8 @@ public class DupliArmsQuirk extends Skill {
     public static final int OCTOSPANSION_TICKS = 22;
     private static final int BLOCK_ARMS = 2;
     private static final int CARRY_ARMS = 2;
+    private static final double CARRY_BACK_HEIGHT = 0.5625D;
+    private static final double CARRY_BACK_DEPTH = 0.21D;
 
     private static final String ARMS_TAG = "arms";
     private static final String GUARD_TAG = "armGuard";
@@ -307,7 +309,7 @@ public class DupliArmsQuirk extends Skill {
         });
     }
 
-    // Weapons in the extra arms follow up each hit
+    // Weapons in the extra arms follow up each hit, transformed arms count as weapons
     @Override
     public boolean onDamageEntity(ManasSkillInstance instance, LivingEntity owner, LivingEntity target, DamageSource source, Changeable<Float> amount) {
         if (!instance.isToggled() || skillHitting || MultiArms.isArmHitting() || owner.level().isClientSide) {
@@ -321,7 +323,7 @@ public class DupliArmsQuirk extends Skill {
         int queued = 0;
         for (int slot = 0; slot < getFreeArms(instance) && slot < MultiArms.SLOTS; slot++) {
             ItemStack weapon = MultiArms.getExtraOffhand(owner, slot);
-            if (MultiArms.isWeapon(weapon)) {
+            if (MultiArms.isWeapon(weapon) || TransformingArmsQuirk.getForm(owner) != TransformingArmsQuirk.NONE) {
                 queued++;
                 float damage = (float) (MultiArms.getArmDamage(owner, weapon) * CONFIG.armDamage);
                 MultiArms.queueImpact(instance, owner, target, damage, CONFIG.weaponAssistDelay * queued, SWING_TAG + slot);
@@ -468,6 +470,18 @@ public class DupliArmsQuirk extends Skill {
                 breakArms(instance, entity, CARRY_ARMS, BACKPACK_CARRY);
             }
         });
+    }
+
+    @SubscribeEvent(priority = EventPriority.HIGH)
+    public static void onCarrierAttack(LivingIncomingDamageEvent event) {
+        LivingEntity target = event.getEntity();
+        if (target.level().isClientSide || !(event.getSource().getEntity() instanceof LivingEntity carrier)) {
+            return;
+        }
+
+        if (getDupliArms(carrier).filter(DupliArmsQuirk::isCarrying).filter(instance -> MultiArms.getHeldTarget(instance, carrier, CARRY_TAG) == target).isPresent()) {
+            event.setCanceled(true);
+        }
     }
 
     private static boolean absorb(ManasSkillInstance instance, LivingEntity entity, LivingIncomingDamageEvent event, String healthTag, String timeTag, double health) {
@@ -624,7 +638,7 @@ public class DupliArmsQuirk extends Skill {
             return;
         }
 
-        LivingEntity target = MultiArms.getTarget(entity, CONFIG.carryRange);
+        LivingEntity target = MultiArms.getNearbyTarget(entity, CONFIG.carryRange + entity.getBbWidth());
         if (target == null) {
             fail(entity, "tensura.targeting.not_targeted");
             return;
@@ -657,13 +671,14 @@ public class DupliArmsQuirk extends Skill {
         if (target instanceof Mob mob && (mob instanceof Enemy || mob instanceof NeutralMob)) {
             mob.setTarget(entity);
         }
-        MultiArms.holdAt(entity, target, getCarryOffset(entity, target), MultiArms.HOLD_BODY);
+        MultiArms.holdAt(entity, target, getCarryOffset(entity, target), MultiArms.HOLD_BODY, true);
         playSound(level, entity, SoundEvents.ARMOR_EQUIP_LEATHER.value(), 1.0F, 0.8F);
         instance.addMasteryPoint(entity);
     }
 
     private static Vec3 getCarryOffset(LivingEntity owner, LivingEntity target) {
-        return new Vec3(0.0D, owner.getBbHeight() * 0.3D, -(owner.getBbWidth() * 0.5D + target.getBbWidth() * 0.5D + 0.05D));
+        double height = Math.max(0.0D, owner.getBbHeight() * CARRY_BACK_HEIGHT - target.getBbHeight() * 0.5D);
+        return new Vec3(0.0D, height, -(owner.getBbWidth() * CARRY_BACK_DEPTH + target.getBbWidth() * 0.5D));
     }
 
     private static void stopCarry(ManasSkillInstance instance, LivingEntity entity) {
@@ -699,7 +714,7 @@ public class DupliArmsQuirk extends Skill {
             return true;
         }
 
-        MultiArms.holdAt(owner, target, getCarryOffset(owner, target), MultiArms.HOLD_BODY);
+        MultiArms.holdAt(owner, target, getCarryOffset(owner, target), MultiArms.HOLD_BODY, true);
         target.setYRot(owner.yBodyRot);
         target.setYBodyRot(owner.yBodyRot);
         target.setYHeadRot(owner.yBodyRot);

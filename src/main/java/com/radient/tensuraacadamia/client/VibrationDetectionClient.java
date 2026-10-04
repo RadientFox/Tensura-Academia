@@ -120,6 +120,12 @@ public class VibrationDetectionClient {
         }
 
         long time = level.getGameTime();
+        Map<Integer, Long> marks = VibrationDetectionQuirk.getClientMarks();
+        if (!marks.isEmpty()) {
+            marks.values().removeIf(until -> until < time);
+            marks.keySet().forEach(id -> VibrationDetectionQuirk.getClientMoving().put(id, time));
+        }
+
         VibrationDetectionQuirk.getClientMoving().values().removeIf(seen -> time - seen > SILHOUETTE_TICKS || seen > time);
         VibrationDetectionQuirk.getClientRipples().removeIf(ripple -> time - ripple.time() > RIPPLE_TICKS || ripple.time() > time);
     }

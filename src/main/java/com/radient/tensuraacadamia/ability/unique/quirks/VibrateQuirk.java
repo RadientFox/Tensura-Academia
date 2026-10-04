@@ -72,6 +72,7 @@ public class VibrateQuirk extends Skill {
     private static final int EARTHQUAKE = 0;
     private static final int TREMORING_EARTH = 1;
     private static final int VIBRATE = 2;
+    private static final int TARGETED_TREMOR = 3;
 
     public static final int EFFECT_EARTHQUAKE = 0;
     public static final int EFFECT_TREMOR = 1;
@@ -90,6 +91,12 @@ public class VibrateQuirk extends Skill {
     private static final float LIFT_CHANCE = 0.3F;
     private static final int LIFTS_PER_TICK = 24;
     private static final int DEBRIS_PER_TICK = 32;
+
+    private static final int SEEK_TICKS = 200;
+    private static final float SEEK_BREAK_CHANCE = 0.25F;
+    private static final double SEEK_HIT_REACH = 1.5D;
+    private static final double SEEK_HIT_HEIGHT = 8.0D;
+    private static final double ERUPT_RADIUS = 3.0D;
 
     private static final Map<Block, Block> CRACKED = Map.ofEntries(
             Map.entry(Blocks.STONE, Blocks.COBBLESTONE),
@@ -114,6 +121,7 @@ public class VibrateQuirk extends Skill {
     private static final List<Shaking> SHAKING = new ArrayList<>();
     private static final List<Quake> QUAKES = new ArrayList<>();
     private static final List<Tremor> TREMORS = new ArrayList<>();
+    private static final List<Seeker> SEEKERS = new ArrayList<>();
 
     private static final class Quake {
         private final ServerLevel level;
@@ -133,7 +141,7 @@ public class VibrateQuirk extends Skill {
         }
     }
 
-    // Tremoring Earth tearing the ground up
+    // tear up the ground
     private static final class Tremor {
         private final ServerLevel level;
         private final ManasSkillInstance instance;
@@ -148,6 +156,23 @@ public class VibrateQuirk extends Skill {
             this.owner = owner;
             this.center = center;
             this.reach = reach;
+        }
+    }
+
+    private static final class Seeker {
+        private final ServerLevel level;
+        private final ManasSkillInstance instance;
+        private final LivingEntity owner;
+        private final LivingEntity target;
+        private Vec3 head;
+        private int age;
+
+        private Seeker(ServerLevel level, ManasSkillInstance instance, LivingEntity owner, LivingEntity target, Vec3 head) {
+            this.level = level;
+            this.instance = instance;
+            this.owner = owner;
+            this.target = target;
+            this.head = head;
         }
     }
 
@@ -185,22 +210,24 @@ public class VibrateQuirk extends Skill {
             case EARTHQUAKE -> CONFIG.earthquakeAuraCost;
             case TREMORING_EARTH -> CONFIG.tremorAuraCost;
             case VIBRATE -> CONFIG.vibrateAuraCost;
+            case TARGETED_TREMOR -> CONFIG.targetedTremorAuraCost;
             default -> 0.0D;
         };
     }
 
     @Override
     public int getModes(ManasSkillInstance instance) {
-        return 3;
+        return 4;
     }
 
     @Override
     public int nextMode(LivingEntity entity, ManasSkillInstance instance, int mode, boolean reverse) {
-        if (reverse) {
-            return mode == EARTHQUAKE ? VIBRATE : mode - 1;
-        }
+        int modes = hasDetection(entity) ? 4 : 3;
+        return Math.floorMod(Math.min(mode, modes - 1) + (reverse ? -1 : 1), modes);
+    }
 
-        return mode == VIBRATE ? EARTHQUAKE : mode + 1;
+    private static boolean hasDetection(LivingEntity entity) {
+        return SkillAPI.getSkillsFrom(entity).getSkill(QuirkSkills.VIBRATION_DETECTION.get()).filter(instance -> instance.getMastery() >= 0.0D).isPresent();
     }
 
     @Override
@@ -209,6 +236,7 @@ public class VibrateQuirk extends Skill {
             case EARTHQUAKE -> "vibrate.earthquake";
             case TREMORING_EARTH -> "vibrate.tremoring_earth";
             case VIBRATE -> "vibrate.vibrate";
+            case TARGETED_TREMOR -> "vibrate.targeted_tremor";
             default -> super.getModeId(instance, mode);
         };
     }
@@ -223,6 +251,7 @@ public class VibrateQuirk extends Skill {
             case EARTHQUAKE -> earthquake(level, instance, entity);
             case TREMORING_EARTH -> tremoringEarth(level, instance, entity);
             case VIBRATE -> vibrate(level, instance, entity);
+            case TARGETED_TREMOR -> targetedTremor(level, instance, entity);
         }
     }
 
@@ -316,7 +345,7 @@ public class VibrateQuirk extends Skill {
         }
     }
 
-    private static void shakeGround(ServerLevel level, Vec3 center, double radius, int points) {
+    static void shakeGround(ServerLevel level, Vec3 center, double radius, int points) {
         for (int i = 0; i < points; i++) {
             double angle = Math.PI * 2.0D * i / points;
             Vec3 pos = center.add(Math.cos(angle) * radius, 0.0D, Math.sin(angle) * radius);
@@ -459,6 +488,7 @@ public class VibrateQuirk extends Skill {
         BlockState state = level.getBlockState(surface);
         if (random.nextFloat() < TREMOR_BREAK_CHANCE) {
             level.removeBlock(surface, false);
+            GroundBlocks.griefed(level, tremor.instance, tremor.owner, surface);
             if (debris < DEBRIS_PER_TICK) {
                 Vec3 out = new Vec3(x, 0.0D, z).normalize().scale(0.1D + random.nextDouble() * 0.25D);
                 GroundBlocks.throwBlock(level, surface, state, out.add(0.0D, 0.45D + random.nextDouble() * 0.45D, 0.0D));
@@ -483,6 +513,124 @@ public class VibrateQuirk extends Skill {
         return debris;
     }
 
+
+    private static void targetedTremor(ServerLevel level, ManasSkillInstance instance, LivingEntity entity) {
+        if (!hasDetection(entity)) {
+            return;
+        }
+
+        LivingEntity target = VibrationDetectionQuirk.getSensedTarget(entity);
+        if (target == null) {
+            return;
+        }
+
+        if (EnergyHelper.isOutOfEnergy(entity, instance, TARGETED_TREMOR)) {
+            return;
+        }
+
+        SEEKERS.add(new Seeker(level, instance, entity, target, entity.position()));
+        shakeGround(level, entity.position(), 2.0D, 6);
+        level.sendParticles(ParticleTypes.EXPLOSION, entity.getX(), entity.getY(), entity.getZ(), 1, 0.0D, 0.0D, 0.0D, 0.0D);
+        level.playSound(null, entity.getX(), entity.getY(), entity.getZ(), SoundEvents.MACE_SMASH_GROUND_HEAVY, SoundSource.PLAYERS, 2.0F, 0.5F);
+        entity.swing(InteractionHand.MAIN_HAND, true);
+        instance.setCoolDown(CONFIG.targetedTremorCooldown, TARGETED_TREMOR);
+        instance.addMasteryPoint(entity);
+    }
+
+    private static boolean tickSeeker(Seeker seeker) {
+        LivingEntity target = seeker.target;
+        if (!seeker.owner.isAlive() || !target.isAlive() || target.isRemoved() || target.level() != seeker.level || ++seeker.age > SEEK_TICKS) {
+            return true;
+        }
+
+        Vec3 flat = new Vec3(target.getX() - seeker.head.x, 0.0D, target.getZ() - seeker.head.z);
+        double distance = flat.length();
+        if (distance <= SEEK_HIT_REACH + target.getBbWidth() * 0.5D && Math.abs(target.getY() - seeker.head.y) <= SEEK_HIT_HEIGHT) {
+            erupt(seeker);
+            return true;
+        }
+
+        Vec3 step = flat.scale(Math.min(CONFIG.targetedTremorSpeed, distance) / distance);
+        Vec3 next = seeker.head.add(step);
+        BlockPos surface = GroundBlocks.findSurface(seeker.level, BlockPos.containing(next.x, seeker.head.y, next.z));
+        seeker.head = surface == null ? next : new Vec3(next.x, surface.getY() + 1.0D, next.z);
+        if (surface != null) {
+            Vec3 side = new Vec3(-step.z, 0.0D, step.x).normalize();
+            crack(seeker, surface, side.scale(0.15D), SEEK_BREAK_CHANCE);
+            crack(seeker, BlockPos.containing(surface.getX() + side.x + 0.5D, surface.getY(), surface.getZ() + side.z + 0.5D), side.scale(0.25D), SEEK_BREAK_CHANCE * 0.5F);
+            crack(seeker, BlockPos.containing(surface.getX() - side.x + 0.5D, surface.getY(), surface.getZ() - side.z + 0.5D), side.scale(-0.25D), SEEK_BREAK_CHANCE * 0.5F);
+        }
+
+        if (seeker.age % 2 == 0) {
+            seeker.level.gameEvent(GameEvent.HIT_GROUND, seeker.head, GameEvent.Context.of(seeker.level.getBlockState(BlockPos.containing(seeker.head).below())));
+        }
+
+        if (seeker.age % 3 == 0) {
+            seeker.level.playSound(null, seeker.head.x, seeker.head.y, seeker.head.z, SoundEvents.ROOTED_DIRT_BREAK, SoundSource.BLOCKS, 1.5F, 0.5F);
+        }
+        return false;
+    }
+
+    private static void crack(Seeker seeker, BlockPos surface, Vec3 out, float breakChance) {
+        ServerLevel level = seeker.level;
+        BlockState state = level.getBlockState(surface);
+        if (state.isAir() || !GroundBlocks.canBreak(level, seeker.instance, seeker.owner, surface)) {
+            return;
+        }
+
+        RandomSource random = level.random;
+        if (CONFIG.tremorBreaksBlocks && random.nextFloat() < breakChance) {
+            level.removeBlock(surface, false);
+            GroundBlocks.griefed(level, seeker.instance, seeker.owner, surface);
+            GroundBlocks.throwBlock(level, surface, state, out.add(0.0D, 0.4D + random.nextDouble() * 0.4D, 0.0D));
+            return;
+        }
+
+        Block cracked = CRACKED.get(state.getBlock());
+        if (CONFIG.tremorBreaksBlocks && cracked != null) {
+            level.setBlock(surface, cracked.defaultBlockState(), Block.UPDATE_ALL);
+        }
+
+        GroundBlocks.dust(level, surface, state, 4);
+    }
+
+    private static void erupt(Seeker seeker) {
+        ServerLevel level = seeker.level;
+        LivingEntity target = seeker.target;
+        boolean mastered = seeker.instance.isMastered(seeker.owner);
+        earthHit(seeker.instance, seeker.owner, target, (float) (mastered ? CONFIG.targetedTremorDamageMastered : CONFIG.targetedTremorDamage), TARGETED_TREMOR);
+        target.push(0.0D, 0.9D, 0.0D);
+        target.hurtMarked = true;
+
+        Vec3 point = new Vec3(target.getX(), seeker.head.y, target.getZ());
+        BlockPos middle = BlockPos.containing(point).below();
+        RandomSource random = level.random;
+        int reach = Mth.ceil(ERUPT_RADIUS);
+        for (int x = -reach; x <= reach; x++) {
+            for (int z = -reach; z <= reach; z++) {
+                if (x * x + z * z > ERUPT_RADIUS * ERUPT_RADIUS) {
+                    continue;
+                }
+
+                BlockPos surface = GroundBlocks.findSurface(level, middle.offset(x, 1, z));
+                if (surface != null) {
+                    Vec3 out = x == 0 && z == 0 ? Vec3.ZERO : new Vec3(x, 0.0D, z).normalize().scale(0.15D + random.nextDouble() * 0.2D);
+                    crack(seeker, surface, out.add(0.0D, 0.2D, 0.0D), 0.5F);
+                }
+            }
+        }
+
+        showEffect(level, EFFECT_TREMOR, point, (float) ERUPT_RADIUS, target.getId(), 20);
+        level.sendParticles(ImpactRecoilQuirk.IMPACT_SHOCKWAVE, point.x, point.y + 0.1D, point.z, 0, 0.0D, 1.0D, 0.0D, ERUPT_RADIUS / 1.5D);
+        level.sendParticles(ParticleTypes.EXPLOSION, point.x, point.y + 0.5D, point.z, 2, 0.5D, 0.3D, 0.5D, 0.0D);
+        BlockState ground = level.getBlockState(middle);
+        if (!ground.isAir()) {
+            level.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, ground), point.x, point.y + 0.3D, point.z, 40, 1.0D, 0.6D, 1.0D, 0.25D);
+        }
+
+        level.playSound(null, point.x, point.y, point.z, SoundEvents.MACE_SMASH_GROUND_HEAVY, SoundSource.PLAYERS, 3.0F, 0.5F);
+        level.playSound(null, point.x, point.y, point.z, SoundEvents.GENERIC_EXPLODE.value(), SoundSource.PLAYERS, 2.0F, 0.6F);
+    }
 
     private static void vibrate(ServerLevel level, ManasSkillInstance instance, LivingEntity entity) {
         LivingEntity target = ObjectSelectionHelper.getTargetingEntity(entity, CONFIG.vibrateRange + TARGET_RAY_OFFSET, false, true);
@@ -568,12 +716,17 @@ public class VibrateQuirk extends Skill {
         if (!TREMORS.isEmpty()) {
             TREMORS.removeIf(VibrateQuirk::tickTremor);
         }
+
+        if (!SEEKERS.isEmpty()) {
+            SEEKERS.removeIf(VibrateQuirk::tickSeeker);
+        }
     }
 
     @SubscribeEvent
     public static void onServerStopping(ServerStoppingEvent event) {
         QUAKES.clear();
         TREMORS.clear();
+        SEEKERS.clear();
         SHAKING.clear();
         IMMUNE.clear();
     }

@@ -8,7 +8,6 @@ import io.github.manasmods.manascore.config.ConfigRegistry;
 import io.github.manasmods.manascore.skill.api.ManasSkillInstance;
 import io.github.manasmods.tensura.ability.skill.Skill;
 import io.github.manasmods.tensura.damage.TensuraDamageSource;
-import io.github.manasmods.tensura.event.TensuraSkillEvents;
 import io.github.manasmods.tensura.registry.sound.TensuraSoundEvents;
 import io.github.manasmods.tensura.util.EnergyHelper;
 import io.github.manasmods.tensura.util.ObjectSelectionHelper;
@@ -88,12 +87,14 @@ public class TelekinesisQuirk extends Skill {
         private final long until;
         private final double phase;
         private final double rockDamage;
+        private final double rockHardness;
+        private int rockHold = TelekinesisBlockEntity.HOLD_ARMS;
         private boolean firing;
         private @Nullable LivingEntity target;
         private Vec3 aim = Vec3.ZERO;
         private long nextLaunch;
 
-        private HeldBlocks(ManasSkillInstance instance, LivingEntity owner, int mode, List<Lifted> blocks, long until, double phase, double rockDamage) {
+        private HeldBlocks(ManasSkillInstance instance, LivingEntity owner, int mode, List<Lifted> blocks, long until, double phase, double rockDamage, double rockHardness) {
             this.instance = instance;
             this.owner = owner;
             this.mode = mode;
@@ -102,6 +103,7 @@ public class TelekinesisQuirk extends Skill {
             this.until = until;
             this.phase = phase;
             this.rockDamage = rockDamage;
+            this.rockHardness = rockHardness;
         }
 
         private boolean isRock() {
@@ -249,7 +251,7 @@ public class TelekinesisQuirk extends Skill {
 
         float scale = mode == BOULDER || mode == WALL ? 1.0F : SMALL_SCALE;
         List<Float> hardness = new ArrayList<>();
-        List<TelekinesisBlockEntity> lifted = liftBlocks(level, chosen, scale, mode == WALL, hardness);
+        List<TelekinesisBlockEntity> lifted = liftBlocks(level, instance, entity, chosen, scale, mode == WALL, hardness);
 
         List<Integer> order = new ArrayList<>();
         for (int i = 0; i < lifted.size(); i++) {
@@ -268,17 +270,18 @@ public class TelekinesisQuirk extends Skill {
 
         long time = level.getGameTime();
         double phase = blocks.isEmpty() ? 0.0D : getAngle(entity, blocks.get(0).block()) - time * TelekinesisBlockEntity.ORBIT_SPEED;
-        HELD.put(entity.getUUID(), new HeldBlocks(instance, entity, mode, blocks, time + CONFIG.heldSeconds * 20L, phase, Double.NaN));
+        HELD.put(entity.getUUID(), new HeldBlocks(instance, entity, mode, blocks, time + CONFIG.heldSeconds * 20L, phase, Double.NaN, 1.0D));
         entity.swing(InteractionHand.MAIN_HAND, true);
         instance.addMasteryPoint(entity);
     }
 
-    private static List<TelekinesisBlockEntity> liftBlocks(ServerLevel level, List<BlockPos> chosen, float scale, boolean shield, List<Float> hardness) {
+    private static List<TelekinesisBlockEntity> liftBlocks(ServerLevel level, ManasSkillInstance instance, LivingEntity entity, List<BlockPos> chosen, float scale, boolean shield, List<Float> hardness) {
         List<TelekinesisBlockEntity> lifted = new ArrayList<>();
         for (BlockPos pos : chosen) {
             BlockState state = level.getBlockState(pos);
             hardness.add(state.getDestroySpeed(level, pos));
             level.removeBlock(pos, false);
+            GroundBlocks.griefed(level, instance, entity, pos);
             level.levelEvent(2001, pos, Block.getId(state));
 
             TelekinesisBlockEntity block = TelekinesisBlockEntity.create(level, state, scale, Vec3.atCenterOf(pos));
@@ -291,6 +294,14 @@ public class TelekinesisQuirk extends Skill {
     }
 
     public static boolean liftRock(ServerLevel level, ManasSkillInstance instance, LivingEntity entity, int count, double damage) {
+        return liftRock(level, instance, entity, count, damage, 1.0D);
+    }
+
+    public static boolean liftRock(ServerLevel level, ManasSkillInstance instance, LivingEntity entity, int count, double damage, double hardnessDamage) {
+        return liftRock(level, instance, entity, count, damage, hardnessDamage, TelekinesisBlockEntity.HOLD_ARMS);
+    }
+
+    public static boolean liftRock(ServerLevel level, ManasSkillInstance instance, LivingEntity entity, int count, double damage, double hardnessDamage, int hold) {
         int width = count > 8 ? 3 : 2;
         int layers = Math.max(1, Mth.ceil(count / (double) (width * width)));
         Vec3 forward = Vec3.directionFromRotation(0.0F, entity.getYRot());
@@ -329,7 +340,7 @@ public class TelekinesisQuirk extends Skill {
         }
 
         List<Float> hardness = new ArrayList<>();
-        List<TelekinesisBlockEntity> lifted = liftBlocks(level, chosen, 1.0F, false, hardness);
+        List<TelekinesisBlockEntity> lifted = liftBlocks(level, instance, entity, chosen, 1.0F, false, hardness);
         List<Integer> used = new ArrayList<>();
         List<Lifted> blocks = new ArrayList<>();
         for (int i = 0; i < lifted.size(); i++) {
@@ -342,7 +353,9 @@ public class TelekinesisQuirk extends Skill {
             blocks.add(new Lifted(lifted.get(i), chosen.get(i), hardness.get(i), slot));
         }
 
-        HELD.put(entity.getUUID(), new HeldBlocks(instance, entity, BOULDER, blocks, Long.MAX_VALUE, 0.0D, damage));
+        HeldBlocks held = new HeldBlocks(instance, entity, BOULDER, blocks, Long.MAX_VALUE, 0.0D, damage, hardnessDamage);
+        held.rockHold = hold;
+        HELD.put(entity.getUUID(), held);
         return true;
     }
 
@@ -370,7 +383,8 @@ public class TelekinesisQuirk extends Skill {
 
         Vec3 center = blocks.stream().map(lifted -> getBlockCenter(lifted.block())).reduce(Vec3.ZERO, Vec3::add).scale(1.0D / blocks.size());
         List<Vec3> offsets = blocks.stream().map(lifted -> getBlockCenter(lifted.block()).subtract(center)).toList();
-        ThrownBlocks thrown = new ThrownBlocks(held.instance, entity, blocks, offsets, null, center, center, BOULDER, 0.0D, held.rockDamage);
+        double extraHardness = (held.rockHardness - 1.0D) * blocks.stream().mapToDouble(lifted -> Math.max(0.0F, lifted.hardness())).sum();
+        ThrownBlocks thrown = new ThrownBlocks(held.instance, entity, blocks, offsets, null, center, center, BOULDER, 0.0D, held.rockDamage + extraHardness);
         thrown.velocity = MultiArms.getThrowVelocity(entity, null, center, range, speed);
         THROWN.add(thrown);
 
@@ -454,15 +468,7 @@ public class TelekinesisQuirk extends Skill {
     }
 
     private static boolean canLift(ServerLevel level, ManasSkillInstance instance, LivingEntity entity, BlockPos pos, BlockState state) {
-        if (state.hasBlockEntity() || !state.getFluidState().isEmpty() || state.getDestroySpeed(level, pos) < 0.0F || state.getCollisionShape(level, pos).isEmpty()) {
-            return false;
-        }
-
-        if (entity instanceof Player player && !level.mayInteract(player, pos)) {
-            return false;
-        }
-
-        return !TensuraSkillEvents.SKILL_GRIEF_PRE.invoker().grief(instance, level, entity, pos.getX(), pos.getY(), pos.getZ()).isFalse();
+        return state.getFluidState().isEmpty() && !state.getCollisionShape(level, pos).isEmpty() && GroundBlocks.canBreak(level, instance, entity, pos);
     }
 
 
@@ -631,7 +637,7 @@ public class TelekinesisQuirk extends Skill {
         };
     }
 
-    // Base damage plus the block's hardness
+    // Base damage + the block's hardness
     private static double getDamage(Lifted lifted, boolean mastered) {
         return (mastered ? CONFIG.baseDamageMastered : CONFIG.baseDamage) + Math.max(0.0F, lifted.hardness());
     }
@@ -725,7 +731,7 @@ public class TelekinesisQuirk extends Skill {
             }
         }
 
-        int hold = held.isRock() ? TelekinesisBlockEntity.HOLD_ARMS : getHoldType(held.mode);
+        int hold = held.isRock() ? held.rockHold : getHoldType(held.mode);
         for (Lifted lifted : held.blocks) {
             TelekinesisBlockEntity block = lifted.block();
             block.keepAlive();
@@ -763,7 +769,8 @@ public class TelekinesisQuirk extends Skill {
             }
         }
 
-        boolean collided = thrown.blocks.stream().map(Lifted::block).anyMatch(block -> !block.isRemoved() && (block.horizontalCollision || block.verticalCollision));
+        boolean collided = thrown.blocks.stream().map(Lifted::block).anyMatch(block -> !block.isRemoved() && (block.horizontalCollision || block.verticalCollision
+                || !level.isPositionEntityTicking(block.blockPosition()) && !level.noCollision(block, block.getBoundingBox())));
         if (thrown.age++ > (thrown.velocity != null ? ROCK_LIFETIME : THROW_LIFETIME) || collided) {
             shatter(level, thrown);
             return true;
@@ -808,8 +815,14 @@ public class TelekinesisQuirk extends Skill {
 
             block.keepAlive();
 
+            // Blocks outside the area the server ticks don't move themselves, so they'd freeze and then jump ahead
             Vec3 spot = thrown.center.add(thrown.offsets.get(i)).subtract(0.0D, block.getBbHeight() * 0.5D, 0.0D);
-            block.setDeltaMovement(spot.subtract(block.position()));
+            if (block.level() instanceof ServerLevel level && !level.isPositionEntityTicking(block.blockPosition())) {
+                block.setPos(spot);
+                block.setDeltaMovement(Vec3.ZERO);
+            } else {
+                block.setDeltaMovement(spot.subtract(block.position()));
+            }
         }
     }
 

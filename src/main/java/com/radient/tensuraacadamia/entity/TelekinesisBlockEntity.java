@@ -53,9 +53,15 @@ public class TelekinesisBlockEntity extends Entity {
     public static final int HOLD_BOULDER = 3;
     public static final int HOLD_WALL = 4;
     public static final int HOLD_ARMS = 5;
+    public static final int HOLD_HAND = 6;
 
     public static final double ARMS_HEIGHT = 1.12D;
     public static final double ARMS_BACK = 0.065D;
+
+    // Right hand held out
+    public static final double HAND_HEIGHT = 0.76D;
+    public static final double HAND_FORWARD = 0.33D;
+    public static final double HAND_SIDE = 0.52D;
 
     public static final double ORBIT_SPEED = 0.1D;
     private static final double ORBIT_HEIGHT = 0.55D;
@@ -71,6 +77,7 @@ public class TelekinesisBlockEntity extends Entity {
     private static final double HOLD_DELAY = 0.4D;
     private static final int MAX_IDLE_TICKS = 100;
     private static final double RENDER_DISTANCE = 256.0D;
+    private static final double STILL_SPEED = 1.0E-7D;
 
     public static final List<Vec3> BOULDER_SHAPE = buildBoulderShape();
 
@@ -162,6 +169,11 @@ public class TelekinesisBlockEntity extends Entity {
                     .add(forward.scale(-ownerHeight * ARMS_BACK))
                     .add(0.0D, ownerHeight * ARMS_HEIGHT + 1.0D - blockHeight * 0.5D, 0.0D)
                     .add(BOULDER_SHAPE.get(Mth.clamp(slot, 0, BOULDER_SHAPE.size() - 1)));
+            case HOLD_HAND -> ownerPos
+                    .add(forward.scale(ownerHeight * HAND_FORWARD + 1.0D))
+                    .add(right.scale(ownerWidth * HAND_SIDE))
+                    .add(0.0D, ownerHeight * HAND_HEIGHT + 1.0D - blockHeight * 0.5D, 0.0D)
+                    .add(BOULDER_SHAPE.get(Mth.clamp(slot, 0, BOULDER_SHAPE.size() - 1)));
             default -> {
                 double angle = phase + time * ORBIT_SPEED + slot * (Math.PI * 2.0D / Math.max(1, slots));
                 double radius = Math.max(ORBIT_RADIUS, slots * (blockWidth + ORBIT_GAP) / (Math.PI * 2.0D));
@@ -172,7 +184,7 @@ public class TelekinesisBlockEntity extends Entity {
     }
 
     public Vec3 getHoldSpot(LivingEntity owner, double time) {
-        float yaw = getHold() == HOLD_ARMS ? owner.yBodyRot : owner.getYRot();
+        float yaw = isHeldByBody() ? owner.yBodyRot : owner.getYRot();
         return getHoldSpot(owner.position(), yaw, owner.getBbWidth(), owner.getBbHeight(), getHold(), this.entityData.get(DATA_SLOT), this.entityData.get(DATA_SLOTS), this.entityData.get(DATA_PHASE), time, getBbWidth(), getBbHeight());
     }
 
@@ -200,6 +212,11 @@ public class TelekinesisBlockEntity extends Entity {
         this.idleTicks = 0;
     }
 
+    // Turns with the body instead of the head
+    private boolean isHeldByBody() {
+        return getHold() == HOLD_ARMS || getHold() == HOLD_HAND;
+    }
+
     private boolean isDelayed() {
         int hold = getHold();
         return hold == HOLD_SHOULDER || hold == HOLD_BOULDER;
@@ -215,7 +232,7 @@ public class TelekinesisBlockEntity extends Entity {
             return Vec3.ZERO;
         }
 
-        float yaw = getHold() == HOLD_ARMS ? Mth.rotLerp(partialTick, owner.yBodyRotO, owner.yBodyRot) : Mth.rotLerp(partialTick, owner.yRotO, owner.getYRot());
+        float yaw = isHeldByBody() ? Mth.rotLerp(partialTick, owner.yBodyRotO, owner.yBodyRot) : Mth.rotLerp(partialTick, owner.yRotO, owner.getYRot());
         double time = level().getGameTime() - 1.0D + partialTick;
         Vec3 spot = getHoldSpot(owner.getPosition(partialTick), yaw, owner.getBbWidth(), owner.getBbHeight(), getHold(), this.entityData.get(DATA_SLOT), this.entityData.get(DATA_SLOTS), this.entityData.get(DATA_PHASE), time, getBbWidth(), getBbHeight());
         return spot.subtract(getPosition(partialTick));
@@ -277,7 +294,6 @@ public class TelekinesisBlockEntity extends Entity {
 
     @Override
     public void tick() {
-        super.tick();
         if (level().isClientSide) {
             LivingEntity owner = getHoldOwner();
             if (owner != null) {
@@ -312,13 +328,21 @@ public class TelekinesisBlockEntity extends Entity {
             return;
         }
 
+        if (getY() < level().getMinBuildHeight() - 64) {
+            discard();
+            return;
+        }
+
         if (++this.idleTicks > MAX_IDLE_TICKS) {
             level().levelEvent(2001, blockPosition(), Block.getId(getBlockState()));
             discard();
             return;
         }
 
-        move(MoverType.SELF, getDeltaMovement());
+        Vec3 motion = getDeltaMovement();
+        if (motion.lengthSqr() > STILL_SPEED) {
+            move(MoverType.SELF, motion);
+        }
     }
 
     @Override

@@ -27,7 +27,9 @@
     "TapeBlockDisplayAccessor",
     "VinesMovementMixin",
     "VinesSkillGateMixin",
-    "DarkShadowMovementMixin"
+    "DarkShadowMovementMixin",
+    "LivingEntityFloatMixin",
+    "EntityPushMixin"
 
   ],
   "client": [
@@ -43,7 +45,8 @@
     "client.OverhaulLegRenderMixin",
     "client.OverhaulArmorKneesMixin",
     "client.EngineKickMixin",
-    "client.WoodenSwordsFirstPersonMixin"
+    "client.WoodenSwordsFirstPersonMixin",
+    "client.MinecraftMarkGlowMixin"
 
   ],
   "injectors": {

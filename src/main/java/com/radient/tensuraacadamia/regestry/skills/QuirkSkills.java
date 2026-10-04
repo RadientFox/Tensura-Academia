@@ -88,6 +88,14 @@ public class QuirkSkills {
     public static final RegistrySupplier<WarpGateQuirk> WARP_GATE = register("warp_gate", WarpGateQuirk::new);
     public static final RegistrySupplier<LeafipulationQuirk> LEAFIPULATION = register("leafipulation", LeafipulationQuirk::new);
     public static final RegistrySupplier<OverhaulQuirk> OVERHAUL = register("overhaul", OverhaulQuirk::new);
+    public static final RegistrySupplier<ZeroGravityQuirk> ZERO_GRAVITY = register("zero_gravity", ZeroGravityQuirk::new);
+    public static final RegistrySupplier<BodyBulkQuirk> BODY_BULK = register("body_bulk", BodyBulkQuirk::new);
+    public static final RegistrySupplier<BruiserQuirk> BRUISER = register("bruiser", BruiserQuirk::new);
+    public static final RegistrySupplier<EnduranceQuirk> ENDURANCE = register("endurance", EnduranceQuirk::new);
+    public static final RegistrySupplier<JetQuirk> JET = register("jet", JetQuirk::new);
+    public static final RegistrySupplier<GigantificationQuirk> GIGANTIFICATION = register("gigantification", GigantificationQuirk::new);
+    public static final RegistrySupplier<TransformingArmsQuirk> TRANSFORMING_ARMS = register("transforming_arms", TransformingArmsQuirk::new);
+    public static final RegistrySupplier<LandmineQuirk> LANDMINE = register("landmine", LandmineQuirk::new);
 
 
 

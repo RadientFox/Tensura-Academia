@@ -4,6 +4,7 @@ import com.radient.tensuraacadamia.TensuraAcadamia;
 import com.radient.tensuraacadamia.mixin.FallingBlockEntityInvoker;
 import io.github.manasmods.manascore.skill.api.ManasSkillInstance;
 import io.github.manasmods.tensura.event.TensuraSkillEvents;
+import io.github.manasmods.tensura.world.TensuraGameRules;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
@@ -13,6 +14,8 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.FallingBlockEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.GameRules;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.RenderShape;
@@ -54,7 +57,15 @@ public final class GroundBlocks {
         return null;
     }
 
+    public static boolean canGrief(Level level, @Nullable LivingEntity entity) {
+        return entity != null && !(entity instanceof Player) ? level.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING) : TensuraGameRules.canSkillGrief(level);
+    }
+
     public static boolean canBreak(ServerLevel level, ManasSkillInstance instance, LivingEntity entity, BlockPos pos) {
+        if (!canGrief(level, entity)) {
+            return false;
+        }
+
         BlockState state = level.getBlockState(pos);
         if (state.hasBlockEntity() || state.getDestroySpeed(level, pos) < 0.0F) {
             return false;
@@ -65,6 +76,10 @@ public final class GroundBlocks {
         }
 
         return !TensuraSkillEvents.SKILL_GRIEF_PRE.invoker().grief(instance, level, entity, pos.getX(), pos.getY(), pos.getZ()).isFalse();
+    }
+
+    public static void griefed(ServerLevel level, ManasSkillInstance instance, LivingEntity entity, BlockPos pos) {
+        TensuraSkillEvents.SKILL_GRIEF_POS.invoker().grief(instance, level, entity, pos.getX(), pos.getY(), pos.getZ());
     }
 
     public static boolean lift(ServerLevel level, ManasSkillInstance instance, LivingEntity owner, BlockPos pos, double speed) {
@@ -78,6 +93,7 @@ public final class GroundBlocks {
         }
 
         level.setBlock(pos, Blocks.AIR.defaultBlockState(), Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE);
+        griefed(level, instance, owner, pos);
         FallingBlockEntity block = FallingBlockEntityInvoker.tracadamia$create(level, pos.getX() + 0.5D, pos.getY(), pos.getZ() + 0.5D, state);
         block.dropItem = false;
         block.time = 1;
@@ -156,7 +172,7 @@ public final class GroundBlocks {
         }
     }
 
-    // Lifted blocks go back where they were
+    // lifted blocks go back
     @SubscribeEvent
     public static void onServerStopping(ServerStoppingEvent event) {
         for (Moving moving : MOVING) {
