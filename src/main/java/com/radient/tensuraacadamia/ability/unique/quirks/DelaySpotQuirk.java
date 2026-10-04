@@ -8,7 +8,6 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -25,12 +24,12 @@ public class DelaySpotQuirk extends Skill {
 
     private final Map<UUID, Set<UUID>> affectedEntities = new HashMap<>();
 
-    public @Nullable ResourceLocation getSkillIcon() {
-        return ResourceLocation.fromNamespaceAndPath("tracadamia", "textures/skill/unique/delayspot.png");
-    }
-
     public DelaySpotQuirk() {
         super(SkillType.UNIQUE);
+    }
+
+    public @Nullable ResourceLocation getSkillIcon() {
+        return ResourceLocation.fromNamespaceAndPath("tracadamia", "textures/skill/unique/delayspot.png");
     }
 
     @Override
@@ -68,18 +67,55 @@ public class DelaySpotQuirk extends Skill {
             return true;
         }
 
+        ServerLevel level = (ServerLevel) entity.level();
         UUID userUUID = entity.getUUID();
 
         Set<UUID> affected = affectedEntities.computeIfAbsent(userUUID, uuid -> new HashSet<>());
+        Set<UUID> inRange = new HashSet<>();
 
-        for (LivingEntity target : entity.level().getEntitiesOfClass(LivingEntity.class, entity.getBoundingBox().inflate(RADIUS), target -> target != entity && target.isAlive() && !target.isAlliedTo(entity))) {
+        for (LivingEntity target : level.getEntitiesOfClass(LivingEntity.class, entity.getBoundingBox().inflate(RADIUS), target -> target != entity && target.isAlive() && !target.isAlliedTo(entity))) {
             slowEntity(target);
-            affected.add(target.getUUID());
+            inRange.add(target.getUUID());
         }
 
-        spawnDomeParticles((ServerLevel) entity.level(), entity);
+        // Unslow anything that was affected previously but is no longer in range
+        Iterator<UUID> iterator = affected.iterator();
+        while (iterator.hasNext()) {
+            UUID targetUUID = iterator.next();
+
+            if (inRange.contains(targetUUID)) {
+                continue;
+            }
+
+            for (ServerLevel serverLevel : level.getServer().getAllLevels()) {
+                if (serverLevel.getEntity(targetUUID) instanceof LivingEntity target) {
+                    unslowEntity(target);
+                    break;
+                }
+            }
+
+            iterator.remove();
+        }
+
+        affected.addAll(inRange);
+
+        spawnDomeParticles(level, entity);
 
         return true;
+    }
+
+    private void unslowEntity(LivingEntity target) {
+        AttributeInstance movementSpeed = target.getAttribute(Attributes.MOVEMENT_SPEED);
+
+        if (movementSpeed == null) {
+            return;
+        }
+
+        AttributeModifier modifier = movementSpeed.getModifier(DELAY_SPOT_SLOWNESS);
+
+        if (modifier != null) {
+            movementSpeed.removeModifier(modifier);
+        }
     }
 
     @Override
@@ -119,28 +155,11 @@ public class DelaySpotQuirk extends Skill {
         MinecraftServer server = currentLevel.getServer();
 
         for (UUID targetUUID : affected) {
-
             for (ServerLevel level : server.getAllLevels()) {
-
-                Entity entity = level.getEntity(targetUUID);
-
-                if (!(entity instanceof LivingEntity target)) {
-                    continue;
+                if (level.getEntity(targetUUID) instanceof LivingEntity target) {
+                    unslowEntity(target);
+                    break;
                 }
-
-                AttributeInstance movementSpeed = target.getAttribute(Attributes.MOVEMENT_SPEED);
-
-                if (movementSpeed == null) {
-                    continue;
-                }
-
-                AttributeModifier modifier = movementSpeed.getModifier(DELAY_SPOT_SLOWNESS);
-
-                if (modifier != null) {
-                    movementSpeed.removeModifier(modifier);
-                }
-
-                break;
             }
         }
     }
