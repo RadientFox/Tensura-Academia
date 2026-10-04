@@ -61,7 +61,13 @@ public final class WhirlwindQuirk extends Skill {
     }
     @Override public double getDefaultAcquiringMagiculeCost() { return 0; }
     @Override public boolean checkAcquiringRequirement(Player player, double cost) { return false; }
-    @Override public double getAuraCost(LivingEntity entity, ManasSkillInstance instance, int mode) { return 0; }
+    @Override public double getAuraCost(LivingEntity entity, ManasSkillInstance instance, int mode) {
+        if (mode == 2 && entity.hasEffect(MHAEffects.WIND_FLIGHT)) return 0;
+        return mode == 1 ? 750 : mode == 2 ? 250 : 500;
+    }
+    @Override public boolean canIgnoreCoolDown(ManasSkillInstance instance, LivingEntity owner, int mode) {
+        return mode == 2 && owner.hasEffect(MHAEffects.WIND_FLIGHT);
+    }
     @Override public int getModes(ManasSkillInstance instance) { return 3; }
     @Override public int nextMode(LivingEntity entity, ManasSkillInstance instance, int mode, boolean reverse) {
         return Math.floorMod(mode + (reverse ? -1 : 1), 3);
@@ -77,6 +83,9 @@ public final class WhirlwindQuirk extends Skill {
     @Override
     public void onPressed(ManasSkillInstance instance, LivingEntity owner, int keyNumber, int mode) {
         if (!(owner.level() instanceof ServerLevel level) || mode < 0 || mode > 2) return;
+        boolean stopping = mode == 2 && owner.hasEffect(MHAEffects.WIND_FLIGHT);
+        double cost = getAuraCost(owner, instance, mode);
+        if (!stopping && (instance.onCoolDown(mode) || !QuirkCastCosts.hasAura(owner, cost))) return;
         if (mode == 2) {
             if (owner.hasEffect(MHAEffects.WIND_FLIGHT)) {
                 owner.removeEffect(MHAEffects.WIND_FLIGHT);
@@ -107,6 +116,8 @@ public final class WhirlwindQuirk extends Skill {
             level.playSound(null, owner.blockPosition(), SoundEvents.BREEZE_WIND_CHARGE_BURST.value(),
                     SoundSource.PLAYERS, 1.0F, 0.8F);
         }
+        QuirkCastCosts.spendAura(owner, cost);
+        QuirkCastCosts.cooldown(instance, mode, mode == 1 ? 5 : mode == 2 ? 20 : 10, 3);
         instance.addMasteryPoint(owner);
         instance.markDirty();
     }

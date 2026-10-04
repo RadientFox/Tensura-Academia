@@ -14,7 +14,6 @@ import org.joml.Vector3f;
 import java.util.ArrayList;
 import java.util.List;
 
-/** A thin, textured vanilla block display with its long axis between two points. */
 final class TapeRibbon {
     static final String TAG = "TracadamiaTapeRibbon";
     private static final List<Display.BlockDisplay> ACTIVE = new ArrayList<>();

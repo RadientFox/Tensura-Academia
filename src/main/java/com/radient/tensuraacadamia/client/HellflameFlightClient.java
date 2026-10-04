@@ -1,6 +1,7 @@
 package com.radient.tensuraacadamia.client;
 
 import com.radient.tensuraacadamia.TensuraAcadamia;
+import com.radient.tensuraacadamia.ability.unique.quirks.HellflameQuirk;
 import com.radient.tensuraacadamia.regestry.skills.QuirkSkills;
 import io.github.manasmods.manascore.skill.api.SkillAPI;
 import net.minecraft.client.Minecraft;
@@ -16,6 +17,7 @@ public final class HellflameFlightClient {
     private HellflameFlightClient() { }
 
     @SubscribeEvent public static void steer(ClientTickEvent.Post event) {
+        if (HellflameQuirk.isSealed()) return;
         LocalPlayer player = Minecraft.getInstance().player;
         if (player == null || !player.getAbilities().flying || !player.isAlive()
                 || SkillAPI.getSkillsFrom(player).getSkill(QuirkSkills.HELLFLAME.get())

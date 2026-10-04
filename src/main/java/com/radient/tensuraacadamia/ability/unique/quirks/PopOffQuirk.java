@@ -36,7 +36,9 @@ public final class PopOffQuirk extends Skill {
 
     @Override public double getDefaultAcquiringMagiculeCost() { return 0; }
     @Override public boolean checkAcquiringRequirement(Player player, double cost) { return false; }
-    @Override public double getAuraCost(LivingEntity entity, ManasSkillInstance instance, int mode) { return 0; }
+    @Override public double getAuraCost(LivingEntity entity, ManasSkillInstance instance, int mode) {
+        return mode == 1 ? 1000 : mode == 2 ? 2000 : 50;
+    }
     @Override public int getModes(ManasSkillInstance instance) { return 3; }
     @Override public boolean canBeToggled(ManasSkillInstance instance, LivingEntity entity) { return true; }
 
@@ -57,6 +59,8 @@ public final class PopOffQuirk extends Skill {
     @Override
     public void onPressed(ManasSkillInstance instance, LivingEntity entity, int keyNumber, int mode) {
         if (!(entity.level() instanceof ServerLevel level) || mode < 0 || mode > 2) return;
+        double cost = getAuraCost(entity, instance, mode);
+        if (instance.onCoolDown(mode) || !QuirkCastCosts.hasAura(entity, cost)) return;
         int count = mode == 1 ? 20 : mode == 2 ? 15 : 1;
         boolean spawned = false;
         for (int i = 0; i < count; i++) {
@@ -81,7 +85,12 @@ public final class PopOffQuirk extends Skill {
             }
             spawned |= level.addFreshEntity(ball);
         }
-        if (spawned) { instance.addMasteryPoint(entity); instance.markDirty(); }
+        if (spawned) {
+            QuirkCastCosts.spendAura(entity, cost);
+            QuirkCastCosts.cooldown(instance, mode, mode == 1 ? 5 : mode == 2 ? 10 : 0, 3);
+            instance.addMasteryPoint(entity);
+            instance.markDirty();
+        }
     }
 
     @SubscribeEvent

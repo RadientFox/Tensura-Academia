@@ -26,7 +26,10 @@ public abstract class ReincarnationSkillPoolMixin {
         addIfMissing(expanded, QuirkSkills.IQ.get());
         addIfMissing(expanded, QuirkSkills.TAPE.get());
         addIfMissing(expanded, QuirkSkills.CLOUD.get());
-        addIfMissing(expanded, QuirkSkills.HELLFLAME.get());
+        expanded.removeIf(skill -> skill == QuirkSkills.HELLFLAME.get());
+        addIfMissing(expanded, QuirkSkills.TELEPORTATION.get());
+        addIfMissing(expanded, QuirkSkills.LEAFIPULATION.get());
+        addIfMissing(expanded, QuirkSkills.OVERHAUL.get());
         return expanded;
     }
 

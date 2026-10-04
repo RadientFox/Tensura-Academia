@@ -94,7 +94,6 @@ public final class DarkShadowModel {
         leftArm.zRot -= sway; rightArm.zRot += sway;
         leftForearm.xRot -= movement * 0.15F; rightForearm.xRot -= movement * 0.15F;
         beak.getChild("jaw").xRot = shadow.action() >= 0 ? 0.12F + shadow.armProgress() * 0.18F : 0;
-        // Extended attack arms replace the matching resting arms.
         int action = shadow.action();
         boolean extending = action >= 0 && action != DarkShadowQuirk.WOMB && action != DarkShadowQuirk.ANGEL;
         rightArm.visible = !extending;

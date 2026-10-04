@@ -58,6 +58,10 @@ public class TensuraAcadamia {
         NeoForge.EVENT_BUS.register(com.radient.tensuraacadamia.ability.unique.quirks.TapeQuirk.class);
         NeoForge.EVENT_BUS.register(com.radient.tensuraacadamia.ability.unique.quirks.CloudQuirk.class);
         NeoForge.EVENT_BUS.register(com.radient.tensuraacadamia.ability.unique.quirks.HellflameQuirk.class);
+        NeoForge.EVENT_BUS.register(com.radient.tensuraacadamia.ability.unique.quirks.TeleportationQuirk.class);
+        NeoForge.EVENT_BUS.register(com.radient.tensuraacadamia.ability.unique.quirks.LeafipulationQuirk.class);
+        NeoForge.EVENT_BUS.register(com.radient.tensuraacadamia.ability.unique.quirks.WarpGateQuirk.class);
+        com.radient.tensuraacadamia.ability.unique.quirks.WarpGateQuirk.registerSkillEvents();
         NeoForge.EVENT_BUS.register(ElectrificationQuirk.class);
         NeoForge.EVENT_BUS.register(SmokescreenQuirk.class);
         NeoForge.EVENT_BUS.register(ExplosionQuirk.class);
@@ -77,11 +81,13 @@ public class TensuraAcadamia {
         DoubleMenus.register(modEventBus);
         MHAEffects.register(modEventBus);
         com.radient.tensuraacadamia.regestry.ThermalIce.register(modEventBus);
+        OverhaulEarth.register(modEventBus);
         MHASounds.register(modEventBus);
         MHAParticles.init(modEventBus);
         QuirkVisualItems.register(modEventBus);
         QueenBeamEntities.register(modEventBus);
         PopOffEntities.register(modEventBus);
+        LeafEntities.register(modEventBus);
         com.radient.tensuraacadamia.regestry.HomingEntities.register(modEventBus);
         com.radient.tensuraacadamia.regestry.SolidAirEntities.register(modEventBus);
         com.radient.tensuraacadamia.regestry.VinesEntities.register(modEventBus);
@@ -100,6 +106,9 @@ public class TensuraAcadamia {
     }
 
     private void registerPayloadHandlers(RegisterPayloadHandlersEvent event) {
+        event.registrar("1").playToClient(com.radient.tensuraacadamia.network.OverhaulStatePayload.TYPE,
+                com.radient.tensuraacadamia.network.OverhaulStatePayload.STREAM_CODEC,
+                com.radient.tensuraacadamia.network.OverhaulStatePayload::handle);
         event.registrar("1").playToServer(ElasticityBouncePayload.TYPE,
                 ElasticityBouncePayload.STREAM_CODEC, ElasticityBouncePayload::handle);
         event.registrar("1").playToClient(GearshiftTrailPayload.TYPE,
@@ -108,6 +117,12 @@ public class TensuraAcadamia {
                 AcceleratorRingsFlightPayload.STREAM_CODEC, AcceleratorRingsFlightPayload::handle);
         event.registrar("1").playToClient(PermeationPhasePayload.TYPE,
                 PermeationPhasePayload.STREAM_CODEC, PermeationPhasePayload::handle);
+        event.registrar("1").playToServer(com.radient.tensuraacadamia.network.WarpGateDestinationPayload.TYPE,
+                com.radient.tensuraacadamia.network.WarpGateDestinationPayload.STREAM_CODEC,
+                com.radient.tensuraacadamia.network.WarpGateDestinationPayload::handle);
+        event.registrar("1").playToClient(com.radient.tensuraacadamia.network.WarpGateOpenPayload.TYPE,
+                com.radient.tensuraacadamia.network.WarpGateOpenPayload.STREAM_CODEC,
+                com.radient.tensuraacadamia.network.WarpGateOpenPayload::handle);
     }
 
     @SubscribeEvent

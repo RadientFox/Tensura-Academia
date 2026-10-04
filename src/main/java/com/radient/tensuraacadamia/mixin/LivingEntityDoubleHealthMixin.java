@@ -15,7 +15,8 @@ public abstract class LivingEntityDoubleHealthMixin {
         LivingEntity entity = (LivingEntity) (Object) this;
         if (entity instanceof Mob mob) {
             float health = DoubleMobHealthData.get(mob);
-            if (Float.isFinite(health) && health > 0.0F) callback.setReturnValue(health);
+            if (Float.isFinite(health) && health > 0.0F) callback.setReturnValue(
+                    com.radient.tensuraacadamia.ability.unique.quirks.OverhaulQuirk.duplicateHealth(entity, health));
         }
     }
 }

@@ -32,6 +32,7 @@ import java.util.Comparator;
 public final class HomingQuirk extends Skill {
     public static final double LOCK_RANGE = 600, GUIDANCE_RANGE = 200;
     private static final String LOCK = "HomingTarget", SNIPE = "TracadamiaSnipe", GUIDED = "TracadamiaHomingTarget";
+    private static final String SHOT_CHECKED = "TracadamiaHomingShotCharged";
 
     public HomingQuirk() { super(SkillType.UNIQUE); }
     @Override public ResourceLocation getSkillIcon() {
@@ -40,7 +41,7 @@ public final class HomingQuirk extends Skill {
     @Override public int getMaxMastery() { return 2500; }
     @Override public double getDefaultAcquiringMagiculeCost() { return 0; }
     @Override public boolean checkAcquiringRequirement(Player player, double cost) { return false; }
-    @Override public double getAuraCost(LivingEntity entity, ManasSkillInstance instance, int mode) { return 0; }
+    @Override public double getAuraCost(LivingEntity entity, ManasSkillInstance instance, int mode) { return mode == 1 ? 2000 : 0; }
     @Override public int getModes(ManasSkillInstance instance) { return instance.getMastery() >= getMaxMastery() ? 2 : 1; }
     @Override public int nextMode(LivingEntity entity, ManasSkillInstance instance, int mode, boolean reverse) {
         return Math.floorMod(mode + (reverse ? -1 : 1), getModes(instance));
@@ -78,8 +79,10 @@ public final class HomingQuirk extends Skill {
                     Component.translatable("tracadamia.skill.homing.locked", target.getDisplayName()), true);
         } else {
             if (!instance.isMastered(owner)) { message(owner, "mastery_required"); return; }
+            if (instance.onCoolDown(mode) || !QuirkCastCosts.hasAura(owner, getAuraCost(owner, instance, mode))) return;
             LivingEntity target = lockedTarget(owner, instance, GUIDANCE_RANGE);
             if (target == null) { message(owner, "lock_required"); return; }
+            boolean spawned = false;
             for (int i = 0; i < 30; i++) {
                 HomingBarrageProjectile shot = HomingEntities.BARRAGE.get().create(level);
                 if (shot == null) continue;
@@ -91,8 +94,11 @@ public final class HomingQuirk extends Skill {
                 Vec3 direction = owner.getLookAngle();
                 shot.shoot(direction.x, direction.y, direction.z, 1.0F, 25.0F);
                 shot.setDeltaMovement(shot.getDeltaMovement().normalize());
-                level.addFreshEntity(shot);
+                spawned |= level.addFreshEntity(shot);
             }
+            if (!spawned) return;
+            QuirkCastCosts.spendAura(owner, getAuraCost(owner, instance, mode));
+            QuirkCastCosts.cooldown(instance, mode, 20, 2);
         }
         instance.addMasteryPoint(owner);
         instance.markDirty();
@@ -108,13 +114,26 @@ public final class HomingQuirk extends Skill {
         if (!(event.getEntity() instanceof Projectile projectile) || !(projectile.level() instanceof ServerLevel level)
                 || !(projectile.getOwner() instanceof LivingEntity owner) || projectile instanceof HomingBarrageProjectile) return;
         ManasSkillInstance instance = SkillAPI.getSkillsFrom(owner).getSkill(QuirkSkills.HOMING.get()).orElse(null);
-        if (instance == null) { clearGuidance(projectile); return; }
-        boolean bow = projectile instanceof AbstractArrow arrow && arrow.getWeaponItem() != null
-                && arrow.getWeaponItem().getItem() instanceof BowItem;
-        if (bow) projectile.getPersistentData().putBoolean(SNIPE, true);
+        if (instance == null) {
+            projectile.getPersistentData().putBoolean(SHOT_CHECKED, true);
+            clearGuidance(projectile);
+            return;
+        }
         if (projectile instanceof AbstractArrow arrow && ((HomingArrowAccessor) arrow).tracadamia$isInGround()) return;
         Vec3 movement = HomingSteering.motion(projectile);
         if (movement.lengthSqr() < 0.0001) return;
+        if (!projectile.getPersistentData().getBoolean(SHOT_CHECKED)) {
+            projectile.getPersistentData().putBoolean(SHOT_CHECKED, true);
+            if (!QuirkCastCosts.hasAura(owner, 10)) {
+                projectile.discard();
+                event.setCanceled(true);
+                return;
+            }
+            QuirkCastCosts.spendAura(owner, 10);
+        }
+        boolean bow = projectile instanceof AbstractArrow arrow && arrow.getWeaponItem() != null
+                && arrow.getWeaponItem().getItem() instanceof BowItem;
+        if (bow) projectile.getPersistentData().putBoolean(SNIPE, true);
         LivingEntity target = lockedTarget(owner, instance, GUIDANCE_RANGE);
         boolean locked = target != null;
         if (target == null && bow) {

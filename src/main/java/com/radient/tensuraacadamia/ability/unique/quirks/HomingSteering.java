@@ -24,7 +24,6 @@ public final class HomingSteering {
         if (speed < 0.0001) return new Result(desired, false);
         Vec3 forward = desired.normalize();
         double lookAhead = Math.min(12, Math.max(3, speed * 3));
-        // Do not look beyond the target and mistake the wall behind it for an obstruction.
         lookAhead = Math.min(lookAhead, target.distanceTo(shot.position()));
         if (clearPath(shot, forward, lookAhead)) {
             clear(shot);
@@ -40,7 +39,6 @@ public final class HomingSteering {
         Vec3 heading = motion(shot).normalize(), aim = target.subtract(shot.position()).normalize();
         Vec3 best = null;
         double bestScore = -Double.MAX_VALUE;
-        // A small fan of side/up/down routes, including turns away from a dead end.
         for (int turn = 1; turn <= 3; turn++) {
             double angle = turn * Math.PI / 4;
             for (int side = 0; side < 8; side++) {
@@ -54,7 +52,6 @@ public final class HomingSteering {
                 }
             }
         }
-        // If enclosed, wait and retry rather than steering through the wall.
         Vec3 remembered = best == null ? forward : best;
         var saved = new net.minecraft.nbt.CompoundTag();
         saved.putDouble("X", remembered.x);
@@ -67,7 +64,6 @@ public final class HomingSteering {
     }
 
     private static boolean clearPath(Projectile shot, Vec3 direction, double distance) {
-        // Swept collision boxes include the projectile's width, not just its center ray.
         int steps = Math.max(1, (int) Math.ceil(distance / 0.5));
         Vec3 step = direction.scale(distance / steps);
         var box = shot.getBoundingBox().deflate(0.01);

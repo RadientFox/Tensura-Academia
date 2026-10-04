@@ -12,9 +12,15 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(PlayerModel.class)
 public abstract class PlayerModelMixin {
 
+    @Inject(method = "setupAnim(Lnet/minecraft/world/entity/LivingEntity;FFFFF)V", at = @At("HEAD"))
+    private void tracadamia$restoreOverhaulPose(LivingEntity entity, float swing, float amount, float ticks, float yaw, float pitch, CallbackInfo ci) {
+        com.radient.tensuraacadamia.client.OverhaulClient.restorePose((PlayerModel<?>) (Object) this);
+    }
+
     @Inject(method = "setupAnim(Lnet/minecraft/world/entity/LivingEntity;FFFFF)V", at = @At("TAIL"))
     private void tracadamia$quirkPoses(LivingEntity entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch, CallbackInfo ci) {
         MultiArmsClient.poseModel((PlayerModel<?>) (Object) this, entity, ageInTicks, netHeadYaw, headPitch);
+        com.radient.tensuraacadamia.client.OverhaulClient.posePlayer((PlayerModel<?>) (Object) this, entity, ageInTicks);
     }
 
 }

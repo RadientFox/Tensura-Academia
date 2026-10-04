@@ -45,7 +45,8 @@ public final class AllForOneStock {
     }
 
     public static boolean canHandle(ManasSkill skill) {
-        if (skill == QuirkSkills.ALL_FOR_ONE.get() || skill == QuirkSkills.PERIL_DIFFUSION.get()) return false;
+        if (skill == QuirkSkills.ALL_FOR_ONE.get() || skill == QuirkSkills.PERIL_DIFFUSION.get()
+                || skill == QuirkSkills.WARP_GATE.get()) return false;
         if (skill instanceof Magic) return true;
         if (!(skill instanceof Skill typed)) return false;
         return switch (typed.getType()) {
@@ -150,7 +151,8 @@ public final class AllForOneStock {
     public static List<ManasSkillInstance> instances(LivingEntity owner) {
         List<ManasSkillInstance> stock = new ArrayList<>();
         for (ManasSkillInstance instance : SkillAPI.getSkillsFrom(owner).getLearnedSkills()) {
-            if (canHandle(instance) || instance.getSkill() == QuirkSkills.PERIL_DIFFUSION.get()) stock.add(instance.copy());
+            if (canHandle(instance) || instance.getSkill() == QuirkSkills.PERIL_DIFFUSION.get()
+                    || instance.getSkill() == QuirkSkills.WARP_GATE.get()) stock.add(instance.copy());
         }
         for (Tag entry : copies(owner)) {
             CompoundTag copy = (CompoundTag) entry;

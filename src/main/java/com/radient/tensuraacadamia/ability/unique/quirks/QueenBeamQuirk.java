@@ -36,7 +36,7 @@ public final class QueenBeamQuirk extends Skill {
     public boolean checkAcquiringRequirement(Player player, double cost) { return false; }
 
     @Override
-    public double getAuraCost(LivingEntity entity, ManasSkillInstance instance, int mode) { return 0.0D; }
+    public double getAuraCost(LivingEntity entity, ManasSkillInstance instance, int mode) { return mode == PRINCESS ? 100 : 50; }
 
     @Override
     public int getModes(ManasSkillInstance instance) { return 2; }
@@ -54,6 +54,8 @@ public final class QueenBeamQuirk extends Skill {
     @Override
     public void onPressed(ManasSkillInstance instance, LivingEntity entity, int keyNumber, int mode) {
         if (!(entity.level() instanceof ServerLevel level) || mode < QUEEN || mode > PRINCESS) return;
+        double cost = getAuraCost(entity, instance, mode);
+        if (instance.onCoolDown(mode) || !QuirkCastCosts.hasAura(entity, cost)) return;
         QueenBeamProjectile projectile = QueenBeamEntities.QUEEN_BEAM.get().create(level);
         if (projectile == null) return;
         Vec3 direction = entity.getLookAngle().normalize();
@@ -62,6 +64,8 @@ public final class QueenBeamQuirk extends Skill {
         projectile.setPos(entity.getEyePosition());
         projectile.shoot(direction.x, direction.y, direction.z, QueenBeamProjectile.SPEED, 0.0F);
         if (!level.addFreshEntity(projectile)) return;
+        QuirkCastCosts.spendAura(entity, cost);
+        QuirkCastCosts.cooldown(instance, mode, mode == PRINCESS ? 3 : 1, 2);
         level.playSound(null, entity.getX(), entity.getEyeY(), entity.getZ(),
                 TensuraSoundEvents.CAST_LIGHT.get(), SoundSource.PLAYERS, 0.6F,
                 mode == PRINCESS ? 1.5F : 1.15F);

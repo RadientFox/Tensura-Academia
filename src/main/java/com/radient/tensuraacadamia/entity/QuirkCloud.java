@@ -35,7 +35,7 @@ public final class QuirkCloud extends Entity {
     private UUID creator, victim;
     private boolean mastered, blindArrived;
     private int followerIndex;
-    private long born, blindEnds;
+    private long born, blindEnds, dismissalVersion;
     private final Set<UUID> stormHits = new HashSet<>();
     private final Map<UUID, Vec3> stormPinned = new HashMap<>();
 
@@ -56,21 +56,32 @@ public final class QuirkCloud extends Entity {
         entityData.set(SPEED_TIER, CloudQuirk.speedTier(owner));
         creator = owner.getUUID(); followerIndex = index; this.mastered = mastered;
         born = level().getGameTime();
+        dismissalVersion = owner.getPersistentData().getLong(CloudQuirk.DISMISS_VERSION);
     }
     public void makeBlind(LivingEntity owner, LivingEntity target, boolean mastered) {
         entityData.set(KIND, BLIND);
         creator = owner.getUUID(); victim = target.getUUID(); this.mastered = mastered;
         born = level().getGameTime();
+        dismissalVersion = owner.getPersistentData().getLong(CloudQuirk.DISMISS_VERSION);
         setPos(owner.getX(), owner.getEyeY() - 0.3, owner.getZ());
     }
     public void makeStorm(LivingEntity owner, double groundY) {
         entityData.set(KIND, STORM);
         creator = owner.getUUID(); born = level().getGameTime();
+        dismissalVersion = owner.getPersistentData().getLong(CloudQuirk.DISMISS_VERSION);
         setPos(owner.getX(), groundY + 50, owner.getZ());
     }
 
     @Override public void tick() {
         super.tick();
+        if (level() instanceof ServerLevel server && creator != null) {
+            Entity owner = server.getServer().getPlayerList().getPlayer(creator);
+            if (owner == null) owner = server.getEntity(creator);
+            if (owner != null && owner.getPersistentData().getLong(CloudQuirk.DISMISS_VERSION) != dismissalVersion) {
+                discard();
+                return;
+            }
+        }
         setNoGravity(true);
         if (kind() == RIDE) {
             if (level() instanceof ServerLevel server) ride(server);
@@ -142,12 +153,12 @@ public final class QuirkCloud extends Entity {
                 blindArrived = true;
                 blindEnds = server.getGameTime() + BLIND_TICKS;
                 target.addEffect(new MobEffectInstance(MobEffects.BLINDNESS, BLIND_TICKS, 0, false, true));
+                CloudQuirk.pacify(target);
             }
             if (server.getGameTime() - born > 80) discard();
             return;
         }
         setPos(face.x, face.y, face.z);
-        if (target instanceof Mob mob) mob.setTarget(null);
         if (server.getGameTime() >= blindEnds) discard();
     }
 
@@ -204,6 +215,7 @@ public final class QuirkCloud extends Entity {
     }
 
     @Override protected void readAdditionalSaveData(CompoundTag tag) {
+        dismissalVersion = tag.getLong("DismissalVersion");
         entityData.set(KIND, tag.getInt("Kind"));
         if (tag.hasUUID("Creator")) creator = tag.getUUID("Creator");
         if (tag.hasUUID("Victim")) victim = tag.getUUID("Victim");
@@ -215,6 +227,7 @@ public final class QuirkCloud extends Entity {
         blindEnds = tag.getLong("BlindEnds");
     }
     @Override protected void addAdditionalSaveData(CompoundTag tag) {
+        tag.putLong("DismissalVersion", dismissalVersion);
         tag.putInt("Kind", kind());
         if (creator != null) tag.putUUID("Creator", creator);
         if (victim != null) tag.putUUID("Victim", victim);

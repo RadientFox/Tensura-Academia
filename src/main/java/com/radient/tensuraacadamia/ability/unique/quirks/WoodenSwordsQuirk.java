@@ -160,7 +160,7 @@ public final class WoodenSwordsQuirk extends Skill {
 
         amount.set((amount.get() + 4.0F) * (float) MELEE_DAMAGE_MULTIPLIER);
         if (isSplinterActive(instance, owner)) {
-            applySplinter(target, false);
+            applySplinter(owner, target, false);
         }
         return true;
     }
@@ -231,7 +231,7 @@ public final class WoodenSwordsQuirk extends Skill {
                     dash.hits++;
                     boolean maxStacks = splinterActive || target.hasEffect(MHAEffects.SPLINTER);
                     if (maxStacks) {
-                        applySplinter(target, maxStacks);
+                        applySplinter(owner, target, maxStacks);
                     }
                     owner.swing(net.minecraft.world.InteractionHand.MAIN_HAND, true);
                     level.playSound(null, target.blockPosition(), SoundEvents.PLAYER_ATTACK_CRIT, SoundSource.PLAYERS, 0.75F, 0.8F + owner.getRandom().nextFloat() * 0.2F);
@@ -292,13 +292,15 @@ public final class WoodenSwordsQuirk extends Skill {
         }
     }
 
-    private static void applySplinter(LivingEntity target, boolean maxStacks) {
+    private static void applySplinter(LivingEntity owner, LivingEntity target, boolean maxStacks) {
+        if (!QuirkCastCosts.hasAura(owner, 1000)) return;
         int oldStacks = target.hasEffect(MHAEffects.SPLINTER)
                 ? Math.max(1, target.getPersistentData().getInt(STACKS_TAG)) : 0;
         int stacks = maxStacks ? MAX_STACKS : Math.min(MAX_STACKS, oldStacks + 1);
+        if (!target.addEffect(new net.minecraft.world.effect.MobEffectInstance(MHAEffects.SPLINTER,
+                DEBUFF_SECONDS * 20, 0, false, true, true)) && !target.hasEffect(MHAEffects.SPLINTER)) return;
         target.getPersistentData().putInt(STACKS_TAG, stacks);
-        target.addEffect(new net.minecraft.world.effect.MobEffectInstance(MHAEffects.SPLINTER,
-                DEBUFF_SECONDS * 20, 0, false, true, true));
+        QuirkCastCosts.spendAura(owner, 1000);
         if (stacks > oldStacks && target instanceof Player player) {
             player.displayClientMessage(Component.translatable("tracadamia.skill.wooden_swords.splinter_stacks", stacks, MAX_STACKS), true);
         }

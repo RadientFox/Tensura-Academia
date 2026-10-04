@@ -8,6 +8,7 @@ import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.client.particle.SpriteSet;
 import net.minecraft.client.particle.TextureSheetParticle;
 import net.minecraft.client.particle.HugeExplosionParticle;
+import net.minecraft.client.particle.CherryParticle;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.core.registries.Registries;
@@ -60,6 +61,8 @@ public final class MHAParticles {
             PARTICLES.register("blaze_rod_beam_overpower", () -> new SimpleParticleType(false));
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> IMPURE_BEAM_OVERPOWER =
             PARTICLES.register("impure_beam_overpower", () -> new SimpleParticleType(false));
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> GREEN_LEAF =
+            PARTICLES.register("green_leaf", () -> new SimpleParticleType(false));
 
 
     private MHAParticles() {
@@ -106,6 +109,26 @@ public final class MHAParticles {
             event.registerSpriteSet(IMPURE_BEAM_OVERPOWER.get(),
                     sprites -> new com.radient.tensuraacadamia.client.EyeBeamParticle.Provider(
                             sprites, 240.0D, 1.08D, 0xFFFFD52A));
+            event.registerSpriteSet(GREEN_LEAF.get(), GreenLeafParticle.Provider::new);
+        }
+    }
+
+    private static final class GreenLeafParticle extends CherryParticle {
+        private GreenLeafParticle(ClientLevel level, double x, double y, double z, SpriteSet sprites) {
+            super(level, x, y, z, sprites);
+            setColor(0.16F, 1.0F, 0.14F);
+        }
+
+        private static final class Provider implements ParticleProvider<SimpleParticleType> {
+            private final SpriteSet sprites;
+
+            private Provider(SpriteSet sprites) { this.sprites = sprites; }
+
+            @Override public Particle createParticle(SimpleParticleType type, ClientLevel level,
+                                                      double x, double y, double z,
+                                                      double xSpeed, double ySpeed, double zSpeed) {
+                return new GreenLeafParticle(level, x, y, z, sprites);
+            }
         }
     }
 

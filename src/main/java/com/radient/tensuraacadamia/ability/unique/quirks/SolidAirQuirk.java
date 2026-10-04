@@ -123,7 +123,6 @@ public final class SolidAirQuirk extends Skill {
         instance.markDirty();
     }
 
-    // Native cooldowns are whole seconds; deadlines also support the mastered half-second wall.
     private static boolean synchronizeCooldowns(ManasSkillInstance instance, long now) {
         var cooldowns = new ArrayList<>(instance.getCooldownList());
         while (cooldowns.size() < 3) cooldowns.add(0);

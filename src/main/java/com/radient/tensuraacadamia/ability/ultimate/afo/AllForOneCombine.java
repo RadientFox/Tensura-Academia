@@ -34,13 +34,14 @@ public final class AllForOneCombine {
     public static boolean combined(LivingEntity owner) { return owner.getPersistentData().contains(DATA, Tag.TAG_COMPOUND); }
 
     public static List<ResourceLocation> entries(LivingEntity owner) {
+        if (WarpGateCombination.combined(owner)) return List.of(QuirkSkills.WARP_GATE.get().getRegistryName());
         if (combined(owner)) return List.of(QuirkSkills.PERIL_DIFFUSION.get().getRegistryName());
         var storage = SkillAPI.getSkillsFrom(owner);
-        if (!eligible(storage.getSkill(QuirkSkills.PERMEATION.get()).orElse(null))) return List.of();
         List<ResourceLocation> choices = new ArrayList<>();
-        for (var partner : List.of(QuirkSkills.DANGERSENSE.get())) {
-            if (eligible(storage.getSkill(partner).orElse(null))) choices.add(partner.getRegistryName());
-        }
+        if (eligible(storage.getSkill(QuirkSkills.PERMEATION.get()).orElse(null))
+                && eligible(storage.getSkill(QuirkSkills.DANGERSENSE.get()).orElse(null)))
+            choices.add(QuirkSkills.DANGERSENSE.get().getRegistryName());
+        if (WarpGateCombination.eligible(owner)) choices.add(QuirkSkills.CLOUD.get().getRegistryName());
         return choices;
     }
 
@@ -52,6 +53,8 @@ public final class AllForOneCombine {
         if (owner.level().isClientSide || PermeationQuirk.isPhasing(owner)
                 || SkillAPI.getSkillsFrom(owner).getSkill(QuirkSkills.ALL_FOR_ONE.get()).isEmpty()
                 || !entries(owner).contains(partnerId)) return false;
+        if (WarpGateCombination.combined(owner) || partnerId.equals(QuirkSkills.CLOUD.get().getRegistryName()))
+            return WarpGateCombination.select(owner);
         if (combined(owner)) return uncombine(owner);
         var max = owner.getAttribute(TensuraAttributes.MAX_MAGICULE);
         if (max == null || !Double.isFinite(max.getValue()) || max.getValue() < MAGICULE_RESERVATION) {

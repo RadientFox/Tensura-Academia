@@ -163,7 +163,6 @@ public final class DarkShadow extends Mob {
         var existence = TensuraStorages.getExistenceFrom(this);
         existence.setMagicule(Math.max(1, EnergyHelper.getMaxMagicule(this)));
         existence.setAura(Math.max(1, EnergyHelper.getMaxAura(this)));
-        // Filling EP can award native combat stats; the copied stats are authoritative.
         copyAttributes(owner, release);
         getAttribute(Attributes.MAX_HEALTH).setBaseValue(getMaxHealth());
         setEffectiveValue(getAttribute(Attributes.ATTACK_DAMAGE), entityData.get(POWER));
@@ -177,7 +176,6 @@ public final class DarkShadow extends Mob {
             var attribute = getAttribute(holder);
             if (attribute != null && owner.getAttribute(holder) != null) setEffectiveValue(attribute, owner.getAttributeValue(holder) * 2 * release);
         }
-        // Body size is controlled by visualScale, not the doubled combat attributes.
         setEffectiveValue(getAttribute(TensuraAttributes.WIDTH_MULTIPLIER), 1);
         setEffectiveValue(getAttribute(TensuraAttributes.HEIGHT_MULTIPLIER), 1);
         refreshDimensions();
@@ -311,7 +309,6 @@ public final class DarkShadow extends Mob {
         if (away.lengthSqr() < 0.01) away = owner.getLookAngle().multiply(-1, 0, -1);
         if (away.lengthSqr() < 0.01) away = new Vec3(0, 0, -1);
         Vec3 goal = target.position().add(away.normalize().scale(distance));
-        // Prefer the creator's side when the other side would exceed the tether.
         Vec3 towardOwner = owner.position().subtract(target.position()).multiply(1, 0, 1);
         if (goal.distanceToSqr(owner.position()) > tetherRange() * tetherRange() && towardOwner.lengthSqr() > 0.01)
             goal = target.position().add(towardOwner.normalize().scale(distance));

@@ -100,7 +100,6 @@ public final class AlchemyQuirk extends Skill {
         if (points(instance) < cost) { message(owner, "not_enough_points", cost); return false; }
         instance.getOrCreateTag().putInt(POINTS, points(instance) - cost); instance.markDirty(); return true;
     }
-    // Ordinary skill onTick runs every 100 ticks; resource upkeep and the dash need real entity ticks.
     private void tickState(ManasSkillInstance instance, LivingEntity owner) {
         if (!(owner.level() instanceof ServerLevel level)) return;
         var tag = instance.getOrCreateTag();
@@ -222,7 +221,6 @@ public final class AlchemyQuirk extends Skill {
         for (LivingEntity candidate : owner.level().getEntitiesOfClass(LivingEntity.class,
                 body.expandTowards(end.subtract(start)).inflate(PUNCH_REACH),
                 enemy -> !(enemy instanceof MoltenShield) && enemy.isAttackable() && HomingQuirk.isEnemy(owner, enemy))) {
-            // Sweep the whole body, not a centreline that passes over small enemies in enlarged forms.
             AABB contact = candidate.getBoundingBox().inflate(body.getXsize() / 2 + PUNCH_REACH,
                     body.getYsize() / 2 + PUNCH_REACH, body.getZsize() / 2 + PUNCH_REACH);
             Vec3 impact = contact.contains(start) ? start : contact.clip(start, end).orElse(null);

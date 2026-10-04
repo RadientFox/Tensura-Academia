@@ -35,6 +35,8 @@ public class MHAEffects {
     public static final DeferredHolder<MobEffect, MobEffect> DARK_SHADOW_FLIGHT;
     public static final DeferredHolder<MobEffect, MobEffect> AFFECTION;
     public static final DeferredHolder<MobEffect, MobEffect> IRON_LOCK;
+    public static final DeferredHolder<MobEffect, MobEffect> WARP_OVERUSE;
+    public static final DeferredHolder<MobEffect, MobEffect> LEAF_ANTI_HEALING;
 
 
     public MHAEffects() {
@@ -66,6 +68,8 @@ public class MHAEffects {
         DARK_SHADOW_FLIGHT = MOB_EFFECTS.register("dark_shadow_flight", com.radient.tensuraacadamia.effects.DarkShadowFlightEffect::new);
         AFFECTION = MOB_EFFECTS.register("affection", Affection::new);
         IRON_LOCK = MOB_EFFECTS.register("iron_lock", com.radient.tensuraacadamia.effects.IronLockEffect::new);
+        WARP_OVERUSE = MOB_EFFECTS.register("warp_overuse", WarpOveruseEffect::new);
+        LEAF_ANTI_HEALING = MOB_EFFECTS.register("leaf_anti_healing", LeafAntiHealingEffect::new);
     }
 
 }

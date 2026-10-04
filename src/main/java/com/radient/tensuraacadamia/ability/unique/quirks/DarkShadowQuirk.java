@@ -121,7 +121,6 @@ public final class DarkShadowQuirk extends Skill {
         if (instance.getOrCreateTag().contains(SNAPSHOT)) shadow.restoreSession(instance.getOrCreateTag().getCompound(SNAPSHOT));
         shadow.setPos(owner.position().add(owner.getLookAngle().multiply(-1, 0, -1)));
         if (!server.addFreshEntity(shadow)) { instance.setToggled(false); instance.markDirty(); return; }
-        // Tensura initializes new mobs' energy attributes when they join the level.
         shadow.updateStats(owner, instance);
         TensuraStorages.getExistenceFrom(shadow).setSkippingEPDrop(true);
         instance.getOrCreateTag().putUUID(SHADOW, shadow.getUUID());
@@ -353,7 +352,6 @@ public final class DarkShadowQuirk extends Skill {
     }
     public static double abyssJumpVelocity(double velocity, double gravity) {
         if (velocity <= 0 || gravity <= 0) return velocity;
-        // Include vanilla gravity and drag: tripling launch velocity would produce roughly nine times the height.
         double height = jumpHeight(velocity, gravity) * 3, low = velocity, high = velocity * 3;
         for (int i = 0; i < 20; i++) {
             double mid = (low + high) / 2;

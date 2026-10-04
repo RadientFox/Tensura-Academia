@@ -37,6 +37,7 @@ import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 import java.util.UUID;
 
 public final class HellflameQuirk extends Skill {
+    public static boolean isSealed() { return true; }
     private static final int MAX_MASTERY = 2500;
     private static final int HEAT_LIMIT = 100;
     private static final int FLIGHT_TICKS = 1200;
@@ -70,9 +71,15 @@ public final class HellflameQuirk extends Skill {
         };
     }
     @Override public double getAuraCost(LivingEntity owner, ManasSkillInstance instance, int mode) { return 0; }
-    @Override public boolean canBeToggled(ManasSkillInstance instance, LivingEntity owner) { return true; }
+    @Override public boolean canBeToggled(ManasSkillInstance instance, LivingEntity owner) { return !isSealed(); }
 
     @Override public void onToggleOn(ManasSkillInstance instance, LivingEntity owner) {
+        if (isSealed()) {
+            if (owner instanceof ServerPlayer player) stopFlight(instance, player, false);
+            instance.setToggled(false);
+            instance.markDirty();
+            return;
+        }
         if (!(owner instanceof ServerPlayer player)) return;
         CompoundTag tag = instance.getOrCreateTag();
         long now = owner.level().getGameTime();
@@ -115,6 +122,7 @@ public final class HellflameQuirk extends Skill {
     }
 
     @Override public void onPressed(ManasSkillInstance instance, LivingEntity owner, int key, int mode) {
+        if (isSealed()) return;
         if (!(owner instanceof ServerPlayer player) || mode < 0 || mode > 3) return;
         long now = owner.level().getGameTime();
         long lockedUntil = instance.getOrCreateTag().getLong(LOCK_UNTIL);
@@ -269,6 +277,14 @@ public final class HellflameQuirk extends Skill {
         if (!(event.getEntity() instanceof ServerPlayer player)) return;
         ManasSkillInstance instance = skill(player);
         if (instance == null) return;
+        if (isSealed()) {
+            stopFlight(instance, player, false);
+            if (instance.isToggled()) {
+                instance.setToggled(false);
+                instance.markDirty();
+            }
+            return;
+        }
         if (instance.onCoolDown(0)) instance.setCoolDown(0, 0);
         if (instance.onCoolDown(2)) instance.setCoolDown(0, 2);
         CompoundTag tag = instance.getOrCreateTag();
@@ -360,6 +376,7 @@ public final class HellflameQuirk extends Skill {
     }
 
     @SubscribeEvent public static void damage(LivingIncomingDamageEvent event) {
+        if (isSealed()) return;
         LivingEntity target = event.getEntity();
         ManasSkillInstance defense = skill(target);
         long now = target.level().getGameTime();
@@ -394,6 +411,7 @@ public final class HellflameQuirk extends Skill {
     }
 
     @SubscribeEvent public static void igniteMelee(LivingDamageEvent.Post event) {
+        if (isSealed()) return;
         if (!(event.getSource().getEntity() instanceof LivingEntity attacker)
                 || !event.getSource().is(DamageTypes.PLAYER_ATTACK)) return;
         ManasSkillInstance instance = skill(attacker);

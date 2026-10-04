@@ -39,6 +39,9 @@
     "client.PermeationPhaseMovementMixin",
     "client.LevelRendererAccessor",
     "client.PlayerModelMixin",
+    "client.OverhaulHumanoidMixin",
+    "client.OverhaulLegRenderMixin",
+    "client.OverhaulArmorKneesMixin",
     "client.EngineKickMixin",
     "client.WoodenSwordsFirstPersonMixin"
 

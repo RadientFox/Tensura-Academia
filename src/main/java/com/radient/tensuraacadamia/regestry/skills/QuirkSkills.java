@@ -84,6 +84,10 @@ public class QuirkSkills {
     public static final RegistrySupplier<TapeQuirk> TAPE = register("tape", TapeQuirk::new);
     public static final RegistrySupplier<CloudQuirk> CLOUD = register("cloud", CloudQuirk::new);
     public static final RegistrySupplier<HellflameQuirk> HELLFLAME = register("hellflame", HellflameQuirk::new);
+    public static final RegistrySupplier<TeleportationQuirk> TELEPORTATION = register("teleportation", TeleportationQuirk::new);
+    public static final RegistrySupplier<WarpGateQuirk> WARP_GATE = register("warp_gate", WarpGateQuirk::new);
+    public static final RegistrySupplier<LeafipulationQuirk> LEAFIPULATION = register("leafipulation", LeafipulationQuirk::new);
+    public static final RegistrySupplier<OverhaulQuirk> OVERHAUL = register("overhaul", OverhaulQuirk::new);
 
 
 

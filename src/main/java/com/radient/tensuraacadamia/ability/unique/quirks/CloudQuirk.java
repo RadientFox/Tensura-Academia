@@ -13,6 +13,8 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.level.ClipContext;
@@ -21,11 +23,15 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
+import net.neoforged.neoforge.event.entity.living.LivingChangeTargetEvent;
+import net.neoforged.neoforge.event.tick.EntityTickEvent;
 
 import java.util.List;
 
 public final class CloudQuirk extends Skill {
+    public static final String DISMISS_VERSION = "TracadamiaCloudDismissVersion";
     private static final int MAX_MASTERY = 2500;
+    private static final String PACIFIED_UNTIL = "TracadamiaCloudPacifiedUntil";
     private static final ResourceLocation MAGIC_SENSE = ResourceLocation.fromNamespaceAndPath("tensura", "magic_sense");
 
     public CloudQuirk() { super(SkillType.UNIQUE); }
@@ -46,7 +52,9 @@ public final class CloudQuirk extends Skill {
             default -> "cloud.cloud";
         };
     }
-    @Override public double getAuraCost(LivingEntity owner, ManasSkillInstance instance, int mode) { return 0; }
+    @Override public double getAuraCost(LivingEntity owner, ManasSkillInstance instance, int mode) {
+        return mode == 0 && owner.isShiftKeyDown() ? 0 : mode == 1 ? 100 : mode == 2 ? 10000 : 50;
+    }
     @Override public boolean canBeToggled(ManasSkillInstance instance, LivingEntity owner) { return true; }
 
     public static boolean mastered(LivingEntity owner) {
@@ -61,6 +69,19 @@ public final class CloudQuirk extends Skill {
 
     @Override public void onPressed(ManasSkillInstance instance, LivingEntity owner, int key, int mode) {
         if (!(owner.level() instanceof ServerLevel level)) return;
+        if (mode == 0 && owner.isShiftKeyDown()) {
+            owner.getPersistentData().putLong(DISMISS_VERSION, owner.getPersistentData().getLong(DISMISS_VERSION) + 1);
+            for (ServerLevel world : level.getServer().getAllLevels()) {
+                var clouds = new java.util.ArrayList<QuirkCloud>();
+                for (var entity : world.getAllEntities())
+                    if (entity instanceof QuirkCloud cloud && owner.getUUID().equals(cloud.creator())) clouds.add(cloud);
+                clouds.forEach(QuirkCloud::discard);
+            }
+            return;
+        }
+        if (mode < 0 || mode > 2 || instance.onCoolDown(mode)) return;
+        double cost = getAuraCost(owner, instance, mode);
+        if (!QuirkCastCosts.hasAura(owner, cost)) return;
         boolean success = switch (mode) {
             case 0 -> cloud(level, owner, instance);
             case 1 -> blind(level, owner, instance);
@@ -68,6 +89,8 @@ public final class CloudQuirk extends Skill {
             default -> false;
         };
         if (success) {
+            QuirkCastCosts.spendAura(owner, cost);
+            QuirkCastCosts.cooldown(instance, mode, mode == 1 ? 5 : mode == 2 ? 30 : 0, 3);
             instance.addMasteryPoint(owner);
             instance.markDirty();
             level.playSound(null, owner.blockPosition(), SoundEvents.WOOL_PLACE, SoundSource.PLAYERS, 1, 0.7F);
@@ -132,5 +155,31 @@ public final class CloudQuirk extends Skill {
         ManasSkillInstance instance = SkillAPI.getSkillsFrom(event.getEntity())
                 .getSkill(QuirkSkills.CLOUD.get()).orElse(null);
         if (instance != null && instance.isToggled()) event.setCanceled(true);
+    }
+
+    public static void pacify(LivingEntity target) {
+        if (!(target instanceof Mob mob)) return;
+        mob.getPersistentData().putLong(PACIFIED_UNTIL, target.level().getGameTime() + 60);
+        clearAggro(mob);
+    }
+
+    private static void clearAggro(Mob mob) {
+        mob.setTarget(null);
+        mob.setLastHurtByMob(null);
+        mob.getBrain().eraseMemory(MemoryModuleType.ATTACK_TARGET);
+        mob.getBrain().eraseMemory(MemoryModuleType.ANGRY_AT);
+    }
+
+    @SubscribeEvent public static void preventRetarget(LivingChangeTargetEvent event) {
+        if (!event.getEntity().level().isClientSide
+                && event.getEntity().getPersistentData().getLong(PACIFIED_UNTIL) > event.getEntity().level().getGameTime())
+            event.setNewAboutToBeSetTarget(null);
+    }
+
+    @SubscribeEvent public static void pacifiedTick(EntityTickEvent.Pre event) {
+        if (!(event.getEntity() instanceof Mob mob) || mob.level().isClientSide
+                || !mob.getPersistentData().contains(PACIFIED_UNTIL)) return;
+        if (mob.getPersistentData().getLong(PACIFIED_UNTIL) > mob.level().getGameTime()) clearAggro(mob);
+        else mob.getPersistentData().remove(PACIFIED_UNTIL);
     }
 }

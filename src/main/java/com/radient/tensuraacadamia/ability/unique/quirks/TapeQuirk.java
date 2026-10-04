@@ -36,7 +36,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-/** Tape constructs are temporary server-side effects; the source blocks used by Trident are real. */
 public final class TapeQuirk extends Skill {
     private static final int MAX_MASTERY = 2500;
     private static final int GRAPPLE_TICKS = 200;
@@ -74,10 +73,18 @@ public final class TapeQuirk extends Skill {
             default -> "tape.tape";
         };
     }
-    @Override public double getAuraCost(LivingEntity owner, ManasSkillInstance instance, int mode) { return 0; }
+    @Override public double getAuraCost(LivingEntity owner, ManasSkillInstance instance, int mode) {
+        return switch (mode) { case 1 -> 500; case 2 -> 4000; case 3 -> 5000; default -> 10; };
+    }
 
     @Override public void onPressed(ManasSkillInstance instance, LivingEntity owner, int key, int mode) {
         if (!(owner.level() instanceof ServerLevel level) || mode < 0 || mode >= getModes(instance)) return;
+        if (mode == 0 && aim(level, owner, 40, false) == null) {
+            grapple(level, owner, instance);
+            return;
+        }
+        double cost = getAuraCost(owner, instance, mode);
+        if (instance.onCoolDown(mode) || !QuirkCastCosts.hasAura(owner, cost)) return;
         boolean used = switch (mode) {
             case 0 -> grapple(level, owner, instance);
             case 1 -> bind(level, owner);
@@ -86,6 +93,8 @@ public final class TapeQuirk extends Skill {
             default -> false;
         };
         if (used) {
+            QuirkCastCosts.spendAura(owner, cost);
+            QuirkCastCosts.cooldown(instance, mode, switch (mode) { case 1 -> 3; case 2 -> 20; case 3 -> 15; default -> 0; }, 4);
             instance.addMasteryPoint(owner);
             instance.markDirty();
             level.playSound(null, owner.blockPosition(), SoundEvents.COBWEB_PLACE, SoundSource.PLAYERS, 0.8F, 1.4F);
@@ -227,8 +236,6 @@ public final class TapeQuirk extends Skill {
 
     @SubscribeEvent public static void tick(ServerTickEvent.Post event) {
         GRAPPLES.removeIf(g -> { if (g.tick()) return false; g.discard(); return true; });
-        // A newly fired line may travel while the old line holds the player, but
-        // its latch replaces the older attachment rather than tethering both.
         java.util.Set<UUID> attachedOwners = new java.util.HashSet<>();
         for (int i = GRAPPLES.size() - 1; i >= 0; i--) {
             Grapple grapple = GRAPPLES.get(i);
@@ -319,8 +326,6 @@ public final class TapeQuirk extends Skill {
             if (retract) {
                 velocity = velocity.add(direction.scale(0.3));
             } else if (distance >= ropeLength - 0.5) {
-                // Preserve motion tangent to the rope. Looking along the swing pumps
-                // that tangent to overcome Minecraft's strong midair velocity drag.
                 Vec3 tangent = owner.getLookAngle().subtract(direction.scale(owner.getLookAngle().dot(direction)));
                 if (tangent.lengthSqr() < 0.01)
                     tangent = velocity.subtract(direction.scale(velocity.dot(direction)));

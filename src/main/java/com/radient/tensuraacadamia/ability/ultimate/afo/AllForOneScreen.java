@@ -87,7 +87,8 @@ public final class AllForOneScreen extends SkillCreationScreen {
         graphics.fill(x, y, x + 1, y + 20, 0xFF8B252E);
         graphics.fill(x + 19, y, x + 20, y + 20, 0xFF8B252E);
         if (enabled) {
-            String label = menu.getMode() == 3 ? selected == QuirkSkills.PERIL_DIFFUSION.get() ? "U" : "C" : menu.getMode() == 0 ? "S" : "T";
+            String label = menu.getMode() == 3 ? selected == QuirkSkills.PERIL_DIFFUSION.get()
+                    || selected == QuirkSkills.WARP_GATE.get() ? "U" : "C" : menu.getMode() == 0 ? "S" : "T";
             graphics.drawCenteredString(font, label, x + 10, y + 6, 0xFFEBC9CB);
         }
     }
@@ -98,8 +99,12 @@ public final class AllForOneScreen extends SkillCreationScreen {
                 && mouseY >= topPos + 116 && mouseY < topPos + 136
                 && ((SkillCreationScreenAccess) (Object) this).tracadamia$getSelectedSkill() != null) {
             if (menu.getMode() == 3) {
-                boolean uncombine = ((SkillCreationScreenAccess) (Object) this).tracadamia$getSelectedSkill() == QuirkSkills.PERIL_DIFFUSION.get();
-                graphics.renderTooltip(font, Component.literal(uncombine ? "Uncombine: restore both quirks and 50,000 max magicules" : "Combine with Permeation: reserve 50,000 max magicules"), mouseX, mouseY);
+                ManasSkill selected = ((SkillCreationScreenAccess) (Object) this).tracadamia$getSelectedSkill();
+                boolean uncombine = selected == QuirkSkills.PERIL_DIFFUSION.get() || selected == QuirkSkills.WARP_GATE.get();
+                String text = uncombine ? "Uncombine: restore both quirks and 50,000 max magicules"
+                        : selected == QuirkSkills.CLOUD.get() ? "Combine Cloud and Teleportation: reserve 50,000 max magicules"
+                        : "Combine with Permeation: reserve 50,000 max magicules";
+                graphics.renderTooltip(font, Component.literal(text), mouseX, mouseY);
                 return;
             }
             graphics.renderTooltip(font, Component.translatable(menu.getMode() == 0

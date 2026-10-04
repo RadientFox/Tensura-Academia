@@ -128,7 +128,6 @@ public final class VineConstruct extends Mob {
             Entity root = server.getEntity(shieldRoot);
             return root instanceof VineConstruct vine && vine.hurt(source, amount);
         }
-        // A wide beam can hit several panels; all belong to the same shield, not five shields.
         if (form() == SHIELD && level() instanceof ServerLevel) {
             ManasSkillInstance ability = ((TensuraDamageSource) source).tensura$getAbilityInstance();
             if (ability != null && (ability.getSkill() == QuirkSkills.BEAMS_FROM_HIS_EYES.get()
@@ -275,7 +274,6 @@ public final class VineConstruct extends Mob {
         entityData.set(TARGET, target.getId());
         Vec3 desired = anchor;
         if (form() == CAGE) {
-            // Lift slowly, using real collision so ceilings are not crossed.
             long elapsed = Math.round(400 * bonus) - (expiresAt - server.getGameTime());
             if (elapsed <= 10) desired = anchor.add(0, 0.3 * bonus, 0);
         } else if (form() == DRAG) {
