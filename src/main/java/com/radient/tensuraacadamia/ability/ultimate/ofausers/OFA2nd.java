@@ -2,6 +2,7 @@ package com.radient.tensuraacadamia.ability.ultimate.ofausers;
 
 import com.github.hvnbael.trnightmare.compat.TextAnimatorCompat;
 import com.github.hvnbael.trnightmare.util.SkillIconFrames;
+import com.radient.tensuraacadamia.TensuraAcadamia;
 import com.radient.tensuraacadamia.config.skills.OFAConfig;
 import com.radient.tensuraacadamia.entity.GreyTornadoBlade;
 import com.radient.tensuraacadamia.regestry.MHAEffects;
@@ -16,7 +17,6 @@ import io.github.manasmods.manascore.skill.api.ManasSkillInstance;
 import io.github.manasmods.manascore.skill.api.SkillAPI;
 import io.github.manasmods.tensura.ability.SkillHelper;
 import io.github.manasmods.tensura.ability.SkillUtils;
-import io.github.manasmods.tensura.ability.TensuraSkill;
 import io.github.manasmods.tensura.ability.TensuraSkillInstance;
 import io.github.manasmods.tensura.ability.skill.Skill;
 import io.github.manasmods.tensura.damage.TensuraDamageTypes;
@@ -38,7 +38,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
 import net.minecraft.network.protocol.game.ClientboundAnimatePacket;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -48,7 +47,6 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.LivingEntity;
@@ -63,12 +61,16 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.event.tick.EntityTickEvent;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
+@EventBusSubscriber(modid = TensuraAcadamia.MODID)
 public class OFA2nd extends Skill {
         private static final OFAConfig.OFA2nd CONFIG = ConfigRegistry.getConfig(OFAConfig.class).OFA2nd;
         public static final ResourceLocation OFA2nd = ResourceLocation.fromNamespaceAndPath("tracadamia", "one_for_all_2");
@@ -102,6 +104,10 @@ public class OFA2nd extends Skill {
     private static final ResourceLocation ATTACK_DAMAGE_MODIFIER = ResourceLocation.fromNamespaceAndPath("tracadamia", "full_cowling_damage");
     private static final ResourceLocation ARMOR_MODIFIER = ResourceLocation.fromNamespaceAndPath("tracadamia", "full_cowling_armor");
     private static final ResourceLocation RECOIL_MODIFIER = ResourceLocation.fromNamespaceAndPath("tracadamia", "full_cowling_recoil");
+    private static final int RECOIL_INTERVAL = 20 * 3;
+    private static final int RECOIL_RECOVERY = 20 * 60 * 20;
+    private static final String NEXT_RECOIL_TAG = "cowlingNextRecoil";
+    private static final String RECOIL_EXPIRES_TAG = "tracadamia_cowling_recoil_expires";
 
     private static final String ACTIVE_TAG = "tracadamia_full_cowling_active";
     private static final String TIME_TAG = "tracadamia_full_cowling_time";
@@ -160,7 +166,6 @@ public class OFA2nd extends Skill {
     public void onTick(ManasSkillInstance instance, LivingEntity entity) {
         Level var6 = entity.level();
 
-        var data = entity.getPersistentData();
         CompoundTag tag = instance.getOrCreateTag();
         double percentUsed =  (tag.getDouble("outputPercent"));
         boolean fullCowlingOn = tag.getBoolean("fullCowling");
@@ -194,17 +199,7 @@ public class OFA2nd extends Skill {
             }
 
 
-            int time2 = data.getInt("activatedTimes2");
-            data.putInt("activatedTimes2", time2 + 1);
-
-
-            if (time2 % 24000 == 0 ){
-
-            }
-
-
             if (fullCowlingOn){
-                Player player = (Player) entity;
 
 
                 double x = entity.getX();
@@ -213,42 +208,13 @@ public class OFA2nd extends Skill {
 
 
 
-                int time = data.getInt("activatedTimes");
-                data.putInt("activatedTimes", time + 1);
+                int time = tag.getInt("activatedTimes");
+                tag.putInt("activatedTimes", time + 1);
                 if (time % BASE_CONFIG.Mastery.masteryActivateTime == 0) {
                     TensuraParticleHelper.spawnServerParticles(entity.level(), MHAParticles.OFA_COWLING_1.get(), x, y, z, 15, 0.1D, 0.1D, 0.1D, 0.1D, true);
                 }
 
-                if  (EnergyHelper.getMaxEP(entity) < ( percentUsed* CONFIG.fullOutputEP)){
-                    player.displayClientMessage(Component.translatable("tracadamia.skill.mode.power").setStyle(Style.EMPTY.withColor(ChatFormatting.WHITE)), true);
-
-                        if (percentUsed < 1) {
-                            float dmg = (float) (entity.getMaxHealth() * percentUsed);
-                            ResourceKey<DamageType> type = TensuraDamageTypes.BLOOD_DRAIN;
-                            DamageSource newSource = ((TensuraSkill) instance.getSkill()).createSource(instance, entity, type, 1);
-                            entity.hurt(newSource, dmg);
-                        }else {
-                            float dmg = (float) (entity.getMaxHealth() * 0.9);
-                            ResourceKey<DamageType> type = TensuraDamageTypes.BLOOD_DRAIN;
-                            DamageSource newSource = ((TensuraSkill) instance.getSkill()).createSource(instance, entity, type, 1);
-                            entity.hurt(newSource, dmg);
-                        }
-
-
-                     if (time % 3 == 0){
-                         if (percentUsed < 1) {
-                             float dmg = (float) (entity.getMaxHealth() * percentUsed);
-                             addhpModifier(entity, -(dmg * percentUsed));
-
-                         }else {
-                             float dmg = (float) (entity.getMaxHealth() * 0.9);
-                             addhpModifier(entity, -dmg);
-                         }
-
-                        tag.putBoolean("fullCowling", true);
-
-                    }
-                }
+                tickRecoil(tag, entity, percentUsed);
 
 
 
@@ -290,6 +256,8 @@ public class OFA2nd extends Skill {
                     attribute3.removeModifier(MOVEMENT_MODIFIER);
                 }
                 tag.putInt("activatedTimes", 1);
+                tag.remove(NEXT_RECOIL_TAG);
+                startRecoilRecovery(entity);
 
             }
         }
@@ -305,14 +273,55 @@ public class OFA2nd extends Skill {
         attribute.addOrUpdateTransientModifier(new AttributeModifier(ATTACK_DAMAGE_MODIFIER, amount, AttributeModifier.Operation.ADD_VALUE));
     }
 
-    private static void addhpModifier(LivingEntity entity, double amount) {
+    private static void tickRecoil(CompoundTag tag, LivingEntity entity, double output) {
         AttributeInstance attribute = entity.getAttribute(Attributes.MAX_HEALTH);
-
-        if (attribute == null) {
-            return;
+        if (attribute == null || !entity.isAlive()) return;
+        CompoundTag data = entity.getPersistentData();
+        if (!data.contains(RECOIL_EXPIRES_TAG)) attribute.removeModifier(RECOIL_MODIFIER);
+        AttributeModifier previous = attribute.getModifier(RECOIL_MODIFIER);
+        if (previous != null) data.putLong(RECOIL_EXPIRES_TAG, Long.MAX_VALUE);
+        long now = entity.level().getGameTime();
+        if (!tag.contains(NEXT_RECOIL_TAG)) tag.putLong(NEXT_RECOIL_TAG, now + RECOIL_INTERVAL);
+        if (now < tag.getLong(NEXT_RECOIL_TAG)) return;
+        tag.putLong(NEXT_RECOIL_TAG, now + RECOIL_INTERVAL);
+        output = Mth.clamp(output, 0, 1);
+        if (output <= 0 || EnergyHelper.getMaxEP(entity) >= output * CONFIG.fullOutputEP) return;
+        if (entity instanceof Player player) {
+            player.displayClientMessage(Component.translatable("tracadamia.skill.mode.power")
+                    .withStyle(ChatFormatting.WHITE), true);
         }
+        double reduction = previous == null ? 0 : -previous.amount();
+        double normalMaxHealth = entity.getMaxHealth() / (1 - reduction);
+        entity.hurt(entity.damageSources().source(TensuraDamageTypes.BLOOD_DRAIN),
+                (float) (normalMaxHealth * (output < 1 ? output : 0.9)));
+        reduction = Math.max(reduction, output < 1 ? output * output : 0.9);
+        attribute.removeModifier(RECOIL_MODIFIER);
+        attribute.addPermanentModifier(new AttributeModifier(RECOIL_MODIFIER, -reduction,
+                AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));
+        entity.setHealth(Math.min(entity.getHealth(), entity.getMaxHealth()));
+        data.putLong(RECOIL_EXPIRES_TAG, Long.MAX_VALUE);
+    }
 
-        attribute.addOrUpdateTransientModifier(new AttributeModifier(RECOIL_MODIFIER, amount, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));
+    private static void startRecoilRecovery(LivingEntity entity) {
+        CompoundTag data = entity.getPersistentData();
+        AttributeInstance attribute = entity.getAttribute(Attributes.MAX_HEALTH);
+        if (attribute != null && !data.contains(RECOIL_EXPIRES_TAG)) {
+            attribute.removeModifier(RECOIL_MODIFIER);
+        }
+        if (data.getLong(RECOIL_EXPIRES_TAG) == Long.MAX_VALUE) {
+            data.putLong(RECOIL_EXPIRES_TAG, entity.level().getGameTime() + RECOIL_RECOVERY);
+        }
+    }
+
+    @SubscribeEvent
+    public static void expireRecoil(EntityTickEvent.Post event) {
+        if (!(event.getEntity() instanceof LivingEntity entity) || entity.level().isClientSide()) return;
+        CompoundTag data = entity.getPersistentData();
+        if (!data.contains(RECOIL_EXPIRES_TAG)
+                || entity.level().getGameTime() < data.getLong(RECOIL_EXPIRES_TAG)) return;
+        AttributeInstance attribute = entity.getAttribute(Attributes.MAX_HEALTH);
+        if (attribute != null) attribute.removeModifier(RECOIL_MODIFIER);
+        data.remove(RECOIL_EXPIRES_TAG);
     }
 
     private static void addspeedModifier(LivingEntity entity, double amount) {
@@ -338,6 +347,7 @@ public class OFA2nd extends Skill {
 
 
     public void onForgetSkill(ManasSkillInstance instance, LivingEntity entity) {
+        startRecoilRecovery(entity);
         AttributeInstance attribute = entity.getAttribute(Attributes.ATTACK_DAMAGE);
         AttributeInstance attribute2 = entity.getAttribute(Attributes.ARMOR);
         AttributeInstance attribute3 = entity.getAttribute(Attributes.MOVEMENT_SPEED);
@@ -356,6 +366,7 @@ public class OFA2nd extends Skill {
     }
 
     public boolean onDamageEntity(ManasSkillInstance instance, LivingEntity attacker, LivingEntity target, DamageSource source, Changeable<Float> amount) {
+        if (attacker == target) return true;
         var data = attacker.getPersistentData();
         CompoundTag tag = instance.getOrCreateTag();
         if (attacker instanceof ServerPlayer player) {
@@ -857,8 +868,11 @@ public class OFA2nd extends Skill {
 
             if (fullCowlingOn){
                 tag.putBoolean("fullCowling", false);
+                tag.remove(NEXT_RECOIL_TAG);
+                startRecoilRecovery(entity);
             }else {
                 tag.putBoolean("fullCowling", true);
+                tag.putLong(NEXT_RECOIL_TAG, entity.level().getGameTime() + RECOIL_INTERVAL);
 
                 colorName = false;
                 AttributeInstance attribute = entity.getAttribute(Attributes.ATTACK_DAMAGE);
