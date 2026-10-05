@@ -39,7 +39,7 @@ public class GreyTornadoBlade extends WindTornadoProjectile {
 
     @Override
     public ResourceKey<DamageType> getDamageType() {
-        return DamageTypes.MOB_ATTACK;
+        return TensuraDamageTypes.AURA_SLASH;
     }
 
     @Override
@@ -56,9 +56,8 @@ public class GreyTornadoBlade extends WindTornadoProjectile {
             return;
         }
 
-        Vec3 forward = owner.getLookAngle();
-        Vec3 horizontal = new Vec3(forward.x, 0, forward.z).normalize().scale(1.8);
-        setPos(owner.getX() + horizontal.x, owner.getY() + 0.3, owner.getZ() + horizontal.z);
+
+        setPos(owner.getX() , owner.getY()  , owner.getZ() );
         setDeltaMovement(Vec3.ZERO);
 
         if (getAge() % 10 == 0) {

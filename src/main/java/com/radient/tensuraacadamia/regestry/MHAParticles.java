@@ -25,8 +25,10 @@ public final class MHAParticles {
             DeferredRegister.create(Registries.PARTICLE_TYPE, "tracadamia");
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> SMASH_PARTICLE =
             PARTICLES.register("smash_particles_1", () -> new SimpleParticleType(false));
-    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> OFA_COWLING =
-            PARTICLES.register("ofa_cowling", () -> new SimpleParticleType(false));
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> OFA_COWLING_1 =
+            PARTICLES.register("ofa_cowling_1", () -> new SimpleParticleType(false));
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> OFA_COWLING_2 =
+            PARTICLES.register("ofa_cowling_2", () -> new SimpleParticleType(false));
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> QUEEN_HEART =
             PARTICLES.register("queen_heart", () -> new SimpleParticleType(false));
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> ELECTRIC_ARC =
@@ -78,7 +80,9 @@ public final class MHAParticles {
         public static void registerProviders(RegisterParticleProvidersEvent event) {
             event.registerSpecial(QUEEN_HEART.get(), new com.radient.tensuraacadamia.client.QueenHeartParticle.Provider());
             event.registerSpriteSet(SMASH_PARTICLE.get(), SmashParticle.Provider::new);
-            event.registerSpriteSet(OFA_COWLING.get(),
+            event.registerSpriteSet(OFA_COWLING_1.get(),
+                    io.github.manasmods.tensura.particle.type.LightningSparkParticle.Provider::new);
+            event.registerSpriteSet(OFA_COWLING_2.get(),
                     io.github.manasmods.tensura.particle.type.LightningSparkParticle.Provider::new);
             event.registerSpriteSet(ELECTRIC_ARC.get(), sprites -> new ElectricParticle.Provider(sprites, false));
             event.registerSpriteSet(ELECTRIC_FIELD.get(), sprites -> new ElectricParticle.Provider(sprites, true));

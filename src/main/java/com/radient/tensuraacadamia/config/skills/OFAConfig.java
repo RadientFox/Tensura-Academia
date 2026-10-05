@@ -86,12 +86,6 @@ public class OFAConfig extends ManasConfig {
         public double apAcquirement = 1_000_000.0;
         @Comment("Skill Mastery Points.")
         public double masteryPoints = 10_000.0;
-        @Comment("Ally Crit Chance")
-        public double allyCrit = 100.0;
-        @Comment("Ally Dodge Chance")
-        public double allyDodge = 30.0;
-        @Comment("Ally Regen Multiplier")
-        public double regenMult = 15.0;
         @Comment("ofa user 100% output damage")
         public double fullDamage = 750.0;
         @Comment("Detroit Smash AP cost")
@@ -118,8 +112,8 @@ public class OFAConfig extends ManasConfig {
         public double fullcowlarmor = 120.0;
         @Comment("Full cowling Speed")
         public double fullcowlSpeed = 0.3;
-        @Comment("Full cowling Jump Height")
-        public double fullcowlJump = 0.3;
+        @Comment("100% output EP needed")
+        public double fullOutputEP = 2_000_000;
 
 
         public OFA2nd() {

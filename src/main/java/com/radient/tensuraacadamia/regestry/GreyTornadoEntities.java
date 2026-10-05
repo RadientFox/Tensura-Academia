@@ -13,7 +13,7 @@ public final class GreyTornadoEntities {
     public static final DeferredHolder<EntityType<?>, EntityType<GreyTornadoBlade>> TORNADO_BLADE =
             ENTITIES.register("grey_tornado_blade", () -> EntityType.Builder
                     .<GreyTornadoBlade>of(GreyTornadoBlade::new, MobCategory.MISC)
-                    .sized(2.5F, 3.0F).clientTrackingRange(32).updateInterval(1).noSummon()
+                    .sized(3.0F, 4.0F).clientTrackingRange(32).updateInterval(1).noSummon()
                     .build("tracadamia:grey_tornado_blade"));
 
     private GreyTornadoEntities() {}
