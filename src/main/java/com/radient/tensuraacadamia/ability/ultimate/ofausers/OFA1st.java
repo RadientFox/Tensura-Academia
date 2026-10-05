@@ -571,10 +571,10 @@ public class OFA1st extends Skill {
                                 SkillHelper.learnSkill(entity, eye3);
                                 SkillAPI.getSkillsFrom(entity).forgetSkill(QuirkSkills.OFA_1ST.get());
                                 if (entity instanceof ServerPlayer player) {
-                                    player.displayClientMessage(Component.translatable("tracadamia.skill.quirk_bestowal.pass").setStyle(Style.EMPTY.withColor(ChatFormatting.RED)), false);
+                                    player.displayClientMessage(Component.translatable("tracadamia.skill.ofa.pass").setStyle(Style.EMPTY.withColor(ChatFormatting.WHITE)), false);
                                 }
                                 if (target instanceof ServerPlayer player) {
-                                    player.displayClientMessage(Component.translatable("tracadamia.skill.quirk_bestowal.passed").setStyle(Style.EMPTY.withColor(ChatFormatting.RED)), false);
+                                    player.displayClientMessage(Component.translatable("tracadamia.skill.ofa.passed").setStyle(Style.EMPTY.withColor(ChatFormatting.BLUE)), false);
                                 }
                             }
                         }

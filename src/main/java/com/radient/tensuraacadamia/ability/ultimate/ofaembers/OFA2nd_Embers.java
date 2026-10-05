@@ -1,8 +1,7 @@
-package com.radient.tensuraacadamia.ability.ultimate.ofausers;
+package com.radient.tensuraacadamia.ability.ultimate.ofaembers;
 
 import com.github.hvnbael.trnightmare.compat.TextAnimatorCompat;
 import com.github.hvnbael.trnightmare.util.SkillIconFrames;
-import com.radient.tensuraacadamia.TensuraAcadamia;
 import com.radient.tensuraacadamia.config.skills.OFAConfig;
 import com.radient.tensuraacadamia.entity.GreyTornadoBlade;
 import com.radient.tensuraacadamia.regestry.MHAEffects;
@@ -62,7 +61,6 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.tick.EntityTickEvent;
 import org.jetbrains.annotations.Nullable;
 
@@ -70,11 +68,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
-public class OFA2nd extends Skill {
+public class OFA2nd_Embers extends Skill {
         private static final OFAConfig.OFA2nd CONFIG = ConfigRegistry.getConfig(OFAConfig.class).OFA2nd;
-        public static final ResourceLocation OFA2nd = ResourceLocation.fromNamespaceAndPath("tracadamia", "one_for_all_2");
+        public static final ResourceLocation OFA2nd = ResourceLocation.fromNamespaceAndPath("tracadamia", "one_for_all_2_embers");
 
-    public OFA2nd() {
+    public OFA2nd_Embers() {
             super(SkillType.ULTIMATE);
         }
 
@@ -86,10 +84,10 @@ public class OFA2nd extends Skill {
         if (name == null) {
             return null;
         } else if (colorName == true){
-            return TextAnimatorCompat.useOnClient() ? TextAnimatorCompat.skillAnimatedDisplayName(name, ResourceLocation.fromNamespaceAndPath("tracadamia", "one_for_all_2")) : name.withStyle(ChatFormatting.WHITE);
+            return TextAnimatorCompat.useOnClient() ? TextAnimatorCompat.skillAnimatedDisplayName(name, ResourceLocation.fromNamespaceAndPath("tracadamia", "one_for_all_2_embers")) : name.withStyle(ChatFormatting.WHITE);
 
         } else {
-            return TextAnimatorCompat.useOnClient() ? TextAnimatorCompat.skillAnimatedDisplayName(name, ResourceLocation.fromNamespaceAndPath("tracadamia", "one_for_all_2")) : name.withStyle(ChatFormatting.WHITE);
+            return TextAnimatorCompat.useOnClient() ? TextAnimatorCompat.skillAnimatedDisplayName(name, ResourceLocation.fromNamespaceAndPath("tracadamia", "one_for_all_2_embers")) : name.withStyle(ChatFormatting.WHITE);
         }
     }
 
@@ -118,15 +116,15 @@ public class OFA2nd extends Skill {
 
 
     public int getModes(ManasSkillInstance instance) {
-        return 4;
+        return 3;
     }
 
     public int nextMode(LivingEntity entity, ManasSkillInstance instance, int mode, boolean reverse) {
 
         if (reverse) {
-            return mode == 0 ? 3 : mode - 1;
+            return mode == 0 ? 2 : mode - 1;
         } else {
-            return mode == 3 ? 0 : mode + 1;
+            return mode == 2 ? 0 : mode + 1;
         }
     }
 
@@ -137,7 +135,7 @@ public class OFA2nd extends Skill {
         if (colorName) {
             return SkillIconFrames.pickAnimated(ICON_FRAMES, this.iconTick);
         }else {
-            return ResourceLocation.fromNamespaceAndPath("tracadamia", "textures/skill/ultimate/one_for_all_2.png");
+            return ResourceLocation.fromNamespaceAndPath("tracadamia", "textures/skill/ultimate/ofa_embers_1.png");
         }
     }
 
@@ -148,7 +146,6 @@ public class OFA2nd extends Skill {
             case 0 -> var10000 = "one_for_all_1.output";
             case 1 -> var10000 = "one_for_all_1.smash";
             case 2 -> var10000 = "one_for_all_1.cowling";
-            case 3 -> var10000 = "one_for_all_1.bestow";
             default -> var10000 = super.getModeId(instance, mode);
         }
 
@@ -609,55 +606,6 @@ public class OFA2nd extends Skill {
 
 
 
-
-            case 3->{
-
-                LivingEntity target = ObjectSelectionHelper.getTargetingEntity(entity, 5.0, false);
-
-
-                if (entity instanceof Player){
-                    if (target instanceof Player){
-
-                        if ((!SkillUtils.hasSkill(target, (ManasSkill) QuirkSkills.OFA_1ST.get()))
-                                && (!SkillUtils.hasSkill(target, (ManasSkill) QuirkSkills.OFA_2ND.get()))
-                                && (!SkillUtils.hasSkill(target, (ManasSkill) QuirkSkills.OFA_3RD.get()))) {
-                            if (!(instance.getMastery() < (double) 0.0F) && !instance.isTemporarySkill()) {
-                                TensuraSkillInstance eye = new TensuraSkillInstance(QuirkSkills.OFA_3RD.get());
-                               // TensuraSkillInstance eye2 = new TensuraSkillInstance(QuirkSkills.GEARSHIFT.get());
-                                TensuraSkillInstance eye3 = new TensuraSkillInstance(QuirkSkills.OFA2nd_Embers.get());
-                                eye.getOrCreateTag().putBoolean("NoMagiculeCost", true);
-                               // eye2.getOrCreateTag().putBoolean("NoMagiculeCost", true);
-                                eye3.getOrCreateTag().putBoolean("NoMagiculeCost", true);
-                                SkillHelper.learnSkill(target, eye);
-                               // SkillHelper.learnSkill(target, eye2);
-                                SkillHelper.learnSkill(entity, eye3);
-                                SkillAPI.getSkillsFrom(entity).forgetSkill(QuirkSkills.OFA_2ND.get());
-                                if (entity instanceof ServerPlayer player) {
-                                    player.displayClientMessage(Component.translatable("tracadamia.skill.ofa.pass").setStyle(Style.EMPTY.withColor(ChatFormatting.BLUE)), false);
-                                }
-                                if (target instanceof ServerPlayer player) {
-                                    player.displayClientMessage(Component.translatable("tracadamia.skill.ofa.passed").setStyle(Style.EMPTY.withColor(ChatFormatting.RED)), false);
-                                }
-                            }
-                        }
-
-                    }
-
-                }
-
-
-
-
-            }
-
-
-
-
-
-
-
-
-
         }
 
 
@@ -910,7 +858,7 @@ public class OFA2nd extends Skill {
 
 
     static {
-        ICON_FRAMES = com.radient.tensuraacadamia.ability.ultimate.ofausers.OFA2nd.build("ofa", 32);
+        ICON_FRAMES = OFA2nd_Embers.build("ofa", 32);
     }
 
     public static ResourceLocation[] build(String prefix, int count) {
