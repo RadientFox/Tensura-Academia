@@ -110,9 +110,7 @@ public class QuirkSkills {
     public static final RegistrySupplier<GigantificationQuirk> GIGANTIFICATION = register("gigantification", GigantificationQuirk::new);
     public static final RegistrySupplier<TransformingArmsQuirk> TRANSFORMING_ARMS = register("transforming_arms", TransformingArmsQuirk::new);
     public static final RegistrySupplier<LandmineQuirk> LANDMINE = register("landmine", LandmineQuirk::new);
-
-
-
+    public static final RegistrySupplier<DecayQuirk> DECAY = register("decay", DecayQuirk::new);
 
 
     private static <E extends ManasSkill> RegistrySupplier<E> register(String name, Supplier<E> supplier) {

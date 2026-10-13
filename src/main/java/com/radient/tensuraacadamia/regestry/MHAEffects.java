@@ -27,6 +27,7 @@ public class MHAEffects {
     public static final DeferredHolder<MobEffect, MobEffect> WATTAGE;
     public static final DeferredHolder<MobEffect, MobEffect> ASPERSION;
     public static final DeferredHolder<MobEffect, MobEffect> SMOKESCREEN_OBSCURED;
+    public static final DeferredHolder<MobEffect, MobEffect> DELAY_SPOT_FIELD;
     public static final DeferredHolder<MobEffect, MobEffect> BOUNCE;
     public static final DeferredHolder<MobEffect, MobEffect> SPLINTER;
     public static final DeferredHolder<MobEffect, MobEffect> POP;
@@ -37,6 +38,7 @@ public class MHAEffects {
     public static final DeferredHolder<MobEffect, MobEffect> IRON_LOCK;
     public static final DeferredHolder<MobEffect, MobEffect> WARP_OVERUSE;
     public static final DeferredHolder<MobEffect, MobEffect> LEAF_ANTI_HEALING;
+    public static final DeferredHolder<MobEffect, MobEffect> DECAYEFFECT;
 
 
     public MHAEffects() {
@@ -70,6 +72,8 @@ public class MHAEffects {
         IRON_LOCK = MOB_EFFECTS.register("iron_lock", com.radient.tensuraacadamia.effects.IronLockEffect::new);
         WARP_OVERUSE = MOB_EFFECTS.register("warp_overuse", WarpOveruseEffect::new);
         LEAF_ANTI_HEALING = MOB_EFFECTS.register("leaf_anti_healing", LeafAntiHealingEffect::new);
+        DELAY_SPOT_FIELD = MOB_EFFECTS.register("delay_spot_field", DelaySpotFieldEffect::new);
+        DECAYEFFECT = MOB_EFFECTS.register("decay", DecayEffect::new);
     }
 
 }
