@@ -37,7 +37,7 @@
     "GroundFrictionMixin",
     "GroundBounceMixin",
     "FallingBlockMixin",
-    "RegenerationCostMixin"
+    "RegenerationCostMixin",
     "EntityPushMixin"
 
   ],
@@ -52,7 +52,7 @@
     "client.MinecraftMarkGlowMixin",
     "client.WingFlightRendererMixin",
     "client.GeoArmorRendererMixin",
-    "client.BossHealthOverlayAccessor"
+    "client.BossHealthOverlayAccessor",
     "client.OverhaulHumanoidMixin",
     "client.OverhaulLegRenderMixin",
     "client.OverhaulArmorKneesMixin",

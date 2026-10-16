@@ -995,8 +995,8 @@
 
   "tracadamia.skill.new_order.body_broken": "The body of air was broken",
   "tracadamia.skill.new_order.body_reforming": "The body of air isn't ready",
-  "tracadamia.skill.new_order.body_title": "Body of Air %s/%s"
-  "effect.tracadamia.bounce": "Bounce",
+  "tracadamia.skill.new_order.body_title": "Body of Air %s/%s",
+
   "effect.tracadamia.splinter": "Splinter",
   "tracadamia.skill.wooden_swords_from_his_hands": "Wooden Swords From His Hands",
   "tracadamia.skill.wooden_swords_from_his_hands.description": "Wooden Swords From His Hands allows the user to generate wooden swords from their wrist.",
