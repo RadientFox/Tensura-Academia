@@ -4,7 +4,6 @@ import com.radient.tensuraacadamia.TensuraAcadamia;
 import com.radient.tensuraacadamia.config.skills.QuirkSkillsConfig;
 import com.radient.tensuraacadamia.entity.TelekinesisBlockEntity;
 import com.radient.tensuraacadamia.util.GroundBlocks;
-import com.radient.tensuraacadamia.util.HitRules;
 import io.github.manasmods.manascore.config.ConfigRegistry;
 import io.github.manasmods.manascore.skill.api.ManasSkillInstance;
 import io.github.manasmods.tensura.ability.skill.Skill;
@@ -649,7 +648,7 @@ public class TelekinesisQuirk extends Skill {
 
     private static @Nullable LivingEntity findHit(ServerLevel level, ThrownBlocks thrown, TelekinesisBlockEntity block, Vec3 from, Vec3 to) {
         AABB sweep = block.getBoundingBox().move(from.subtract(to)).expandTowards(to.subtract(from)).inflate(0.3D);
-        return level.getEntitiesOfClass(LivingEntity.class, sweep, target -> target != thrown.owner && target.isAlive() && !target.isSpectator() && HitRules.canHit(thrown.owner, target))
+        return level.getEntitiesOfClass(LivingEntity.class, sweep, target -> target != thrown.owner && target.isAlive() && !target.isSpectator())
                 .stream()
                 .min(Comparator.comparingDouble(target -> target.distanceToSqr(from)))
                 .orElse(null);

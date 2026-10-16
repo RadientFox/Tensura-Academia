@@ -3,7 +3,6 @@ package com.radient.tensuraacadamia.ability.unique.quirks;
 import com.radient.tensuraacadamia.TensuraAcadamia;
 import com.radient.tensuraacadamia.config.skills.QuirkSkillsConfig;
 import com.radient.tensuraacadamia.regestry.skills.QuirkSkills;
-import com.radient.tensuraacadamia.util.HitRules;
 import com.radient.tensuraacadamia.util.Modifiers;
 import io.github.manasmods.manascore.config.ConfigRegistry;
 import io.github.manasmods.manascore.skill.api.ManasSkillInstance;
@@ -239,7 +238,7 @@ public class TransformingArmsQuirk extends Skill {
         sweeping = true;
         try {
             for (LivingEntity other : level.getEntitiesOfClass(LivingEntity.class, target.getBoundingBox().inflate(1.0D, 0.25D, 1.0D),
-                    other -> other != attacker && other != target && other.isAlive() && !other.isSpectator() && HitRules.canHit(attacker, other) && !MultiArms.isHoldPair(attacker, other))) {
+                    other -> other != attacker && other != target && other.isAlive() && !other.isSpectator() && !attacker.isAlliedTo(other) && !MultiArms.isHoldPair(attacker, other))) {
                 other.knockback(0.4D, Mth.sin(attacker.getYRot() * Mth.DEG_TO_RAD), -Mth.cos(attacker.getYRot() * Mth.DEG_TO_RAD));
                 other.hurt(source, damage);
             }

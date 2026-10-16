@@ -3,7 +3,6 @@ package com.radient.tensuraacadamia.ability.unique.quirks;
 import com.radient.tensuraacadamia.TensuraAcadamia;
 import com.radient.tensuraacadamia.config.skills.QuirkSkillsConfig;
 import com.radient.tensuraacadamia.regestry.skills.QuirkSkills;
-import com.radient.tensuraacadamia.util.HitRules;
 import dev.architectury.event.EventResult;
 import io.github.manasmods.manascore.config.ConfigRegistry;
 import io.github.manasmods.manascore.network.api.util.Changeable;
@@ -416,7 +415,7 @@ public class StrongarmQuirk extends Skill {
     private static @Nullable LivingEntity findLungeTarget(ServerLevel level, LivingEntity owner) {
         Vec3 forward = Vec3.directionFromRotation(0.0F, owner.getYRot());
         return level.getEntitiesOfClass(LivingEntity.class, owner.getBoundingBox().inflate(CATCH_RANGE),
-                        target -> target != owner && target.isAlive() && !target.isSpectator() && HitRules.canHit(owner, target)
+                        target -> target != owner && target.isAlive() && !target.isSpectator() && !owner.isAlliedTo(target)
                                 && forward.dot(target.position().subtract(owner.position())) >= 0.0D)
                 .stream()
                 .min(Comparator.comparingDouble(owner::distanceToSqr))
@@ -498,6 +497,7 @@ public class StrongarmQuirk extends Skill {
         return COMBOS.stream().anyMatch(combo -> combo.owner == entity);
     }
 
+    // false once the combo is over
     private static boolean tickCombo(Combo combo) {
         LivingEntity owner = combo.owner;
         if (!owner.isAlive() || owner.isRemoved() || !hasEmptyHands(owner) || !(owner.level() instanceof ServerLevel level)) {

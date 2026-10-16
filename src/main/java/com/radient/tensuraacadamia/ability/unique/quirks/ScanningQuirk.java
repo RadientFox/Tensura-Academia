@@ -3,21 +3,17 @@ package com.radient.tensuraacadamia.ability.unique.quirks;
 import com.radient.tensuraacadamia.TensuraAcadamia;
 import com.radient.tensuraacadamia.config.skills.QuirkSkillsConfig;
 import com.radient.tensuraacadamia.regestry.skills.QuirkSkills;
-import com.radient.tensuraacadamia.util.Modifiers;
-import io.github.manasmods.manascore.attribute.api.ManasCoreAttributes;
 import io.github.manasmods.manascore.config.ConfigRegistry;
 import io.github.manasmods.manascore.skill.api.ManasSkillInstance;
 import io.github.manasmods.manascore.skill.api.SkillAPI;
 import io.github.manasmods.manascore.skill.api.Skills;
 import io.github.manasmods.tensura.ability.skill.Skill;
-import io.github.manasmods.tensura.damage.TensuraDamageHelper;
 import io.github.manasmods.tensura.registry.sound.TensuraSoundEvents;
 import io.github.manasmods.tensura.storage.TensuraStorages;
 import io.github.manasmods.tensura.util.AttributeHelper;
 import io.github.manasmods.tensura.util.EnergyHelper;
 import io.github.manasmods.tensura.util.ObjectSelectionHelper;
 import net.minecraft.ChatFormatting;
-import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
@@ -30,26 +26,18 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.player.Player;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
-import net.neoforged.neoforge.event.server.ServerStoppingEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
-import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import org.jetbrains.annotations.Nullable;
-import org.joml.Vector3f;
 
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.function.Predicate;
 
 @EventBusSubscriber(modid = TensuraAcadamia.MODID)
 public class ScanningQuirk extends Skill {
@@ -58,8 +46,6 @@ public class ScanningQuirk extends Skill {
 
     private static final int SCAN = 0;
     private static final int LOCK_ON = 1;
-    private static final int WEAKNESS_DETECTION = 2;
-    private static final int MODES = 3;
 
     private static final double TARGET_RAY_OFFSET = 1.0D;
     private static final int LOCK_CHECK_INTERVAL = 5;
@@ -72,39 +58,6 @@ public class ScanningQuirk extends Skill {
     private static final double PRESENCE_SENSE_LEVEL = 4.0D;
     private static final String LOCK_ID_TAG = "lockTarget";
     private static final String LOCK_UUID_TAG = "lockTargetUUID";
-    private static final String WEAKNESS_TAG = "weaknessType";
-    private static final ResourceLocation ON_TARGET = ResourceLocation.fromNamespaceAndPath(TensuraAcadamia.MODID, "on_target");
-    private static final int WEAKNESS_PARTICLE_TICKS = 10;
-
-    // Damage types that weakness detection has access to
-    public enum Weakness {
-        FLAME("flame", 0xFF6A2A, TensuraDamageHelper::isFireDamage),
-        WATER("water", 0x3C8CFF, TensuraDamageHelper::isWaterDamage),
-        ICE("ice", 0xA8E8FF, TensuraDamageHelper::isCold),
-        WIND("wind", 0x9CFFB0, TensuraDamageHelper::isWindDamage),
-        PHYSICAL("physical", 0xC8C8C8, TensuraDamageHelper::isPhysicalAttack),
-        LIGHTNING("lightning", 0xFFF04A, TensuraDamageHelper::isLightningDamage),
-        DARK("dark", 0x7A2AA8, TensuraDamageHelper::isDarkDamage),
-        LIGHT("light", 0xFFFFD8, TensuraDamageHelper::isLightDamage);
-
-        private final String name;
-        private final DustParticleOptions particle;
-        private final Predicate<DamageSource> matches;
-
-        Weakness(String name, int color, Predicate<DamageSource> matches) {
-            this.name = name;
-            this.particle = new DustParticleOptions(new Vector3f((color >> 16 & 255) / 255.0F, (color >> 8 & 255) / 255.0F, (color & 255) / 255.0F), 1.0F);
-            this.matches = matches;
-        }
-
-        public Component getName() {
-            return Component.translatable("tracadamia.skill.scanning.weakness." + this.name);
-        }
-    }
-
-    private record Exposed(LivingEntity owner, LivingEntity target, Weakness weakness, double bonus, long until) {}
-
-    private static final List<Exposed> EXPOSED = new ArrayList<>();
 
     // Latest scan on the client
     private static @Nullable ScanPayload clientScan;
@@ -120,17 +73,17 @@ public class ScanningQuirk extends Skill {
 
     @Override
     public double getAuraCost(LivingEntity entity, ManasSkillInstance instance, int mode) {
-        return mode == WEAKNESS_DETECTION ? CONFIG.weaknessAuraCost : CONFIG.auraCost;
+        return CONFIG.auraCost;
     }
 
     @Override
     public int getModes(ManasSkillInstance instance) {
-        return MODES;
+        return 2;
     }
 
     @Override
     public int nextMode(LivingEntity entity, ManasSkillInstance instance, int mode, boolean reverse) {
-        return Math.floorMod(mode + (reverse ? -1 : 1), MODES);
+        return mode == SCAN ? LOCK_ON : SCAN;
     }
 
     @Override
@@ -138,32 +91,19 @@ public class ScanningQuirk extends Skill {
         return switch (mode) {
             case SCAN -> "scanning.scan";
             case LOCK_ON -> "scanning.lock_on";
-            case WEAKNESS_DETECTION -> "scanning.weakness_detection";
             default -> super.getModeId(instance, mode);
         };
     }
 
     @Override
-    public boolean canIgnoreCoolDown(ManasSkillInstance instance, LivingEntity entity, int mode) {
-        return mode == WEAKNESS_DETECTION && entity.isShiftKeyDown() || super.canIgnoreCoolDown(instance, entity, mode);
-    }
-
-    @Override
     public void onPressed(ManasSkillInstance instance, LivingEntity entity, int keyNumber, int mode) {
-        if (!(entity.level() instanceof ServerLevel level)) {
+        if (!(entity.level() instanceof ServerLevel)) {
             return;
         }
 
         switch (mode) {
             case SCAN -> toggleScan(instance, entity);
             case LOCK_ON -> lockOn(instance, entity);
-            case WEAKNESS_DETECTION -> {
-                if (entity.isShiftKeyDown()) {
-                    cycleWeakness(level, instance, entity);
-                } else {
-                    exposeWeakness(level, instance, entity);
-                }
-            }
         }
     }
 
@@ -199,15 +139,11 @@ public class ScanningQuirk extends Skill {
 
     @Override
     public boolean canTick(ManasSkillInstance instance, LivingEntity entity) {
-        return isScanning(instance) || instance.isToggled();
+        return isScanning(instance);
     }
 
     @Override
     public void onTick(ManasSkillInstance instance, LivingEntity entity) {
-        if (!(entity instanceof Player)) {
-            updateOnTarget(instance, entity);
-        }
-
         CompoundTag tag = instance.getOrCreateTag();
         int time = tag.getInt("activatedTimes");
         if (time % BASE_CONFIG.Mastery.masteryActivateTime == 0) {
@@ -223,26 +159,6 @@ public class ScanningQuirk extends Skill {
         if (instance.getTag() != null && instance.getTag().getBoolean(PRESENCE_TAG)) {
             AttributeHelper.removePresenceSense(entity, PRESENCE_SENSE_LEVEL);
         }
-
-        Modifiers.set(entity, ManasCoreAttributes.CRITICAL_ATTACK_CHANCE, ON_TARGET, 0.0D, AttributeModifier.Operation.ADD_VALUE);
-        EXPOSED.removeIf(exposed -> exposed.owner() == entity);
-    }
-
-    // On Target, Passive Toggle
-    @Override
-    public boolean canBeToggled(ManasSkillInstance instance, LivingEntity living) {
-        return instance.getMastery() >= 0.0D;
-    }
-
-    @Override
-    public void onToggleOff(ManasSkillInstance instance, LivingEntity entity) {
-        Modifiers.set(entity, ManasCoreAttributes.CRITICAL_ATTACK_CHANCE, ON_TARGET, 0.0D, AttributeModifier.Operation.ADD_VALUE);
-    }
-
-    // Every attack crits while locked on
-    private static void updateOnTarget(ManasSkillInstance instance, LivingEntity entity) {
-        boolean onTarget = instance.isToggled() && getLockTarget(instance) >= 0;
-        Modifiers.set(entity, ManasCoreAttributes.CRITICAL_ATTACK_CHANCE, ON_TARGET, onTarget ? CONFIG.onTargetCritChance : 0.0D, AttributeModifier.Operation.ADD_VALUE);
     }
 
     public static List<ManasSkillInstance> getQuirks(LivingEntity target) {
@@ -391,101 +307,7 @@ public class ScanningQuirk extends Skill {
             if (player.tickCount % LOCK_CHECK_INTERVAL == 0) {
                 checkLock(player, level, skills, instance);
             }
-
-            updateOnTarget(instance, player);
         });
-    }
-
-    // Weakness Detection
-
-    public static Weakness getWeakness(ManasSkillInstance instance) {
-        CompoundTag tag = instance.getTag();
-        Weakness[] types = Weakness.values();
-        return types[Math.floorMod(tag == null ? 0 : tag.getInt(WEAKNESS_TAG), types.length)];
-    }
-
-    private static void cycleWeakness(ServerLevel level, ManasSkillInstance instance, LivingEntity entity) {
-        Weakness next = Weakness.values()[(getWeakness(instance).ordinal() + 1) % Weakness.values().length];
-        instance.getOrCreateTag().putInt(WEAKNESS_TAG, next.ordinal());
-        instance.markDirty();
-        message(entity, Component.translatable("tracadamia.skill.scanning.weakness_selected", next.getName()).withStyle(ChatFormatting.AQUA));
-        level.playSound(null, entity.getX(), entity.getY(), entity.getZ(), SoundEvents.UI_BUTTON_CLICK.value(), SoundSource.PLAYERS, 0.4F, 1.4F);
-    }
-
-    private static @Nullable LivingEntity getLocked(ServerLevel level, ManasSkillInstance instance) {
-        CompoundTag tag = instance.getTag();
-        return tag != null && tag.hasUUID(LOCK_UUID_TAG) && level.getEntity(tag.getUUID(LOCK_UUID_TAG)) instanceof LivingEntity target && target.isAlive() ? target : null;
-    }
-
-    private static void exposeWeakness(ServerLevel level, ManasSkillInstance instance, LivingEntity entity) {
-        LivingEntity target = getLocked(level, instance);
-        if (target == null) {
-            fail(entity, "tracadamia.skill.scanning.not_locked");
-            return;
-        }
-
-        if (EnergyHelper.isOutOfEnergy(entity, instance, WEAKNESS_DETECTION)) {
-            return;
-        }
-
-        Weakness weakness = getWeakness(instance);
-        double bonus = instance.isMastered(entity) ? CONFIG.weaknessDamageMastered : CONFIG.weaknessDamage;
-        EXPOSED.removeIf(exposed -> exposed.owner() == entity);
-        EXPOSED.add(new Exposed(entity, target, weakness, bonus, level.getGameTime() + CONFIG.weaknessSeconds * 20L));
-
-        level.sendParticles(weakness.particle, target.getX(), target.getY(0.5D), target.getZ(), 30, target.getBbWidth() * 0.5D, target.getBbHeight() * 0.4D, target.getBbWidth() * 0.5D, 0.0D);
-        level.playSound(null, target.getX(), target.getY(), target.getZ(), SoundEvents.AMETHYST_BLOCK_RESONATE, SoundSource.PLAYERS, 1.0F, 1.2F);
-        message(entity, Component.translatable("tracadamia.skill.scanning.weakness_exposed", target.getDisplayName(), weakness.getName()).withStyle(ChatFormatting.AQUA));
-        message(target, Component.translatable("tracadamia.skill.scanning.weakness_found", weakness.getName()).withStyle(ChatFormatting.RED));
-        instance.setCoolDown(CONFIG.weaknessCooldown, WEAKNESS_DETECTION);
-        instance.addMasteryPoint(entity);
-    }
-
-    // Extra damage from exposed weaknesses
-    public static double getWeaknessBonus(LivingEntity target, DamageSource source) {
-        double multiplier = 1.0D;
-        for (Exposed exposed : EXPOSED) {
-            if (exposed.target() == target && exposed.weakness().matches.test(source)) {
-                multiplier *= 1.0D + exposed.bonus();
-            }
-        }
-        return multiplier;
-    }
-
-    @SubscribeEvent
-    public static void onIncomingDamage(LivingIncomingDamageEvent event) {
-        if (EXPOSED.isEmpty() || event.getEntity().level().isClientSide) {
-            return;
-        }
-
-        double multiplier = getWeaknessBonus(event.getEntity(), event.getSource());
-        if (multiplier != 1.0D) {
-            event.setAmount((float) (event.getAmount() * multiplier));
-        }
-    }
-
-    private static boolean tickExposed(Exposed exposed) {
-        LivingEntity target = exposed.target();
-        if (!target.isAlive() || target.isRemoved() || !(target.level() instanceof ServerLevel level) || level.getGameTime() > exposed.until()) {
-            return true;
-        }
-
-        if (level.getGameTime() % WEAKNESS_PARTICLE_TICKS == 0L) {
-            level.sendParticles(exposed.weakness().particle, target.getX(), target.getY(0.5D), target.getZ(), 2, target.getBbWidth() * 0.4D, target.getBbHeight() * 0.3D, target.getBbWidth() * 0.4D, 0.0D);
-        }
-        return false;
-    }
-
-    @SubscribeEvent
-    public static void onServerTick(ServerTickEvent.Post event) {
-        if (!EXPOSED.isEmpty()) {
-            EXPOSED.removeIf(ScanningQuirk::tickExposed);
-        }
-    }
-
-    @SubscribeEvent
-    public static void onServerStopping(ServerStoppingEvent event) {
-        EXPOSED.clear();
     }
 
     private static void checkLock(ServerPlayer player, ServerLevel level, Skills skills, ManasSkillInstance instance) {

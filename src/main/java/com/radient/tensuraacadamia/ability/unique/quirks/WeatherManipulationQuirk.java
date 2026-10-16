@@ -5,7 +5,6 @@ import com.radient.tensuraacadamia.config.skills.QuirkSkillsConfig;
 import com.radient.tensuraacadamia.entity.StormBoltEntity;
 import com.radient.tensuraacadamia.entity.TornadoEntity;
 import com.radient.tensuraacadamia.util.DamageReduction;
-import com.radient.tensuraacadamia.util.HitRules;
 import io.github.manasmods.manascore.config.ConfigRegistry;
 import io.github.manasmods.manascore.network.api.util.Changeable;
 import io.github.manasmods.manascore.skill.api.ManasSkill;
@@ -309,7 +308,7 @@ public class WeatherManipulationQuirk extends Skill {
         double radius = instance.isMastered(entity) ? CONFIG.stormRadiusMastered : CONFIG.stormRadius;
         float damage = (float) (instance.isMastered(entity) ? CONFIG.stormDamageMastered : CONFIG.stormDamage);
         List<LivingEntity> targets = level.getEntitiesOfClass(LivingEntity.class, entity.getBoundingBox().inflate(radius),
-                target -> target != entity && target.isAlive() && HitRules.canHit(entity, target) && target.distanceTo(entity) <= radius);
+                target -> target != entity && target.isAlive() && !entity.isAlliedTo(target) && target.distanceTo(entity) <= radius);
 
         if (targets.isEmpty()) {
             fail(entity, "tensura.targeting.not_targeted");
@@ -416,7 +415,7 @@ public class WeatherManipulationQuirk extends Skill {
 
         float damage = (float) (instance.isMastered(entity) ? CONFIG.chargeStrikeDamageMastered : CONFIG.chargeStrikeDamage);
         AABB area = new AABB(pos.x - STORM_BOLT_REACH, pos.y - STORM_BOLT_REACH, pos.z - STORM_BOLT_REACH, pos.x + STORM_BOLT_REACH, pos.y + 6.0D + STORM_BOLT_REACH, pos.z + STORM_BOLT_REACH);
-        for (LivingEntity target : level.getEntitiesOfClass(LivingEntity.class, area, target -> target != entity && target.isAlive() && HitRules.canHit(entity, target))) {
+        for (LivingEntity target : level.getEntitiesOfClass(LivingEntity.class, area, target -> target != entity && target.isAlive() && !entity.isAlliedTo(target))) {
             target.invulnerableTime = 0;
             target.hurt(((Skill) instance.getSkill()).createSource(instance, entity, TensuraDamageTypes.LIGHTNING_ELEMENTAL, BOLT_CHARGE), damage);
         }

@@ -5,7 +5,6 @@ import com.radient.tensuraacadamia.config.skills.QuirkSkillsConfig;
 import com.radient.tensuraacadamia.regestry.skills.QuirkSkills;
 import com.radient.tensuraacadamia.util.GroundBlocks;
 import com.radient.tensuraacadamia.util.DamageReduction;
-import com.radient.tensuraacadamia.util.HitRules;
 import io.github.manasmods.manascore.config.ConfigRegistry;
 import io.github.manasmods.manascore.network.api.util.Changeable;
 import io.github.manasmods.manascore.skill.api.ManasSkillInstance;
@@ -364,7 +363,7 @@ public class VibrateQuirk extends Skill {
         double radius = mastered ? CONFIG.earthquakeRadiusMastered : CONFIG.earthquakeRadius;
         float damage = (float) (mastered ? CONFIG.earthquakeDamageMastered : CONFIG.earthquakeDamage);
         AABB area = entity.getBoundingBox().inflate(radius, 4.0D, radius);
-        for (LivingEntity target : level.getEntitiesOfClass(LivingEntity.class, area, target -> target != entity && target.isAlive() && HitRules.canHit(entity, target)
+        for (LivingEntity target : level.getEntitiesOfClass(LivingEntity.class, area, target -> target != entity && target.isAlive()
                 && target.position().subtract(entity.position()).horizontalDistance() <= radius && VibrationDetectionQuirk.isGrounded(target))) {
             earthHit(instance, entity, target, damage, EARTHQUAKE);
             target.addEffect(new MobEffectInstance(TensuraMobEffects.getReference(TensuraMobEffects.PARALYSIS), CONFIG.earthquakeStunSeconds * 20, 0, false, false, true), entity);
@@ -435,7 +434,7 @@ public class VibrateQuirk extends Skill {
         double half = (mastered ? CONFIG.tremorSizeMastered : CONFIG.tremorSize) * 0.5D;
         float damage = (float) (mastered ? CONFIG.tremorDamageMastered : CONFIG.tremorDamage);
         AABB area = new AABB(entity.getX() - half, entity.getY() - SURFACE_SEARCH, entity.getZ() - half, entity.getX() + half, entity.getY() + 12.0D, entity.getZ() + half);
-        for (LivingEntity target : level.getEntitiesOfClass(LivingEntity.class, area, target -> target != entity && target.isAlive() && HitRules.canHit(entity, target))) {
+        for (LivingEntity target : level.getEntitiesOfClass(LivingEntity.class, area, target -> target != entity && target.isAlive())) {
             earthHit(instance, entity, target, damage, TREMORING_EARTH);
             target.push(0.0D, 0.7D, 0.0D);
             target.hurtMarked = true;
@@ -739,6 +738,7 @@ public class VibrateQuirk extends Skill {
         }
     }
 
+    // Seen on the client, used by VibrateClient
     public record Effect(int kind, Vec3 pos, float radius, int entityId, int duration, long start, long seed) {}
 
     private static final List<Effect> CLIENT_EFFECTS = new ArrayList<>();

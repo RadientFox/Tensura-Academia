@@ -14,9 +14,6 @@ public final class BruiserClient {
 
     private static final float GUARD_PITCH = -1.4F;
     private static final float GUARD_YAW = 0.5F;
-    private static final float ARM_INNER = 1.0F;
-    private static final float ARM_TOP = 2.0F;
-    private static final float LEG_INNER = 2.0F;
 
     private BruiserClient() {
     }
@@ -26,10 +23,10 @@ public final class BruiserClient {
         int part = found.map(BruiserQuirk::getPart).orElse(-1);
         float size = (float) BruiserQuirk.getPartScale();
 
-        scale(model.rightArm, model.rightSleeve, part == BruiserQuirk.RIGHT_ARM ? size : 1.0F, -1.0F, true);
-        scale(model.leftArm, model.leftSleeve, part == BruiserQuirk.LEFT_ARM ? size : 1.0F, 1.0F, true);
-        scale(model.rightLeg, model.rightPants, part == BruiserQuirk.RIGHT_LEG ? size : 1.0F, -1.0F, false);
-        scale(model.leftLeg, model.leftPants, part == BruiserQuirk.LEFT_LEG ? size : 1.0F, 1.0F, false);
+        scale(model.rightArm, model.rightSleeve, part == BruiserQuirk.RIGHT_ARM ? size : 1.0F, true);
+        scale(model.leftArm, model.leftSleeve, part == BruiserQuirk.LEFT_ARM ? size : 1.0F, true);
+        scale(model.rightLeg, model.rightPants, part == BruiserQuirk.RIGHT_LEG ? size : 1.0F, false);
+        scale(model.leftLeg, model.leftPants, part == BruiserQuirk.LEFT_LEG ? size : 1.0F, false);
 
         if (part == BruiserQuirk.LEFT_ARM && found.filter(BruiserQuirk::isBlocking).isPresent()) {
             model.leftArm.xRot = GUARD_PITCH + Mth.clamp(model.head.xRot, -0.6F, 0.6F);
@@ -39,18 +36,13 @@ public final class BruiserClient {
         }
     }
 
-    private static void scale(ModelPart limb, ModelPart layer, float size, float side, boolean arm) {
+    private static void scale(ModelPart limb, ModelPart layer, float size, boolean lengthen) {
         limb.xScale = size;
-        limb.yScale = arm ? size : 1.0F;
+        limb.yScale = lengthen ? size : 1.0F;
         limb.zScale = size;
-        if (arm) {
-            limb.x += side * (size - 1.0F) * ARM_INNER;
-            limb.y += (size - 1.0F) * ARM_TOP;
-        } else {
-            // Vanilla never resets a leg's x
-            limb.x = limb.getInitialPose().x + side * (size - 1.0F) * LEG_INNER;
-        }
-        layer.copyFrom(limb);
+        layer.xScale = limb.xScale;
+        layer.yScale = limb.yScale;
+        layer.zScale = limb.zScale;
     }
 
 }

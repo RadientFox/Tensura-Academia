@@ -16,7 +16,6 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -55,7 +54,6 @@ public class DupliArmsQuirk extends Skill {
     private static final int OCTOBLOW = 2;
     private static final int OCTOSPANSION = 3;
     private static final int BACKPACK_CARRY = 4;
-    private static final int ARM_SLOTS = 5;
 
     public static final int OCTOBLOW_ARMS = 16;
     public static final int OCTOSPANSION_WINDUP = 8;
@@ -129,21 +127,16 @@ public class DupliArmsQuirk extends Skill {
 
     @Override
     public int getModes(ManasSkillInstance instance) {
-        return 6;
+        return 5;
     }
 
     @Override
     public int nextMode(LivingEntity entity, ManasSkillInstance instance, int mode, boolean reverse) {
         if (reverse) {
-            return mode == ARM_GROWTH ? ARM_SLOTS : mode - 1;
+            return mode == ARM_GROWTH ? BACKPACK_CARRY : mode - 1;
         }
 
-        return mode == ARM_SLOTS ? ARM_GROWTH : mode + 1;
-    }
-
-    @Override
-    public boolean canIgnoreCoolDown(ManasSkillInstance instance, LivingEntity entity, int mode) {
-        return mode == ARM_SLOTS || super.canIgnoreCoolDown(instance, entity, mode);
+        return mode == BACKPACK_CARRY ? ARM_GROWTH : mode + 1;
     }
 
     @Override
@@ -154,7 +147,6 @@ public class DupliArmsQuirk extends Skill {
             case OCTOBLOW -> "dupli_arms.octoblow";
             case OCTOSPANSION -> "dupli_arms.octospansion";
             case BACKPACK_CARRY -> "dupli_arms.backpack_carry";
-            case ARM_SLOTS -> "dupli_arms.arm_slots";
             default -> super.getModeId(instance, mode);
         };
     }
@@ -171,11 +163,6 @@ public class DupliArmsQuirk extends Skill {
             case OCTOBLOW -> octoblow(level, instance, entity);
             case OCTOSPANSION -> octospansion(level, instance, entity);
             case BACKPACK_CARRY -> backpackCarry(level, instance, entity);
-            case ARM_SLOTS -> {
-                if (entity instanceof ServerPlayer player) {
-                    MultiArms.openArmSlots(player, Component.translatable("tracadamia.skill.dupli_arms"));
-                }
-            }
         }
     }
 
@@ -231,9 +218,9 @@ public class DupliArmsQuirk extends Skill {
         return MultiArms.getSwingTime(instance, SWING_TAG + slot);
     }
 
-    // Every grown arm has a slot
+    // Arms hold items while Extra Arms is on
     public static int getArmSlots(LivingEntity entity) {
-        return getDupliArms(entity).map(DupliArmsQuirk::getArms).orElse(0);
+        return getDupliArms(entity).filter(ManasSkillInstance::isToggled).map(DupliArmsQuirk::getArms).orElse(0);
     }
 
     private static int getMaxArms(ManasSkillInstance instance, LivingEntity entity) {
@@ -662,8 +649,8 @@ public class DupliArmsQuirk extends Skill {
             return;
         }
 
-        if (!MultiArms.canGrab(entity, target)) {
-            fail(entity, MultiArms.getGrabFail(target));
+        if (!MultiArms.canGrab(target)) {
+            fail(entity, "tracadamia.skill.arms.boss");
             return;
         }
 
@@ -684,7 +671,7 @@ public class DupliArmsQuirk extends Skill {
         if (target instanceof Mob mob && (mob instanceof Enemy || mob instanceof NeutralMob)) {
             mob.setTarget(entity);
         }
-        MultiArms.holdAt(entity, target, getCarryOffset(entity, target), MultiArms.HOLD_BODY, true, false, true);
+        MultiArms.holdAt(entity, target, getCarryOffset(entity, target), MultiArms.HOLD_BODY, true);
         playSound(level, entity, SoundEvents.ARMOR_EQUIP_LEATHER.value(), 1.0F, 0.8F);
         instance.addMasteryPoint(entity);
     }
@@ -727,7 +714,7 @@ public class DupliArmsQuirk extends Skill {
             return true;
         }
 
-        MultiArms.holdAt(owner, target, getCarryOffset(owner, target), MultiArms.HOLD_BODY, true, false, true);
+        MultiArms.holdAt(owner, target, getCarryOffset(owner, target), MultiArms.HOLD_BODY, true);
         target.setYRot(owner.yBodyRot);
         target.setYBodyRot(owner.yBodyRot);
         target.setYHeadRot(owner.yBodyRot);
