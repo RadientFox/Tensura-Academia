@@ -353,6 +353,7 @@ public final class ElectrificationQuirk extends Skill {
             Vec3 center;
             double radius;
             double damage;
+            Vec3 previousPosition = burst.previousPosition;
             double aura = TensuraStorages.getExistenceFrom(burst.owner).getAura();
             if (burst.targeted) {
                 double travel = burst.ticks / (double) TARGETED_BURST_TICKS;
@@ -373,7 +374,7 @@ public final class ElectrificationQuirk extends Skill {
                 dischargeVisuals(level, center, radius, burst.ticks);
             }
             if (damage <= 0) continue;
-            AABB area = burst.targeted ? new AABB(center, center).inflate(radius)
+            AABB area = burst.targeted ? new AABB(previousPosition, center).inflate(radius)
                     : new AABB(center.x - radius, burst.owner.getY() - 3, center.z - radius,
                     center.x + radius, burst.owner.getY() + burst.owner.getBbHeight() + 3, center.z + radius);
             for (LivingEntity target : level.getEntitiesOfClass(LivingEntity.class,

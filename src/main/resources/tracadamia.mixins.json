@@ -11,6 +11,21 @@
     "FallingBlockEntityInvoker",
     "LivingEntityClimbMixin",
     "LightningBoltAccessor",
+    "PermeationSkillGateMixin",
+    "PermeationPlayerTickMixin",
+    "PerilDiffusionMeleeMixin",
+    "WoodenSwordsDamageSourceMixin",
+    "MobDoubleHealthMixin",
+    "DoubleCloneEPGainMixin",
+    "LivingEntityDoubleHealthMixin",
+    "TailwindFlightMixin",
+    "HomingArrowAccessor",
+    "AlchemyProjectileImpactInvoker",
+    "TapeDisplayAccessor",
+    "TapeBlockDisplayAccessor",
+    "VinesMovementMixin",
+    "VinesSkillGateMixin",
+    "DarkShadowMovementMixin",
     "LivingEntityFloatMixin",
     "EntityPushMixin",
     "HeldPassengerMixin",
@@ -23,6 +38,8 @@
     "GroundBounceMixin",
     "FallingBlockMixin",
     "RegenerationCostMixin"
+    "EntityPushMixin"
+
   ],
   "client": [
     "SkillCreationScreenMixin",
@@ -36,6 +53,13 @@
     "client.WingFlightRendererMixin",
     "client.GeoArmorRendererMixin",
     "client.BossHealthOverlayAccessor"
+    "client.OverhaulHumanoidMixin",
+    "client.OverhaulLegRenderMixin",
+    "client.OverhaulArmorKneesMixin",
+    "client.EngineKickMixin",
+    "client.WoodenSwordsFirstPersonMixin",
+    "client.MinecraftMarkGlowMixin"
+
   ],
   "injectors": {
     "defaultRequire": 1

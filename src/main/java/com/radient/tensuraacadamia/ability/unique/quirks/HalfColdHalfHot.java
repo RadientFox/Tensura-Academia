@@ -588,6 +588,7 @@ public final class HalfColdHalfHot extends Skill {
     private static void flashfireBeam(ServerLevel level, LivingEntity owner) {
         Vec3 origin = bodyCenter(owner);
         Vec3 destination = end(level, owner, origin, owner.getLookAngle(), 30);
+        WhirlwindQuirk.igniteBeam(level, origin, owner.getLookAngle(), origin.distanceTo(destination), 1.6);
         for (LivingEntity target : level.getEntitiesOfClass(LivingEntity.class,
                 new AABB(origin, destination).inflate(1.0), e -> e != owner && e.isAlive())) {
             if (!target.getBoundingBox().inflate(0.8).contains(origin)

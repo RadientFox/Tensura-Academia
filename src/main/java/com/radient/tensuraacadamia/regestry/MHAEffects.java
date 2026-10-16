@@ -1,16 +1,6 @@
 package com.radient.tensuraacadamia.regestry;
 
-import com.radient.tensuraacadamia.effects.ToInspireOthersEffect;
-import com.radient.tensuraacadamia.effects.BleedingEffect;
-import com.radient.tensuraacadamia.effects.BloodParalysisEffect;
-import com.radient.tensuraacadamia.effects.BadTasteEffect;
-import com.radient.tensuraacadamia.effects.CoalgulationEffect;
-import com.radient.tensuraacadamia.effects.QuirkSicknessEffect;
-import com.radient.tensuraacadamia.effects.ElectricBoostEffect;
-import com.radient.tensuraacadamia.effects.WattageEffect;
-import com.radient.tensuraacadamia.effects.AspersionEffect;
-import com.radient.tensuraacadamia.effects.SmokescreenObscuredEffect;
-import com.radient.tensuraacadamia.effects.BounceEffect;
+import com.radient.tensuraacadamia.effects.*;
 import dev.architectury.registry.registries.RegistrySupplier;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
@@ -37,7 +27,18 @@ public class MHAEffects {
     public static final DeferredHolder<MobEffect, MobEffect> WATTAGE;
     public static final DeferredHolder<MobEffect, MobEffect> ASPERSION;
     public static final DeferredHolder<MobEffect, MobEffect> SMOKESCREEN_OBSCURED;
+    public static final DeferredHolder<MobEffect, MobEffect> DELAY_SPOT_FIELD;
     public static final DeferredHolder<MobEffect, MobEffect> BOUNCE;
+    public static final DeferredHolder<MobEffect, MobEffect> SPLINTER;
+    public static final DeferredHolder<MobEffect, MobEffect> POP;
+    public static final DeferredHolder<MobEffect, MobEffect> TAILWIND;
+    public static final DeferredHolder<MobEffect, MobEffect> WIND_FLIGHT;
+    public static final DeferredHolder<MobEffect, MobEffect> DARK_SHADOW_FLIGHT;
+    public static final DeferredHolder<MobEffect, MobEffect> AFFECTION;
+    public static final DeferredHolder<MobEffect, MobEffect> IRON_LOCK;
+    public static final DeferredHolder<MobEffect, MobEffect> WARP_OVERUSE;
+    public static final DeferredHolder<MobEffect, MobEffect> LEAF_ANTI_HEALING;
+    public static final DeferredHolder<MobEffect, MobEffect> DECAYEFFECT;
 
 
     public MHAEffects() {
@@ -62,6 +63,17 @@ public class MHAEffects {
         ASPERSION = MOB_EFFECTS.register("aspersion", AspersionEffect::new);
         SMOKESCREEN_OBSCURED = MOB_EFFECTS.register("smokescreen_obscured", SmokescreenObscuredEffect::new);
         BOUNCE = MOB_EFFECTS.register("bounce", BounceEffect::new);
+        SPLINTER = MOB_EFFECTS.register("splinter", SplinterEffect::new);
+        POP = MOB_EFFECTS.register("pop", PopEffect::new);
+        TAILWIND = MOB_EFFECTS.register("tailwind", () -> new TailwindEffect(false));
+        WIND_FLIGHT = MOB_EFFECTS.register("wind_flight", () -> new TailwindEffect(true));
+        DARK_SHADOW_FLIGHT = MOB_EFFECTS.register("dark_shadow_flight", com.radient.tensuraacadamia.effects.DarkShadowFlightEffect::new);
+        AFFECTION = MOB_EFFECTS.register("affection", Affection::new);
+        IRON_LOCK = MOB_EFFECTS.register("iron_lock", com.radient.tensuraacadamia.effects.IronLockEffect::new);
+        WARP_OVERUSE = MOB_EFFECTS.register("warp_overuse", WarpOveruseEffect::new);
+        LEAF_ANTI_HEALING = MOB_EFFECTS.register("leaf_anti_healing", LeafAntiHealingEffect::new);
+        DELAY_SPOT_FIELD = MOB_EFFECTS.register("delay_spot_field", DelaySpotFieldEffect::new);
+        DECAYEFFECT = MOB_EFFECTS.register("decay", DecayEffect::new);
     }
 
 }

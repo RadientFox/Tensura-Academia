@@ -137,7 +137,7 @@ public final class VoiceQuirk extends Skill {
         boolean mastered = instance.isMastered(owner);
         float damage = baseDamage * (mastered ? MASTERY_MULTIPLIER : 1.0F);
         AABB candidates = owner.getBoundingBox().expandTowards(forward.scale(length))
-                .inflate(width * 0.5D, height * 0.5D, width * 0.5D);
+                .inflate(Math.max(height, width) * 0.5D);
         for (LivingEntity target : level.getEntitiesOfClass(LivingEntity.class, candidates,
                 target -> target != owner && target.isAlive())) {
             if (insideCannon(target.getBoundingBox(), origin, forward, right, length, height, width))
@@ -150,16 +150,23 @@ public final class VoiceQuirk extends Skill {
 
     private static boolean insideCannon(AABB bounds, Vec3 origin, Vec3 forward, Vec3 right,
                                         double length, double height, double width) {
+        Vec3 up = right.cross(forward).normalize();
         Vec3 relative = bounds.getCenter().subtract(origin);
         double forwardDistance = relative.dot(forward);
         double sideways = Math.abs(relative.dot(right));
         double horizontalExtent = Math.abs(forward.x) * bounds.getXsize() * 0.5D
+                + Math.abs(forward.y) * bounds.getYsize() * 0.5D
                 + Math.abs(forward.z) * bounds.getZsize() * 0.5D;
         double lateralExtent = Math.abs(right.x) * bounds.getXsize() * 0.5D
+                + Math.abs(right.y) * bounds.getYsize() * 0.5D
                 + Math.abs(right.z) * bounds.getZsize() * 0.5D;
+        double vertical = Math.abs(relative.dot(up));
+        double verticalExtent = Math.abs(up.x) * bounds.getXsize() * 0.5D
+                + Math.abs(up.y) * bounds.getYsize() * 0.5D
+                + Math.abs(up.z) * bounds.getZsize() * 0.5D;
         return forwardDistance + horizontalExtent >= 0.0D && forwardDistance - horizontalExtent <= length
                 && sideways <= width * 0.5D + lateralExtent
-                && bounds.maxY >= origin.y - height * 0.5D && bounds.minY <= origin.y + height * 0.5D;
+                && vertical <= height * 0.5D + verticalExtent;
     }
 
     private static void renderCannon(ServerLevel level, Vec3 origin, Vec3 forward, double length, double diameter) {

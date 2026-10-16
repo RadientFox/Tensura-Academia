@@ -2,12 +2,11 @@ package com.radient.tensuraacadamia.ability.unique.quirks;
 
 import com.radient.tensuraacadamia.config.skills.QuirkSkillsConfig;
 import com.radient.tensuraacadamia.regestry.MHAParticles;
+import com.radient.tensuraacadamia.regestry.MHASounds;
 import io.github.manasmods.manascore.config.ConfigRegistry;
 import io.github.manasmods.manascore.network.api.util.Changeable;
 import io.github.manasmods.manascore.skill.api.ManasSkillInstance;
-import io.github.manasmods.manascore.skill.api.SkillEvents;
 import io.github.manasmods.tensura.ability.skill.Skill;
-import io.github.manasmods.tensura.damage.TensuraDamageHelper;
 import io.github.manasmods.tensura.particle.TensuraParticleHelper;
 import io.github.manasmods.tensura.util.EnergyHelper;
 import net.minecraft.ChatFormatting;
@@ -17,6 +16,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
@@ -95,10 +96,11 @@ public class Power_Stock extends Skill {
 
                     double scale = instance.getTag() == null ? 0.0 : instance.getTag().getDouble("scale");
                     double percent = scale == 0.0 ? 1.0 : Math.min(scale, 1.0);
-                    if (data.getBoolean("power_active") == false){
+                    if (!data.getBoolean("power_active")){
                         if (percent > 0) {
 
                             int epSpent = getCurrentStock((Player) entity, (float) percent);
+                            player.level().playSound((Player)null, player.getX(), player.getY(), player.getZ(), (SoundEvent) MHASounds.CHARGING.get(), SoundSource.PLAYERS, 1.0F, 1.0F);
 
                                 player.displayClientMessage(Component.translatable("tracadamia.skill.power_stock.ouputamount", new Object[]{ epSpent}).setStyle(Style.EMPTY.withColor(ChatFormatting.DARK_BLUE)), false);
                                 data.putBoolean("power_active", true);
@@ -116,31 +118,27 @@ public class Power_Stock extends Skill {
 
     public boolean onDamageEntity(ManasSkillInstance instance, LivingEntity attacker, LivingEntity target, DamageSource source, Changeable<Float> amount) {
         var data = attacker.getPersistentData();
-        TensuraParticleHelper.spawnServerParticles(target.level(), (ParticleOptions) MHAParticles.SMASH_PARTICLE.get(), target.getX(), target.getY(), target.getZ(), 1, 0.08, 0.08, 0.08, 0.2, true);
         if (attacker instanceof ServerPlayer player) {
             RandomSource rng = player.getRandom();
             int tempChance = (int) CONFIG.evolvingMight;
             if (rng.nextInt(100) < tempChance) {
 
 
-
+                TensuraParticleHelper.spawnServerParticles(target.level(), (ParticleOptions) MHAParticles.SMASH_PARTICLE.get(), target.getX(), target.getY(), target.getZ(), 1, 0.08, 0.08, 0.08, 0.2, true);
                     float damage = (float) (CONFIG.evolvingMightPower * data.getInt("power_used"));
                     amount.set((Float)amount.get() + damage);
                     data.putBoolean("power_active", false);
                     return true;
 
 
-
-
-
             } else {
 
 
-                if (data.getBoolean("power_active") == false){
+                if (!data.getBoolean("power_active")){
                     return true;
                 }
                 else {
-
+                    TensuraParticleHelper.spawnServerParticles(target.level(), (ParticleOptions) MHAParticles.SMASH_PARTICLE.get(), target.getX(), target.getY(), target.getZ(), 1, 0.08, 0.08, 0.08, 0.2, true);
                     float damage = (float) (CONFIG.stockpileConversion * data.getInt("power_used"));
                     amount.set((Float)amount.get() + damage);
                     data.putBoolean("power_active", false);

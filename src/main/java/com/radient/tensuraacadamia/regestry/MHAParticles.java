@@ -8,6 +8,7 @@ import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.client.particle.SpriteSet;
 import net.minecraft.client.particle.TextureSheetParticle;
 import net.minecraft.client.particle.HugeExplosionParticle;
+import net.minecraft.client.particle.CherryParticle;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.core.registries.Registries;
@@ -24,6 +25,28 @@ public final class MHAParticles {
             DeferredRegister.create(Registries.PARTICLE_TYPE, "tracadamia");
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> SMASH_PARTICLE =
             PARTICLES.register("smash_particles_1", () -> new SimpleParticleType(false));
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> OFA_COWLING_1 =
+            PARTICLES.register("ofa_cowling_1", () -> new SimpleParticleType(false));
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> OFA_COWLING_2 =
+            PARTICLES.register("ofa_cowling_2", () -> new SimpleParticleType(false));
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> OFA_COWLING_3 =
+            PARTICLES.register("ofa_cowling_3", () -> new SimpleParticleType(false));
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> OFA_COWLING_4 =
+            PARTICLES.register("ofa_cowling_4", () -> new SimpleParticleType(false));
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> OFA_COWLING_5 =
+            PARTICLES.register("ofa_cowling_5", () -> new SimpleParticleType(false));
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> OFA_COWLING_6 =
+            PARTICLES.register("ofa_cowling_6", () -> new SimpleParticleType(false));
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> OFA_COWLING_7 =
+            PARTICLES.register("ofa_cowling_7", () -> new SimpleParticleType(false));
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> OFA_COWLING_8 =
+            PARTICLES.register("ofa_cowling_8", () -> new SimpleParticleType(false));
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> OFA_COWLING_9 =
+            PARTICLES.register("ofa_cowling_9", () -> new SimpleParticleType(false));
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> OFA_COWLING_RAINBOW =
+            PARTICLES.register("ofa_cowling_rainbow", () -> new SimpleParticleType(false));
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> QUEEN_HEART =
+            PARTICLES.register("queen_heart", () -> new SimpleParticleType(false));
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> ELECTRIC_ARC =
             PARTICLES.register("electric_arc", () -> new SimpleParticleType(false));
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> ELECTRIC_FIELD =
@@ -38,10 +61,27 @@ public final class MHAParticles {
             PARTICLES.register("orange_explosion", () -> new SimpleParticleType(false));
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> SMALL_ORANGE_EXPLOSION =
             PARTICLES.register("small_orange_explosion", () -> new SimpleParticleType(false));
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> ENGINE_SPARK =
+            PARTICLES.register("engine_spark", () -> new SimpleParticleType(false));
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> VOICE_CANNON =
             PARTICLES.register("voice_cannon", () -> new SimpleParticleType(false));
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> VOICE_CANNON_WIDE =
             PARTICLES.register("voice_cannon_wide", () -> new SimpleParticleType(false));
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> OFA_1_COWL =
+            PARTICLES.register("ofa_1_fullcowl", () -> new SimpleParticleType(false));
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> BLAZE_ROD_BEAM =
+            PARTICLES.register("blaze_rod_beam", () -> new SimpleParticleType(false));
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> BLAZE_ROD_BEAM_WIDE =
+            PARTICLES.register("blaze_rod_beam_wide", () -> new SimpleParticleType(false));
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> IMPURE_BEAM =
+            PARTICLES.register("impure_beam", () -> new SimpleParticleType(false));
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> BLAZE_ROD_BEAM_OVERPOWER =
+            PARTICLES.register("blaze_rod_beam_overpower", () -> new SimpleParticleType(false));
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> IMPURE_BEAM_OVERPOWER =
+            PARTICLES.register("impure_beam_overpower", () -> new SimpleParticleType(false));
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> GREEN_LEAF =
+            PARTICLES.register("green_leaf", () -> new SimpleParticleType(false));
+
 
     private MHAParticles() {
     }
@@ -54,7 +94,28 @@ public final class MHAParticles {
     public static final class Client {
         @SubscribeEvent
         public static void registerProviders(RegisterParticleProvidersEvent event) {
+            event.registerSpecial(QUEEN_HEART.get(), new com.radient.tensuraacadamia.client.QueenHeartParticle.Provider());
             event.registerSpriteSet(SMASH_PARTICLE.get(), SmashParticle.Provider::new);
+            event.registerSpriteSet(OFA_COWLING_1.get(),
+                    io.github.manasmods.tensura.particle.type.LightningSparkParticle.Provider::new);
+            event.registerSpriteSet(OFA_COWLING_2.get(),
+                    io.github.manasmods.tensura.particle.type.LightningSparkParticle.Provider::new);
+            event.registerSpriteSet(OFA_COWLING_3.get(),
+                    io.github.manasmods.tensura.particle.type.LightningSparkParticle.Provider::new);
+            event.registerSpriteSet(OFA_COWLING_4.get(),
+                    io.github.manasmods.tensura.particle.type.LightningSparkParticle.Provider::new);
+            event.registerSpriteSet(OFA_COWLING_5.get(),
+                    io.github.manasmods.tensura.particle.type.LightningSparkParticle.Provider::new);
+            event.registerSpriteSet(OFA_COWLING_6.get(),
+                    io.github.manasmods.tensura.particle.type.LightningSparkParticle.Provider::new);
+            event.registerSpriteSet(OFA_COWLING_7.get(),
+                    io.github.manasmods.tensura.particle.type.LightningSparkParticle.Provider::new);
+            event.registerSpriteSet(OFA_COWLING_8.get(),
+                    io.github.manasmods.tensura.particle.type.LightningSparkParticle.Provider::new);
+            event.registerSpriteSet(OFA_COWLING_9.get(),
+                    io.github.manasmods.tensura.particle.type.LightningSparkParticle.Provider::new);
+            event.registerSpriteSet(OFA_COWLING_RAINBOW.get(),
+                    io.github.manasmods.tensura.particle.type.LightningSparkParticle.Provider::new);
             event.registerSpriteSet(ELECTRIC_ARC.get(), sprites -> new ElectricParticle.Provider(sprites, false));
             event.registerSpriteSet(ELECTRIC_FIELD.get(), sprites -> new ElectricParticle.Provider(sprites, true));
             event.registerSpriteSet(ELECTRIC_TRAIL.get(), sprites -> new ElectricParticle.Provider(sprites, 2));
@@ -64,8 +125,97 @@ public final class MHAParticles {
                     sprites -> new OrangeExplosionParticle.Provider(sprites, 0.62F, 0.18F));
             event.registerSpriteSet(SMALL_ORANGE_EXPLOSION.get(),
                     sprites -> new OrangeExplosionParticle.Provider(sprites, 0.38F, 0.12F));
+            event.registerSpriteSet(ENGINE_SPARK.get(), EngineSparkParticle.Provider::new);
             event.registerSpriteSet(VOICE_CANNON.get(), sprites -> new VoiceCannonParticle.Provider(sprites, 5.0F));
             event.registerSpriteSet(VOICE_CANNON_WIDE.get(), sprites -> new VoiceCannonParticle.Provider(sprites, 15.0F));
+
+            event.registerSpriteSet(OFA_1_COWL.get(), SmashParticle.Provider::new);
+            event.registerSpriteSet(BLAZE_ROD_BEAM.get(),
+                    sprites -> new com.radient.tensuraacadamia.client.EyeBeamParticle.Provider(
+                            sprites, 100.0D, 0.3D, 0xFFFF0000));
+            event.registerSpriteSet(BLAZE_ROD_BEAM_WIDE.get(),
+                    sprites -> new com.radient.tensuraacadamia.client.EyeBeamParticle.Provider(
+                            sprites, 240.0D, 15.0D, 0xFFFF0000));
+            event.registerSpriteSet(IMPURE_BEAM.get(),
+                    sprites -> new com.radient.tensuraacadamia.client.EyeBeamParticle.Provider(
+                            sprites, 240.0D, 0.36D, 0xFFFFD52A));
+            event.registerSpriteSet(BLAZE_ROD_BEAM_OVERPOWER.get(),
+                    sprites -> new com.radient.tensuraacadamia.client.EyeBeamParticle.Provider(
+                            sprites, 240.0D, 30.0D, 0xFFFF0000));
+            event.registerSpriteSet(IMPURE_BEAM_OVERPOWER.get(),
+                    sprites -> new com.radient.tensuraacadamia.client.EyeBeamParticle.Provider(
+                            sprites, 240.0D, 1.08D, 0xFFFFD52A));
+            event.registerSpriteSet(GREEN_LEAF.get(), GreenLeafParticle.Provider::new);
+        }
+    }
+
+    private static final class GreenLeafParticle extends CherryParticle {
+        private GreenLeafParticle(ClientLevel level, double x, double y, double z, SpriteSet sprites) {
+            super(level, x, y, z, sprites);
+            setColor(0.16F, 1.0F, 0.14F);
+        }
+
+        private static final class Provider implements ParticleProvider<SimpleParticleType> {
+            private final SpriteSet sprites;
+
+            private Provider(SpriteSet sprites) { this.sprites = sprites; }
+
+            @Override public Particle createParticle(SimpleParticleType type, ClientLevel level,
+                                                      double x, double y, double z,
+                                                      double xSpeed, double ySpeed, double zSpeed) {
+                return new GreenLeafParticle(level, x, y, z, sprites);
+            }
+        }
+    }
+
+    private static final class EngineSparkParticle extends TextureSheetParticle {
+        private EngineSparkParticle(ClientLevel level, double x, double y, double z,
+                                    double xSpeed, double ySpeed, double zSpeed, SpriteSet sprites) {
+            super(level, x, y, z, xSpeed, ySpeed, zSpeed);
+            this.pickSprite(sprites);
+            this.lifetime = 6 + level.random.nextInt(4);
+            this.quadSize = 0.055F + level.random.nextFloat() * 0.020F;
+            this.gravity = 0.0F;
+            this.friction = 0.90F;
+            this.hasPhysics = false;
+            this.xd = xSpeed;
+            this.yd = ySpeed;
+            this.zd = zSpeed;
+            this.setColor(1.0F, 0.40F, 0.08F);
+            this.setAlpha(0.88F);
+        }
+
+        @Override
+        public void tick() {
+            super.tick();
+            this.alpha = 0.88F * (1.0F - (float) this.age / this.lifetime);
+            this.quadSize *= 0.94F;
+        }
+
+        @Override
+        public int getLightColor(float partialTick) {
+            return 0xF000F0;
+        }
+
+        @Override
+        public ParticleRenderType getRenderType() {
+            return ParticleRenderType.PARTICLE_SHEET_TRANSLUCENT;
+        }
+
+        private static final class Provider implements ParticleProvider<SimpleParticleType> {
+            private final SpriteSet sprites;
+
+            private Provider(SpriteSet sprites) {
+                this.sprites = sprites;
+            }
+
+            @Override
+            public Particle createParticle(SimpleParticleType type, ClientLevel level,
+                                           double x, double y, double z,
+                                           double xSpeed, double ySpeed, double zSpeed) {
+                return new EngineSparkParticle(level, x, y, z, xSpeed, ySpeed, zSpeed, sprites);
+            }
+
         }
     }
 
@@ -272,6 +422,38 @@ public final class MHAParticles {
 
     private static final class SmashParticle extends TextureSheetParticle {
         private SmashParticle(ClientLevel level, double x, double y, double z,
+                              double xSpeed, double ySpeed, double zSpeed, SpriteSet sprites) {
+            super(level, x, y, z, xSpeed, ySpeed, zSpeed);
+            this.pickSprite(sprites);
+            this.lifetime = 12;
+            this.quadSize = 0.35F;
+            this.gravity = 0.0F;
+            this.hasPhysics = false;
+        }
+
+        @Override
+        public ParticleRenderType getRenderType() {
+            return ParticleRenderType.PARTICLE_SHEET_TRANSLUCENT;
+        }
+
+        private static final class Provider implements ParticleProvider<SimpleParticleType> {
+            private final SpriteSet sprites;
+
+            private Provider(SpriteSet sprites) {
+                this.sprites = sprites;
+            }
+
+            @Override
+            public Particle createParticle(SimpleParticleType type, ClientLevel level,
+                                           double x, double y, double z,
+                                           double xSpeed, double ySpeed, double zSpeed) {
+                return new SmashParticle(level, x, y, z, xSpeed, ySpeed, zSpeed, sprites);
+            }
+        }
+    }
+
+    private static final class OFA1CowlParticle extends TextureSheetParticle {
+        private OFA1CowlParticle(ClientLevel level, double x, double y, double z,
                               double xSpeed, double ySpeed, double zSpeed, SpriteSet sprites) {
             super(level, x, y, z, xSpeed, ySpeed, zSpeed);
             this.pickSprite(sprites);

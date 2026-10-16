@@ -1,11 +1,22 @@
 package com.radient.tensuraacadamia.entity;
 
+import com.radient.tensuraacadamia.regestry.OFAEntitys;
+import io.github.manasmods.manascore.skill.api.ManasSkillInstance;
 import io.github.manasmods.tensura.damage.TensuraDamageHelper;
+import io.github.manasmods.tensura.data.TensuraBlockTags;
 import io.github.manasmods.tensura.entity.magic.beam.BeamProjectile;
 import io.github.manasmods.tensura.entity.projectile.WebBulletProjectile;
+import io.github.manasmods.tensura.event.TensuraSkillEvents;
+import io.github.manasmods.tensura.item.weapon.ranged.WebCartridgeItem;
+import io.github.manasmods.tensura.item.weapon.ranged.WebGunItem;
+import io.github.manasmods.tensura.registry.block.TensuraBlocks;
 import io.github.manasmods.tensura.registry.effect.TensuraMobEffects;
+import io.github.manasmods.tensura.registry.entity.MonsterEntityTypes;
+import io.github.manasmods.tensura.registry.item.TensuraToolItems;
 import io.github.manasmods.tensura.storage.TensuraStorages;
 import io.github.manasmods.tensura.util.EnergyHelper;
+import io.github.manasmods.tensura.world.TensuraGameRules;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
@@ -13,6 +24,7 @@ import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
@@ -20,15 +32,23 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.AbstractArrow;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
-/*
+import org.jetbrains.annotations.NotNull;
+
 public  class BlackwhipProjectile extends AbstractArrow {
     private static final EntityDataAccessor<Boolean> SLINGER;
-
+    private static final EntityDataAccessor<ItemStack> SOURCE_ITEM;
+    private static final EntityDataAccessor<ItemStack> AMMO;
 
     public BlackwhipProjectile(EntityType<? extends AbstractArrow> type, Level level) {
         super(type, level);
@@ -40,24 +60,64 @@ public  class BlackwhipProjectile extends AbstractArrow {
     }
 
 
+    public BlackwhipProjectile(Level worldIn, LivingEntity shooter, boolean right, ItemStack sourceItem, ItemStack ammo) {
+        this((EntityType)OFAEntitys.BLACKWHIP_PROJECTILE.get(), worldIn);
+        this.setOwner(shooter);
+        this.setSourceItem(sourceItem.copy());
+        this.setAmmo(ammo);
+        float rot = shooter.yHeadRot + (float)(right ? 60 : -60);
+        this.setPos(shooter.getX() - (double)shooter.getBbWidth() * 0.5 * (double)Mth.sin(rot * 0.017453292F), shooter.getEyeY() - 0.20000000298023224, shooter.getZ() + (double)shooter.getBbWidth() * 0.5 * (double)Mth.cos(rot * 0.017453292F));
+    }
 
+    public BlackwhipProjectile(Level worldIn, LivingEntity shooter, boolean right, ItemStack ammo) {
+        this((EntityType)OFAEntitys.BLACKWHIP_PROJECTILE.get(), worldIn);
+        this.setOwner(shooter);
+        this.setAmmo(ammo);
+        float rot = shooter.yHeadRot + (float)(right ? 60 : -60);
+        this.setPos(shooter.getX() - (double)shooter.getBbWidth() * 0.5 * (double)Mth.sin(rot * 0.017453292F), shooter.getEyeY() - 0.20000000298023224, shooter.getZ() + (double)shooter.getBbWidth() * 0.5 * (double)Mth.cos(rot * 0.017453292F));
+    }
 
     public void defineSynchedData(SynchedEntityData.Builder builder) {
         super.defineSynchedData(builder);
         builder.define(SLINGER, false);
+        builder.define(SOURCE_ITEM, ((WebGunItem) TensuraToolItems.WEB_GUN.get()).getDefaultInstance());
+        builder.define(AMMO, this.getDefaultPickupItem());
     }
 
     public void addAdditionalSaveData(CompoundTag compound) {
         super.addAdditionalSaveData(compound);
         compound.putBoolean("Slinger", this.isSlinger());
+        compound.put("SourceItem", this.getSourceItem().save(this.registryAccess(), new CompoundTag()));
+        compound.put("Ammo", this.getAmmo().save(this.registryAccess(), new CompoundTag()));
     }
 
     public void readAdditionalSaveData(CompoundTag compound) {
         super.readAdditionalSaveData(compound);
         this.setSlinger(compound.getBoolean("Slinger"));
+        if (compound.contains("SourceItem", 10)) {
+            this.setSourceItem(ItemStack.parseOptional(this.registryAccess(), compound.getCompound("SourceItem")));
+        }
 
+        if (compound.contains("Ammo", 10)) {
+            this.setAmmo(ItemStack.parseOptional(this.registryAccess(), compound.getCompound("Ammo")));
+        }
 
+    }
 
+    public ItemStack getSourceItem() {
+        return (ItemStack)this.entityData.get(SOURCE_ITEM);
+    }
+
+    public void setSourceItem(ItemStack pStack) {
+        this.entityData.set(SOURCE_ITEM, pStack);
+    }
+
+    public ItemStack getAmmo() {
+        return (ItemStack)this.entityData.get(AMMO);
+    }
+
+    public void setAmmo(ItemStack pStack) {
+        this.entityData.set(AMMO, pStack);
     }
 
     public boolean isSlinger() {
@@ -68,6 +128,17 @@ public  class BlackwhipProjectile extends AbstractArrow {
         this.entityData.set(SLINGER, saddled);
     }
 
+    public @NotNull ItemStack getPickupItem() {
+        return this.getAmmo();
+    }
+
+    public @NotNull ItemStack getPickupItemStackOrigin() {
+        return this.getAmmo();
+    }
+
+    protected @NotNull ItemStack getDefaultPickupItem() {
+        return ((Item)TensuraToolItems.WEB_CARTRIDGE.get()).getDefaultInstance();
+    }
 
     public boolean isInGround() {
         return this.inGround;
@@ -186,11 +257,6 @@ public  class BlackwhipProjectile extends AbstractArrow {
     public void playerTouch(Player pEntity) {
     }
 
-    @Override
-    protected ItemStack getDefaultPickupItem() {
-        return null;
-    }
-
     public void recreateFromPacket(ClientboundAddEntityPacket pPacket) {
         super.recreateFromPacket(pPacket);
         double d0 = pPacket.getXa();
@@ -199,7 +265,7 @@ public  class BlackwhipProjectile extends AbstractArrow {
 
         for(int i = 0; i < 12; ++i) {
             double d3 = 0.4 + 0.1 * (double)i;
-            this.level().addParticle(ParticleTypes.ELDER_GUARDIAN, this.getX(), this.getY(), this.getZ(), d0 * d3, d1, d2 * d3);
+            this.level().addParticle(ParticleTypes.SPIT, this.getX(), this.getY(), this.getZ(), d0 * d3, d1, d2 * d3);
         }
 
         this.setDeltaMovement(d0, d1, d2);
@@ -214,8 +280,12 @@ public  class BlackwhipProjectile extends AbstractArrow {
         } else {
             if (entity instanceof LivingEntity target) {
                 TensuraDamageHelper.markHurt(target, this.getOwner());
+                Item var5 = this.getAmmo().getItem();
+                if (!(var5 instanceof WebCartridgeItem)) {
+                    return;
+                }
 
-
+                WebCartridgeItem webCartridgeItem = (WebCartridgeItem)var5;
                 if (target.getBbHeight() <= 3.0F || target.getBbWidth() <= 3.0F) {
                     boolean var10000;
                     label31: {
@@ -233,12 +303,12 @@ public  class BlackwhipProjectile extends AbstractArrow {
 
                     boolean epHigh = var10000;
                     if (!epHigh) {
-                        MobEffectInstance webbed = new MobEffectInstance(TensuraMobEffects.getReference(TensuraMobEffects.WEBBED), 200, 0, true, false, true);
+                        MobEffectInstance webbed = new MobEffectInstance(TensuraMobEffects.getReference(TensuraMobEffects.WEBBED), webCartridgeItem.getWebbedDuration(), 0, true, false, true);
                         target.addEffect(webbed, this.getOwner());
                     }
 
-                    if ((double)target.getRandom().nextFloat() <= 1) {
-                        target.addEffect(new MobEffectInstance(TensuraMobEffects.getReference(TensuraMobEffects.SILENCE), 200, 0, true, false, true), this.getOwner());
+                    if ((double)target.getRandom().nextFloat() <= webCartridgeItem.getSilenceChance()) {
+                        target.addEffect(new MobEffectInstance(TensuraMobEffects.getReference(TensuraMobEffects.SILENCE), webCartridgeItem.getSilenceDuration(), 0, true, false, true), this.getOwner());
                     }
                 }
             }
@@ -251,8 +321,11 @@ public  class BlackwhipProjectile extends AbstractArrow {
     protected void onHitBlock(BlockHitResult pResult) {
         super.onHitBlock(pResult);
         if (!this.level().isClientSide) {
-
-           if (!this.isSlinger()) {
+            if (this.shouldPlaceWeb()) {
+                this.placeWeb(this);
+                this.remove(RemovalReason.DISCARDED);
+                this.playSound(SoundEvents.WOOL_BREAK, 0.1F, 0.1F);
+            } else if (!this.isSlinger()) {
                 this.remove(RemovalReason.DISCARDED);
             }
         } else {
@@ -262,20 +335,97 @@ public  class BlackwhipProjectile extends AbstractArrow {
     }
 
     private boolean shouldPlaceWeb() {
+        if (this.getOwner() != null) {
+            if (this.getOwner().getType().equals(MonsterEntityTypes.HELL_CATERPILLAR.get())) {
+                return false;
+            }
 
+            if (this.getOwner().getType().equals(MonsterEntityTypes.HELL_MOTH.get())) {
+                return false;
+            }
+        }
 
         return !this.isSlinger();
     }
 
+    protected boolean shouldGrief() {
+        return this.getOwner() != null && !this.getOwner().getType().equals(EntityType.PLAYER) ? this.level().getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING) : TensuraGameRules.canSkillGrief(this.level());
+    }
 
+    protected void placeWeb(Entity entity) {
+        if (this.shouldGrief()) {
+            Item var3 = this.getAmmo().getItem();
+            if (var3 instanceof WebCartridgeItem) {
+                WebCartridgeItem webCartridgeItem = (WebCartridgeItem)var3;
+                int yPos = Mth.floor(entity.getY()) - 1;
+                int xPos = Mth.floor(entity.getX());
+                int zPos = Mth.floor(entity.getZ());
+                boolean destroyBlock = false;
+                boolean placeWeb = false;
+                boolean webbedStones = false;
+
+                for(int j = -1; j <= 1; ++j) {
+                    for(int k = -1; k <= 1; ++k) {
+                        for(int i = -1; i <= 2; ++i) {
+                            int newYPos = yPos + i;
+                            int newXPos = xPos;
+                            int newZPos = zPos;
+                            if (i == 1 || i == 0) {
+                                newXPos = xPos + j;
+                                newZPos = zPos + k;
+                            }
+
+                            BlockPos blockpos = new BlockPos(newXPos, newYPos, newZPos);
+                            BlockState blockstate = this.level().getBlockState(blockpos);
+                            if ((k != j && k != -j || j == 0) && !((TensuraSkillEvents.SkillGriefEvent)TensuraSkillEvents.SKILL_GRIEF_PRE.invoker()).grief((ManasSkillInstance)null, this.level(), this.getOwner(), (double)newXPos, (double)newYPos, (double)newZPos).isFalse()) {
+                                BlockState webbedStone;
+                                if (blockstate.isAir() || blockstate.is(TensuraBlockTags.WEB_REPLACEABLE)) {
+                                    webbedStone = webCartridgeItem.getWebBlock().defaultBlockState();
+                                    destroyBlock = this.level().destroyBlock(blockpos, true, this) || destroyBlock;
+                                    placeWeb = this.level().setBlockAndUpdate(blockpos, webbedStone) || placeWeb;
+                                    this.level().scheduleTick(blockpos, webbedStone.getBlock(), webCartridgeItem.getDissolvingDuration());
+                                }
+
+                                if (this.getAmmo().is((Item)TensuraToolItems.WEB_CARTRIDGE.get()) && blockstate.is(TensuraBlockTags.WEBBED_AVAILABLE)) {
+                                    webbedStone = ((Block) TensuraBlocks.WEBBED_COBBLESTONE.get()).defaultBlockState();
+                                    if (blockstate.is(Blocks.STONE_BRICKS)) {
+                                        webbedStone = ((Block)TensuraBlocks.WEBBED_STONE_BRICKS.get()).defaultBlockState();
+                                    }
+
+                                    webbedStones = this.level().setBlockAndUpdate(blockpos, webbedStone) || webbedStones;
+                                }
+
+                                ((TensuraSkillEvents.SkillGriefEvent)TensuraSkillEvents.SKILL_GRIEF_POS.invoker()).grief((ManasSkillInstance)null, this.level(), this.getOwner(), (double)newXPos, (double)newYPos, (double)newZPos);
+                            }
+                        }
+                    }
+                }
+
+                if (destroyBlock) {
+                    this.level().playSound((Player)null, this.blockPosition(), SoundEvents.WITHER_BREAK_BLOCK, SoundSource.PLAYERS, 0.2F, 1.0F);
+                    if (this.getOwner() != null) {
+                        this.level().gameEvent(this.getOwner(), GameEvent.BLOCK_DESTROY, this.blockPosition());
+                    }
+                }
+
+                if (placeWeb || webbedStones) {
+                    this.level().playSound((Player)null, this.blockPosition(), SoundEvents.WITHER_BREAK_BLOCK, SoundSource.PLAYERS, 0.2F, 1.0F);
+                    if (this.getOwner() != null) {
+                        this.level().gameEvent(this.getOwner(), GameEvent.BLOCK_CHANGE, this.blockPosition());
+                    }
+                }
+
+            }
+        }
+    }
 
     static {
         SLINGER = SynchedEntityData.defineId(WebBulletProjectile.class, EntityDataSerializers.BOOLEAN);
-
-
+        SOURCE_ITEM = SynchedEntityData.defineId(WebBulletProjectile.class, EntityDataSerializers.ITEM_STACK);
+        AMMO = SynchedEntityData.defineId(WebBulletProjectile.class, EntityDataSerializers.ITEM_STACK);
     }
 }
 
- */
+
 
 

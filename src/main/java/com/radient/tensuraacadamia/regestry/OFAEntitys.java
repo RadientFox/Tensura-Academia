@@ -2,20 +2,14 @@ package com.radient.tensuraacadamia.regestry;
 
 
 import com.radient.tensuraacadamia.TensuraAcadamia;
-import dev.architectury.registry.registries.RegistrySupplier;
-import io.github.manasmods.tensura.entity.projectile.magic.WindTornadoProjectile;
+import com.radient.tensuraacadamia.entity.BlackwhipProjectile;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
-import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
-import java.util.function.Supplier;
 
-/*
 public class OFAEntitys {
 
     public static final net.neoforged.neoforge.registries.DeferredRegister<EntityType<?>> ENTITY_TYPES =
@@ -36,10 +30,8 @@ public class OFAEntitys {
                             .build("blackwhip_projectile"));
 
 
-
-
 }
 
 
- */
+
 

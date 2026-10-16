@@ -27,6 +27,10 @@ public final class MHASounds {
             TensuraAcadamia.MODID, "butterfly_effect");
     public static final DeferredHolder<SoundEvent, SoundEvent> BUTTERFLY_EFFECT = SOUNDS.register(
             "butterfly_effect", () -> SoundEvent.createVariableRangeEvent(BUTTERFLY_EFFECT_ID));
+    public static final ResourceLocation CHARGING_SFX = ResourceLocation.fromNamespaceAndPath(
+            TensuraAcadamia.MODID, "charging_sfx");
+    public static final DeferredHolder<SoundEvent, SoundEvent> CHARGING = SOUNDS.register(
+            "charging_sfx", () -> SoundEvent.createVariableRangeEvent(CHARGING_SFX));
 
     private MHASounds() {
     }

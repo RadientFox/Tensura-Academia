@@ -9,23 +9,25 @@ import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 import org.jetbrains.annotations.NotNull;
 
-public record PermeationPhasePayload(int entityId, boolean active) implements CustomPacketPayload {
+public record PermeationPhasePayload(int entityId, boolean active, boolean noClip, int oxygen) implements CustomPacketPayload {
     public static final Type<PermeationPhasePayload> TYPE = new Type<>(
             ResourceLocation.fromNamespaceAndPath(TensuraAcadamia.MODID, "permeation_phase"));
     public static final StreamCodec<FriendlyByteBuf, PermeationPhasePayload> STREAM_CODEC =
             CustomPacketPayload.codec(PermeationPhasePayload::encode, PermeationPhasePayload::new);
 
     public PermeationPhasePayload(FriendlyByteBuf buffer) {
-        this(buffer.readInt(), buffer.readBoolean());
+        this(buffer.readInt(), buffer.readBoolean(), buffer.readBoolean(), buffer.readVarInt());
     }
 
     private void encode(FriendlyByteBuf buffer) {
         buffer.writeInt(entityId);
         buffer.writeBoolean(active);
+        buffer.writeBoolean(noClip);
+        buffer.writeVarInt(oxygen);
     }
 
     public static void handle(PermeationPhasePayload payload, IPayloadContext context) {
-        context.enqueueWork(() -> PermeationPhaseClient.setActive(payload.entityId, payload.active));
+        context.enqueueWork(() -> PermeationPhaseClient.setActive(payload.entityId, payload.active, payload.noClip, payload.oxygen));
     }
 
     @Override

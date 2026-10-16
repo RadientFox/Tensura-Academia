@@ -2,7 +2,9 @@ package com.radient.tensuraacadamia.ability.unique.quirks;
 
 import com.radient.tensuraacadamia.network.PermeationPhasePayload;
 import io.github.manasmods.manascore.skill.api.ManasSkillInstance;
+import io.github.manasmods.manascore.skill.api.SkillAPI;
 import io.github.manasmods.tensura.ability.skill.Skill;
+import com.radient.tensuraacadamia.regestry.skills.QuirkSkills;
 import io.github.manasmods.tensura.registry.effect.TensuraMobEffects;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
@@ -20,6 +22,8 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.neoforged.neoforge.event.server.ServerStoppedEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.Nullable;
@@ -33,6 +37,9 @@ public final class PermeationQuirk extends Skill {
     private static final int MAX_MASTERY = 2_500;
     private static final int BLINDER_UNLOCK_MASTERY = 1_250;
     private static final int BLINDER_COOLDOWN = 8;
+    public static final int MAX_OXYGEN = 200;
+    private static final String OXYGEN = "TracadamiaPermeationOxygen";
+    private static final String PHASE_RECOVERY = "TracadamiaPermeationRecovery";
     private static final Map<UUID, PhaseState> PHASING = new HashMap<>();
     private static final Map<UUID, BlinderRush> BLINDER_RUSHES = new HashMap<>();
 
@@ -47,7 +54,8 @@ public final class PermeationQuirk extends Skill {
         }
     }
 
-    private record PhaseState(ServerPlayer player, boolean originalNoPhysics) {
+    private record PhaseState(ServerPlayer player, boolean originalNoPhysics, boolean selective, long deadline,
+                              ResourceLocation dimension) {
     }
 
     public PermeationQuirk() {
@@ -66,16 +74,13 @@ public final class PermeationQuirk extends Skill {
 
     @Override
     public boolean onHeld(ManasSkillInstance instance, LivingEntity entity, int heldTicks, int mode) {
-        if (mode != 0 || entity.level().isClientSide || !(entity instanceof ServerPlayer player)) return mode == 0;
+        if (mode != 0 && mode != 2) return false;
+        if (entity.level().isClientSide) return true;
+        if (!(entity instanceof ServerPlayer player)) return false;
+        if (!PHASING.containsKey(player.getUUID()) && !startPhase(player, mode == 2, Long.MAX_VALUE, true)) return false;
         BLINDER_RUSHES.remove(player.getUUID());
-        boolean enteringPhase = !PHASING.containsKey(player.getUUID());
-        enterPhase(player);
-        if (enteringPhase) {
-            Vec3 motion = player.getDeltaMovement();
-            player.setDeltaMovement(motion.x, Math.min(motion.y, -0.22D), motion.z);
-            player.setOnGround(false);
-            player.hurtMarked = true;
-        }
+        if (heldTicks == 0) instance.addMasteryPoint(player);
+        if (heldTicks > 0 && heldTicks % 20 == 0) instance.addMasteryPoint(player);
         player.resetFallDistance();
         if (player.serverLevel().getGameTime() % 4L == 0L) {
             player.serverLevel().sendParticles(ParticleTypes.END_ROD, player.getX(), player.getY() + player.getBbHeight() * 0.5D,
@@ -86,13 +91,17 @@ public final class PermeationQuirk extends Skill {
 
     @Override
     public void onRelease(ManasSkillInstance instance, LivingEntity entity, int heldTicks, int keyNumber, int mode) {
-        if (mode != 0 || entity.level().isClientSide || !(entity instanceof ServerPlayer player)) return;
-        if (PHASING.containsKey(player.getUUID())) eject(player, 50.0F, null);
+        if (mode != 0 && mode != 2 || entity.level().isClientSide || !(entity instanceof ServerPlayer player)) return;
+        finishPhase(player, 50.0F);
+    }
+
+    @Override public boolean shouldTriggerReleaseOnHeldInterrupt(ManasSkillInstance instance, LivingEntity entity, int key, int mode) {
+        return true;
     }
 
     @Override
     public int getModes(ManasSkillInstance instance) {
-        return instance.getMastery() >= BLINDER_UNLOCK_MASTERY ? 2 : 1;
+        return 3;
     }
 
     @Override
@@ -100,26 +109,29 @@ public final class PermeationQuirk extends Skill {
         return switch (mode) {
             case 0 -> "permeation.permeate";
             case 1 -> "permeation.blinder_touch";
+            case 2 -> "permeation.selective";
             default -> super.getModeId(instance, mode);
         };
     }
 
     @Override
     public int nextMode(LivingEntity entity, ManasSkillInstance instance, int mode, boolean reverse) {
-        return Math.floorMod(mode + (reverse ? -1 : 1), getModes(instance));
+        if (isPhasing(entity)) return -1;
+        int next = Math.floorMod(mode + (reverse ? -1 : 1), 3);
+        if (next == 1 && instance.getMastery() < BLINDER_UNLOCK_MASTERY) next = reverse ? 0 : 2;
+        return next;
     }
 
     @Override
     public void onPressed(ManasSkillInstance instance, LivingEntity entity, int keyNumber, int mode) {
-        if (!(entity instanceof ServerPlayer player) || mode != 1 || mode >= getModes(instance)
+        if (!(entity instanceof ServerPlayer player) || mode != 1 || instance.getMastery() < BLINDER_UNLOCK_MASTERY || isPhasing(player)
                 || instance.onCoolDown(mode)) return;
         LivingEntity target = lookedAtTarget(player, 28.0D);
         if (target == null) {
             player.displayClientMessage(Component.translatable("tracadamia.skill.permeation.no_target"), true);
             return;
         }
-        leavePhase(player);
-        enterPhase(player);
+        if (!startPhase(player, false, Long.MAX_VALUE, true)) return;
         BLINDER_RUSHES.put(player.getUUID(), new BlinderRush(player, target));
         instance.addMasteryPoint(player);
         instance.setCoolDown(BLINDER_COOLDOWN, mode);
@@ -127,11 +139,61 @@ public final class PermeationQuirk extends Skill {
 
     @SubscribeEvent
     public static void cancelDamageWhilePermeating(LivingIncomingDamageEvent event) {
-        if (PHASING.containsKey(event.getEntity().getUUID())) event.setCanceled(true);
+        if (isPhasing(event.getEntity()) || event.getSource().getEntity() instanceof LivingEntity attacker && isPhasing(attacker)) {
+            event.setCanceled(true);
+        }
+    }
+
+    public static boolean isPhasing(LivingEntity entity) { return PHASING.containsKey(entity.getUUID()); }
+
+    public static boolean isNoClipActive(LivingEntity entity) {
+        PhaseState state = PHASING.get(entity.getUUID());
+        return state != null && state.player() == entity && !state.selective() && entity.isAlive();
+    }
+
+    public static boolean blocksSkill(LivingEntity entity, ManasSkillInstance skill) {
+        PhaseState state = PHASING.get(entity.getUUID());
+        return state != null && (skill.getSkill() != QuirkSkills.PERMEATION.get() || state.deadline() != Long.MAX_VALUE);
+    }
+
+    public static void registerSkillEvents() {
+        io.github.manasmods.manascore.skill.api.SkillEvents.ACTIVATE_SKILL.register((change, owner, key, mode) ->
+                isPhasing(owner) ? dev.architectury.event.EventResult.interruptFalse() : dev.architectury.event.EventResult.pass());
+        io.github.manasmods.manascore.skill.api.SkillEvents.TOGGLE_SKILL.register((change, owner) ->
+                isPhasing(owner) ? dev.architectury.event.EventResult.interruptFalse() : dev.architectury.event.EventResult.pass());
+    }
+
+    @SubscribeEvent
+    public static void blockMelee(net.neoforged.neoforge.event.entity.player.AttackEntityEvent event) {
+        if (isPhasing(event.getEntity())) event.setCanceled(true);
     }
 
     @SubscribeEvent
     public static void onServerTick(ServerTickEvent.Post event) {
+        Iterator<Map.Entry<UUID, PhaseState>> phases = PHASING.entrySet().iterator();
+        while (phases.hasNext()) {
+            Map.Entry<UUID, PhaseState> entry = phases.next();
+            ServerPlayer player = entry.getValue().player();
+            boolean skillMissing = player.isAlive() && !player.isRemoved()
+                    && SkillAPI.getSkillsFrom(player).getSkill(QuirkSkills.PERMEATION.get()).isEmpty()
+                    && SkillAPI.getSkillsFrom(player).getSkill(QuirkSkills.PERIL_DIFFUSION.get()).isEmpty();
+            boolean serverChanged = !(player.level() instanceof ServerLevel level)
+                    || level.getServer() != event.getServer() || !player.level().dimension().location().equals(entry.getValue().dimension());
+            if (!player.isAlive() || player.isRemoved() || skillMissing || serverChanged) {
+                player.noPhysics = entry.getValue().originalNoPhysics();
+                BLINDER_RUSHES.remove(entry.getKey());
+                phases.remove();
+                if (skillMissing && !serverChanged && !entry.getValue().selective()) {
+                    Vec3 surface = findSurface(player.serverLevel(), player);
+                    phaseTeleport(player, surface);
+                    player.resetFallDistance();
+                }
+                syncPhase(player, false);
+            }
+        }
+
+        for (ServerPlayer player : event.getServer().getPlayerList().getPlayers()) tickOxygen(player);
+
         Iterator<Map.Entry<UUID, BlinderRush>> iterator = BLINDER_RUSHES.entrySet().iterator();
         while (iterator.hasNext()) {
             Map.Entry<UUID, BlinderRush> entry = iterator.next();
@@ -198,21 +260,120 @@ public final class PermeationQuirk extends Skill {
         player.connection.teleport(destination.x, destination.y, destination.z, player.getYRot(), player.getXRot());
     }
 
-    private static void enterPhase(ServerPlayer player) {
-        if (PHASING.putIfAbsent(player.getUUID(), new PhaseState(player, player.noPhysics)) == null) {
-            syncPhase(player, true);
+    public static int oxygen(LivingEntity player) {
+        return player.getPersistentData().contains(OXYGEN) ? Math.clamp(player.getPersistentData().getInt(OXYGEN), 0, MAX_OXYGEN) : MAX_OXYGEN;
+    }
+
+    public static void tickOxygen(ServerPlayer player) {
+        PhaseState state = PHASING.get(player.getUUID());
+        if (state != null && player.serverLevel().getGameTime() >= state.deadline()) {
+            finishPhase(player, 50.0F);
+            BLINDER_RUSHES.remove(player.getUUID());
+            return;
         }
-        player.noPhysics = true;
+        int before = oxygen(player);
+        int remaining = Math.clamp(before + (state == null ? 1 : -1), 0, MAX_OXYGEN);
+        if (remaining == before) return;
+        player.getPersistentData().putInt(OXYGEN, remaining);
+        if (state != null && remaining == 0) {
+            finishPhase(player, 0.0F);
+            BLINDER_RUSHES.remove(player.getUUID());
+        } else if (remaining % 5 == 0 || remaining == MAX_OXYGEN) syncPhase(player, state != null);
+    }
+
+    public static boolean nearBlock(ServerPlayer player) {
+        Vec3 pos = player.position();
+        for (BlockPos block : BlockPos.withinManhattan(player.blockPosition(), 10, 10, 10)) {
+            double dx = Math.max(Math.max(block.getX() - pos.x, pos.x - block.getX() - 1), 0);
+            double dy = Math.max(Math.max(block.getY() - pos.y, pos.y - block.getY() - 1), 0);
+            double dz = Math.max(Math.max(block.getZ() - pos.z, pos.z - block.getZ() - 1), 0);
+            if (dx * dx + dy * dy + dz * dz <= 100 && player.level().hasChunkAt(block) && !player.level().getBlockState(block).isAir()) return true;
+        }
+        return false;
+    }
+
+    public static boolean startPhase(ServerPlayer player, boolean selective, long deadline, boolean requireBlock) {
+        if (isPhasing(player)) return true;
+        if (oxygen(player) == 0 || !player.isAlive()) return false;
+        if (requireBlock && !nearBlock(player)) {
+            player.displayClientMessage(Component.literal("Permeation requires a block within 10 blocks."), true);
+            return false;
+        }
+        PHASING.put(player.getUUID(), new PhaseState(player, player.noPhysics, selective, deadline, player.level().dimension().location()));
+        player.getPersistentData().putBoolean(PHASE_RECOVERY, !selective);
+        if (!selective) {
+            player.noPhysics = true;
+            Vec3 motion = player.getDeltaMovement();
+            player.setDeltaMovement(motion.x, Math.min(motion.y, -0.22D), motion.z);
+            player.setOnGround(false);
+            player.hurtMarked = true;
+        }
+        syncPhase(player, true);
+        return true;
+    }
+
+    private static void finishPhase(ServerPlayer player, float damage) {
+        PhaseState state = PHASING.get(player.getUUID());
+        if (state == null) return;
+        if (state.selective()) leavePhase(player);
+        else eject(player, damage, null);
     }
 
     private static void leavePhase(ServerPlayer player) {
         PhaseState state = PHASING.remove(player.getUUID());
-        player.noPhysics = state != null && state.originalNoPhysics();
+        player.getPersistentData().remove(PHASE_RECOVERY);
+        if (state != null) player.noPhysics = state.originalNoPhysics();
         syncPhase(player, false);
     }
 
+    @SubscribeEvent
+    public static void onPlayerLogout(PlayerEvent.PlayerLoggedOutEvent event) {
+        if (!(event.getEntity() instanceof ServerPlayer player)) return;
+        finishPhase(player, 0.0F);
+        BLINDER_RUSHES.remove(player.getUUID());
+    }
+
+    @SubscribeEvent
+    public static void onPlayerLogin(PlayerEvent.PlayerLoggedInEvent event) {
+        if (event.getEntity() instanceof ServerPlayer player) {
+            if (player.getPersistentData().getBoolean(PHASE_RECOVERY)) {
+                phaseTeleport(player, findSurface(player.serverLevel(), player));
+                player.resetFallDistance();
+                player.getPersistentData().remove(PHASE_RECOVERY);
+            }
+            syncPhase(player, false);
+        }
+    }
+
+    @SubscribeEvent
+    public static void onDimensionChange(PlayerEvent.PlayerChangedDimensionEvent event) {
+        if (event.getEntity() instanceof ServerPlayer player) {
+            leavePhase(player);
+            BLINDER_RUSHES.remove(player.getUUID());
+        }
+    }
+
+    @SubscribeEvent
+    public static void onPlayerRespawn(PlayerEvent.PlayerRespawnEvent event) {
+        if (event.getEntity() instanceof ServerPlayer player) syncPhase(player, false);
+    }
+
+    @SubscribeEvent
+    public static void onServerStopped(ServerStoppedEvent event) {
+        for (PhaseState state : PHASING.values()) state.player().noPhysics = state.originalNoPhysics();
+        PHASING.clear();
+        BLINDER_RUSHES.clear();
+    }
+
+    @SubscribeEvent
+    public static void onServerStopping(net.neoforged.neoforge.event.server.ServerStoppingEvent event) {
+        for (PhaseState state : java.util.List.copyOf(PHASING.values())) finishPhase(state.player(), 0.0F);
+        BLINDER_RUSHES.clear();
+    }
+
     private static void syncPhase(ServerPlayer player, boolean active) {
-        PermeationPhasePayload payload = new PermeationPhasePayload(player.getId(), active);
+        PhaseState state = PHASING.get(player.getUUID());
+        PermeationPhasePayload payload = new PermeationPhasePayload(player.getId(), active, active && state != null && !state.selective(), oxygen(player));
         AABB area = player.getBoundingBox().inflate(128.0D);
         for (ServerPlayer viewer : player.serverLevel().getEntitiesOfClass(ServerPlayer.class, area)) {
             PacketDistributor.sendToPlayer(viewer, payload);

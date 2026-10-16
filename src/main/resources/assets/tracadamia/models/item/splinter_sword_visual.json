@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/handheld",
+  "textures": {
+    "layer0": "tracadamia:item/splinter_sword_red"
+  }
+}

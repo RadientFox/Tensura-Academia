@@ -22,6 +22,7 @@ public class QuirkSkillsConfig extends ManasConfig {
     public AbsorbAndRelease AbsorbAndRelease = new AbsorbAndRelease();
     public Rupture Rupture = new Rupture();
     public Burst Burst = new Burst();
+    public LifeForce LifeForce = new LifeForce();
     public Multiplier Multiplier = new Multiplier();
     public Mole Mole = new Mole();
     public ShockAbsorption ShockAbsorption = new ShockAbsorption();
@@ -66,6 +67,13 @@ public class QuirkSkillsConfig extends ManasConfig {
     public Tripod Tripod = new Tripod();
     public Warping Warping = new Warping();
     public NewOrder NewOrder = new NewOrder();
+    public Blast Blast = new Blast();
+
+    public static class Blast extends ManasSubConfig {
+        @Comment("Maximum block hardness Big Ass Blast can destroy. Negative-hardness blocks are always protected.")
+        public double maxBlockHardness = 3;
+    }
+
 
 
     public QuirkSkillsConfig() {
@@ -653,6 +661,23 @@ public class QuirkSkillsConfig extends ManasConfig {
         public double suicideHealthMultiplierMastered = 2.0;
 
         public Burst() {
+        }
+    }
+
+    public static class LifeForce extends ManasSubConfig {
+        @Comment("Skill Mastery Points")
+        public double masteryPoints = 2_500.0;
+
+        @Comment("Health Multiplier")
+        public int HPBonus = 3;
+        @Comment("Spiritual Health Multiplier")
+        public int SHPBonus = 3;
+        @Comment("Regen Multiplier")
+        public int regenBonus = 3;
+        @Comment("Slowness Level")
+        public int slownessLevel = 2;
+
+        public LifeForce() {
         }
     }
 

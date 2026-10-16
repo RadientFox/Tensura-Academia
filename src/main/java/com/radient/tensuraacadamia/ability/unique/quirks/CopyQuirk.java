@@ -44,11 +44,6 @@ public class CopyQuirk extends Skill {
         return true;
     }
 
-    public boolean canBeSlotted(ManasSkillInstance instance, LivingEntity entity, int mode) {
-        return false;
-    }
-
-
     @Override
     public int getMaxMastery() {
         return 2500;

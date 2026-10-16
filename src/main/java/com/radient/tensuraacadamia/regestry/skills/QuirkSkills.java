@@ -1,7 +1,9 @@
 package com.radient.tensuraacadamia.regestry.skills;
 
+import com.radient.tensuraacadamia.ability.ultimate.ofaembers.OFA1st_Embers;
+import com.radient.tensuraacadamia.ability.ultimate.ofaembers.OFA2nd_Embers;
+import com.radient.tensuraacadamia.ability.ultimate.ofausers.*;
 import com.radient.tensuraacadamia.ability.unique.quirks.DangerSenseQuirk;
-import com.radient.tensuraacadamia.ability.ultimate.ofausers.OFA1st;
 import com.radient.tensuraacadamia.ability.ultimate.AllForOne;
 import com.radient.tensuraacadamia.ability.unique.quirks.*;
 import com.radient.tensuraacadamia.ability.unique.quirks.neworder.NewOrderQuirk;
@@ -16,12 +18,29 @@ public class QuirkSkills {
 
 
     public static final RegistrySupplier<OFA1st> OFA_1ST = register("one_for_all_1", OFA1st::new);
+    public static final RegistrySupplier<OFA1st_Embers> OFA1st_Embers = register("one_for_all_1_embers", OFA1st_Embers::new);
+    public static final RegistrySupplier<OFA2nd> OFA_2ND = register("one_for_all_2", OFA2nd::new);
+    public static final RegistrySupplier<OFA2nd_Embers> OFA2nd_Embers = register("one_for_all_2_embers", OFA2nd_Embers::new);
+    public static final RegistrySupplier<OFA3rd> OFA_3RD = register("one_for_all_3", OFA3rd::new);
+
+    public static final RegistrySupplier<OFA4th> OFA_4TH = register("one_for_all_4", OFA4th::new);
+
+    public static final RegistrySupplier<OFA5th> OFA_5TH = register("one_for_all_5", OFA5th::new);
+
+    public static final RegistrySupplier<OFA6th> OFA_6TH = register("one_for_all_6", OFA6th::new);
+
+    public static final RegistrySupplier<OFA7th> OFA_7TH = register("one_for_all_7", OFA7th::new);
+
+    public static final RegistrySupplier<OFA8th> OFA_8TH = register("one_for_all_8", OFA8th::new);
+
+    public static final RegistrySupplier<OFA9th> OFA_9TH = register("one_for_all_9", OFA9th::new);
 
 
     public static final RegistrySupplier<Power_Stock> POWER_STOCK = register("power_stock", Power_Stock::new);
     public static final RegistrySupplier<QuirkBestowal> QUIRK_BESTOWAL = register("quirk_bestowal", QuirkBestowal::new);
     public static final RegistrySupplier<FloatQuirk> FLOAT = register("float", FloatQuirk::new);
     public static final RegistrySupplier<GearshiftQuirk> GEARSHIFT = register("gearshift", GearshiftQuirk::new);
+    public static final RegistrySupplier<EngineQuirk> ENGINE = register("engine", EngineQuirk::new);
     public static final RegistrySupplier<Bloodcurdle> BLOODCURDLE = register("bloodcurdle", Bloodcurdle::new);
     public static final RegistrySupplier<DangerSenseQuirk> DANGERSENSE = register("dangersense", DangerSenseQuirk::new);
     public static final RegistrySupplier<CopyQuirk> COPY = register("copy", CopyQuirk::new);
@@ -42,9 +61,13 @@ public class QuirkSkills {
     public static final RegistrySupplier<StrongarmQuirk> STRONGARM = register("strongarm", StrongarmQuirk::new);
     public static final RegistrySupplier<KineticBoosterQuirk> KINETIC_BOOSTER = register("kinetic_booster", KineticBoosterQuirk::new);
     public static final RegistrySupplier<SpringlikeLimbsQuirk> SPRINGLIKE_LIMBS = register("springlike_limbs", SpringlikeLimbsQuirk::new);
+    public static final RegistrySupplier<AcceleratorRingsQuirk> ACCELERATOR_RINGS = register("accelerator_rings", AcceleratorRingsQuirk::new);
+    public static final RegistrySupplier<PermeationQuirk> PERMEATION = register("permeation", PermeationQuirk::new);
+    public static final RegistrySupplier<PerilDiffusionQuirk> PERIL_DIFFUSION = register("peril_diffusion", PerilDiffusionQuirk::new);
     public static final RegistrySupplier<AbsorbAndReleaseQuirk> ABSORB_AND_RELEASE = register("absorb_and_release", AbsorbAndReleaseQuirk::new);
     public static final RegistrySupplier<RuptureQuirk> RUPTURE = register("rupture", RuptureQuirk::new);
     public static final RegistrySupplier<BurstQuirk> BURST = register("burst", BurstQuirk::new);
+    public static final RegistrySupplier<LifeForceQuirk> LifeForce = register("life_force", LifeForceQuirk::new);
     public static final RegistrySupplier<MultiplierQuirk> MULTIPLIER = register("multiplier", MultiplierQuirk::new);
     public static final RegistrySupplier<MoleQuirk> MOLE = register("mole", MoleQuirk::new);
     public static final RegistrySupplier<ShockAbsorptionQuirk> SHOCK_ABSORPTION = register("shock_absorption", ShockAbsorptionQuirk::new);
@@ -59,6 +82,27 @@ public class QuirkSkills {
     public static final RegistrySupplier<BodyMorphQuirk> BODY_MORPH = register("body_morph", BodyMorphQuirk::new);
     public static final RegistrySupplier<ExtraArmsQuirk> EXTRA_ARMS = register("extra_arms", ExtraArmsQuirk::new);
     public static final RegistrySupplier<TailQuirk> TAIL = register("tail", TailQuirk::new);
+    public static final RegistrySupplier<WoodenSwordsQuirk> WOODEN_SWORDS = register("wooden_swords_from_his_hands", WoodenSwordsQuirk::new);
+    public static final RegistrySupplier<BeamsFromHisEyesQuirk> BEAMS_FROM_HIS_EYES = register("beams_from_his_eyes", BeamsFromHisEyesQuirk::new);
+    public static final RegistrySupplier<ImpureBeamQuirk> IMPURE_BEAM = register("impure_beam", ImpureBeamQuirk::new);
+    public static final RegistrySupplier<DoubleQuirk> DOUBLE = register("double", DoubleQuirk::new);
+    public static final RegistrySupplier<QueenBeamQuirk> QUEEN_BEAM = register("queen_beam", QueenBeamQuirk::new);
+    public static final RegistrySupplier<PopOffQuirk> POP_OFF = register("pop_off", PopOffQuirk::new);
+    public static final RegistrySupplier<WhirlwindQuirk> WHIRLWIND = register("whirlwind", WhirlwindQuirk::new);
+    public static final RegistrySupplier<HomingQuirk> HOMING = register("homing", HomingQuirk::new);
+    public static final RegistrySupplier<SolidAirQuirk> SOLID_AIR = register("solid_air", SolidAirQuirk::new);
+    public static final RegistrySupplier<VinesQuirk> VINES = register("vines", VinesQuirk::new);
+    public static final RegistrySupplier<BlastQuirk> BLAST = register("blast", BlastQuirk::new);
+    public static final RegistrySupplier<DarkShadowQuirk> DARK_SHADOW = register("dark_shadow", DarkShadowQuirk::new);
+    public static final RegistrySupplier<AlchemyQuirk> ALCHEMY = register("alchemy", AlchemyQuirk::new);
+    public static final RegistrySupplier<IQQuirk> IQ = register("iq", IQQuirk::new);
+    public static final RegistrySupplier<TapeQuirk> TAPE = register("tape", TapeQuirk::new);
+    public static final RegistrySupplier<CloudQuirk> CLOUD = register("cloud", CloudQuirk::new);
+    public static final RegistrySupplier<HellflameQuirk> HELLFLAME = register("hellflame", HellflameQuirk::new);
+    public static final RegistrySupplier<TeleportationQuirk> TELEPORTATION = register("teleportation", TeleportationQuirk::new);
+    public static final RegistrySupplier<WarpGateQuirk> WARP_GATE = register("warp_gate", WarpGateQuirk::new);
+    public static final RegistrySupplier<LeafipulationQuirk> LEAFIPULATION = register("leafipulation", LeafipulationQuirk::new);
+    public static final RegistrySupplier<OverhaulQuirk> OVERHAUL = register("overhaul", OverhaulQuirk::new);
     public static final RegistrySupplier<ZeroGravityQuirk> ZERO_GRAVITY = register("zero_gravity", ZeroGravityQuirk::new);
     public static final RegistrySupplier<BodyBulkQuirk> BODY_BULK = register("body_bulk", BodyBulkQuirk::new);
     public static final RegistrySupplier<BruiserQuirk> BRUISER = register("bruiser", BruiserQuirk::new);
@@ -90,6 +134,7 @@ public class QuirkSkills {
     public static final RegistrySupplier<NewOrderQuirk> NEW_ORDER = register("new_order", NewOrderQuirk::new);
 
 
+    public static final RegistrySupplier<DecayQuirk> DECAY = register("decay", DecayQuirk::new);
 
 
     private static <E extends ManasSkill> RegistrySupplier<E> register(String name, Supplier<E> supplier) {
