@@ -8,7 +8,6 @@ import com.radient.tensuraacadamia.mixin.ServerGamePacketListenerAccessor;
 import com.radient.tensuraacadamia.regestry.skills.QuirkSkills;
 import com.radient.tensuraacadamia.util.AdditiveBoost;
 import com.radient.tensuraacadamia.util.GroundBlocks;
-import com.radient.tensuraacadamia.util.HitRules;
 import io.github.manasmods.manascore.config.ConfigRegistry;
 import io.github.manasmods.manascore.skill.api.ManasSkillInstance;
 import io.github.manasmods.manascore.skill.api.SkillAPI;
@@ -98,7 +97,6 @@ public class ZeroGravityQuirk extends Skill {
     public static final int ACTION_WIND = 1;
 
     private static final ResourceLocation FLOAT = ResourceLocation.fromNamespaceAndPath(TensuraAcadamia.MODID, "zero_gravity");
-    private static final ResourceLocation LENT_FLOAT = ResourceLocation.fromNamespaceAndPath(TensuraAcadamia.MODID, "zero_gravity_lent");
     private static final ResourceLocation GRAVITY_BOOST = ResourceLocation.fromNamespaceAndPath(TensuraAcadamia.MODID, "zero_gravity_boost");
     public static final double LIFT = 0.1D;
     public static final int LIFT_TICKS = 6;
@@ -124,8 +122,6 @@ public class ZeroGravityQuirk extends Skill {
     private static final List<Meteor> METEORS = new ArrayList<>();
     private static final Map<LivingEntity, Entity> RAISING = new HashMap<>();
     private static final Set<UUID> WIND_THRUSTING = new HashSet<>();
-
-    private static final Map<LivingEntity, Long> LENT = new HashMap<>();
 
     private static double clientWindThrust;
     private static @Nullable FloatPayload clientFloat;
@@ -300,7 +296,7 @@ public class ZeroGravityQuirk extends Skill {
     }
 
     private static @Nullable Entity getOwnAimedFloat(ManasSkillInstance instance, LivingEntity entity) {
-        double range = getEntityReach(entity);
+        double range = instance.isMastered(entity) ? CONFIG.floatRangeMastered : CONFIG.floatRange;
         Entity aimed = ObjectSelectionHelper.getTargetingEntity(Entity.class, entity, range + 1.0D, 0.2D, false, true, false);
         return aimed != null && aimed.distanceTo(entity) <= range + aimed.getBbWidth() && isOwnFloat(entity, aimed) ? aimed : null;
     }
@@ -362,61 +358,8 @@ public class ZeroGravityQuirk extends Skill {
 
     public static boolean isFloating(LivingEntity entity) {
         AttributeInstance gravity = entity.getAttribute(Attributes.GRAVITY);
-        return gravity != null && (gravity.hasModifier(FLOAT) || gravity.hasModifier(LENT_FLOAT));
+        return gravity != null && gravity.hasModifier(FLOAT);
     }
-
-    // this stuff is specifically used by New Order
-    public static void lendFloat(LivingEntity target) {
-        AttributeInstance gravity = target.getAttribute(Attributes.GRAVITY);
-        if (gravity == null || !(target.level() instanceof ServerLevel level)) {
-            return;
-        }
-
-        if (!gravity.hasModifier(LENT_FLOAT)) {
-            boolean floating = isFloating(target);
-            gravity.addOrUpdateTransientModifier(new AttributeModifier(LENT_FLOAT, -1.0D, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));
-            target.setDiscardFriction(true);
-            target.resetFallDistance();
-            if (!floating) {
-                if (!(target instanceof Player) && target.onGround()) {
-                    Vec3 motion = target.getDeltaMovement();
-                    target.setDeltaMovement(motion.x, Math.max(motion.y, 0.0D) + LIFT, motion.z);
-                    target.hurtMarked = true;
-                }
-                if (target instanceof ServerPlayer player) {
-                    PacketDistributor.sendToPlayer(player, FloatPayload.fromConfig());
-                }
-                level.sendParticles(ParticleTypes.REVERSE_PORTAL, target.getX(), target.getY(0.2D), target.getZ(), 20, target.getBbWidth() * 0.5D, 0.1D, target.getBbWidth() * 0.5D, 0.05D);
-                playSound(level, target.position(), SoundEvents.SHULKER_BULLET_HIT, 1.0F, 0.8F);
-            }
-        }
-        LENT.put(target, level.getGameTime() + 1L);
-    }
-
-    private static boolean tickLent(LivingEntity target, long until) {
-        AttributeInstance gravity = target.getAttribute(Attributes.GRAVITY);
-        if (target.isRemoved() || gravity == null || target.level().getGameTime() > until) {
-            if (gravity != null) {
-                gravity.removeModifier(LENT_FLOAT);
-            }
-            if (!isFloating(target)) {
-                target.setDiscardFriction(false);
-            }
-            target.resetFallDistance();
-            return false;
-        }
-
-        target.setDiscardFriction(true);
-        target.resetFallDistance();
-        if (target instanceof ServerPlayer player) {
-            ((ServerGamePacketListenerAccessor) player.connection).tracadamia$setAboveGroundTickCount(0);
-        }
-        if (target.level() instanceof ServerLevel level && level.getGameTime() % 10L == 0L) {
-            level.sendParticles(ParticleTypes.REVERSE_PORTAL, target.getX(), target.getY(), target.getZ(), 2, target.getBbWidth() * 0.4D, 0.05D, target.getBbWidth() * 0.4D, 0.01D);
-        }
-        return true;
-    }
-    // No more new order stuff
 
     public static FloatPayload getClientFloat() {
         return clientFloat != null ? clientFloat : FloatPayload.fromConfig();
@@ -577,13 +520,14 @@ public class ZeroGravityQuirk extends Skill {
             return;
         }
 
-        LivingEntity target = MultiArms.getTarget(entity, getEntityReach(entity));
+        double range = instance.isMastered(entity) ? CONFIG.floatRangeMastered : CONFIG.floatRange;
+        LivingEntity target = MultiArms.getTarget(entity, range);
         if (target != null && isFloating(target)) {
             fail(entity, Component.translatable("tracadamia.skill.zero_gravity.already_floating"));
             return;
         }
 
-        BlockPos block = target == null ? getFloatableBlock(level, instance, entity, getBlockReach(entity)) : null;
+        BlockPos block = target == null ? getFloatableBlock(level, instance, entity, range) : null;
         if (target == null && block == null) {
             fail(entity, Component.translatable("tensura.targeting.not_targeted"));
             return;
@@ -621,15 +565,6 @@ public class ZeroGravityQuirk extends Skill {
         if (floating != null) {
             floating.velocity = new Vec3(floating.velocity.x, speed, floating.velocity.z);
         }
-    }
-
-    // Changed it to use the player's interaction range
-    private static double getEntityReach(LivingEntity entity) {
-        return entity instanceof Player player ? player.entityInteractionRange() : 3.0D;
-    }
-
-    private static double getBlockReach(LivingEntity entity) {
-        return entity instanceof Player player ? player.blockInteractionRange() : 4.5D;
     }
 
     private static @Nullable BlockPos getFloatableBlock(ServerLevel level, ManasSkillInstance instance, LivingEntity entity, double range) {
@@ -827,7 +762,7 @@ public class ZeroGravityQuirk extends Skill {
         AABB sweep = block.getBoundingBox().move(from.subtract(to)).expandTowards(to.subtract(from)).inflate(0.2D);
         boolean grace = time - floating.punched <= PUNCH_GRACE;
         boolean recoil = time - floating.struckAt <= PUNCH_GRACE * 2L;
-        return level.getEntitiesOfClass(LivingEntity.class, sweep, target -> target.isAlive() && !target.isSpectator() && target != floating.owner && HitRules.canHit(floating.puncher != null ? floating.puncher : floating.owner, target)
+        return level.getEntitiesOfClass(LivingEntity.class, sweep, target -> target.isAlive() && !target.isSpectator() && target != floating.owner
                         && !(grace && target == floating.puncher) && !(recoil && target == floating.struck))
                 .stream()
                 .min(Comparator.comparingDouble(target -> target.distanceToSqr(from)))
@@ -1013,7 +948,7 @@ public class ZeroGravityQuirk extends Skill {
             Vec3 from = block.position().add(0.0D, block.getBbHeight() * 0.5D, 0.0D);
             Vec3 to = from.add(move).subtract(0.0D, block.getBbHeight() * 0.5D, 0.0D);
             LivingEntity direct = level.getEntitiesOfClass(LivingEntity.class, block.getBoundingBox().expandTowards(move),
-                    target -> target != shower.owner && target.isAlive() && !target.isSpectator() && HitRules.canHit(shower.owner, target)).stream().findFirst().orElse(null);
+                    target -> target != shower.owner && target.isAlive() && !target.isSpectator()).stream().findFirst().orElse(null);
             BlockHitResult hit = level.clip(new ClipContext(from, to, ClipContext.Block.COLLIDER, ClipContext.Fluid.ANY, block));
             if (direct != null || hit.getType() == HitResult.Type.BLOCK || to.y < level.getMinBuildHeight()) {
                 Vec3 point = direct != null ? direct.position() : hit.getType() == HitResult.Type.BLOCK ? hit.getLocation() : to;
@@ -1043,7 +978,7 @@ public class ZeroGravityQuirk extends Skill {
         }
 
         for (LivingEntity target : level.getEntitiesOfClass(LivingEntity.class, new AABB(point, point).inflate(radius),
-                target -> target != shower.owner && target != direct && target.isAlive() && HitRules.canHit(shower.owner, target) && target.position().distanceTo(point) <= radius + target.getBbWidth() * 0.5D)) {
+                target -> target != shower.owner && target != direct && target.isAlive() && target.position().distanceTo(point) <= radius + target.getBbWidth() * 0.5D)) {
             hurt(shower.instance, shower.owner, target, DamageTypes.EXPLOSION, METEOR_SHOWER, damage * 0.5F, false);
             Vec3 away = target.position().subtract(point).multiply(1.0D, 0.0D, 1.0D);
             target.push(away.x * 0.3D, 0.3D, away.z * 0.3D);
@@ -1189,7 +1124,7 @@ public class ZeroGravityQuirk extends Skill {
         Vec3 bottom = meteor.center.subtract(0.0D, meteor.radius, 0.0D);
         BlockHitResult hit = level.clip(new ClipContext(meteor.center, bottom.add(move), ClipContext.Block.COLLIDER, ClipContext.Fluid.ANY, cluster));
         LivingEntity direct = level.getEntitiesOfClass(LivingEntity.class, new AABB(meteor.center, meteor.center).inflate(meteor.radius).expandTowards(move),
-                target -> target != meteor.owner && target.isAlive() && !target.isSpectator() && HitRules.canHit(meteor.owner, target) && target.getBoundingBox().getCenter().distanceTo(meteor.center) <= meteor.radius + meteor.fallSpeed).stream().findFirst().orElse(null);
+                target -> target != meteor.owner && target.isAlive() && !target.isSpectator() && target.getBoundingBox().getCenter().distanceTo(meteor.center) <= meteor.radius + meteor.fallSpeed).stream().findFirst().orElse(null);
         if (hit.getType() == HitResult.Type.BLOCK || direct != null || bottom.y + move.y < level.getMinBuildHeight()) {
             Vec3 point = hit.getType() == HitResult.Type.BLOCK ? hit.getLocation() : direct != null ? direct.position() : bottom.add(move);
             landMeteor(level, meteor, point);
@@ -1211,7 +1146,7 @@ public class ZeroGravityQuirk extends Skill {
         double crater = meteor.radius * CONFIG.devastationCraterScale;
         double reach = crater + CONFIG.devastationShockwaveRadius;
 
-        for (LivingEntity target : level.getEntitiesOfClass(LivingEntity.class, new AABB(point, point).inflate(reach), target -> target != meteor.owner && target.isAlive() && HitRules.canHit(meteor.owner, target))) {
+        for (LivingEntity target : level.getEntitiesOfClass(LivingEntity.class, new AABB(point, point).inflate(reach), target -> target != meteor.owner && target.isAlive())) {
             double distance = target.getBoundingBox().getCenter().distanceTo(point) - target.getBbWidth() * 0.5D;
             if (distance <= crater) {
                 hurt(meteor.instance, meteor.owner, target, TensuraDamageTypes.EARTH_ELEMENTAL, DEVASTATION, damage, true);
@@ -1293,10 +1228,6 @@ public class ZeroGravityQuirk extends Skill {
         if (!METEORS.isEmpty()) {
             METEORS.removeIf(ZeroGravityQuirk::tickMeteor);
         }
-
-        if (!LENT.isEmpty()) {
-            LENT.entrySet().removeIf(entry -> !tickLent(entry.getKey(), entry.getValue()));
-        }
     }
 
     @SubscribeEvent
@@ -1307,8 +1238,6 @@ public class ZeroGravityQuirk extends Skill {
         METEORS.clear();
         RAISING.clear();
         WIND_THRUSTING.clear();
-        LENT.forEach((target, until) -> tickLent(target, Long.MIN_VALUE));
-        LENT.clear();
     }
 
     private static void playSound(ServerLevel level, Vec3 pos, SoundEvent sound, float volume, float pitch) {

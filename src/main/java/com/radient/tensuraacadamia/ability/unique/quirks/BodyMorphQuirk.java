@@ -5,7 +5,6 @@ import com.radient.tensuraacadamia.config.skills.QuirkSkillsConfig;
 import com.radient.tensuraacadamia.entity.TelekinesisBlockEntity;
 import com.radient.tensuraacadamia.regestry.skills.QuirkSkills;
 import com.radient.tensuraacadamia.util.GroundBlocks;
-import com.radient.tensuraacadamia.util.HitRules;
 import com.radient.tensuraacadamia.util.SizeReach;
 import dev.architectury.event.EventResult;
 import io.github.manasmods.manascore.config.ConfigRegistry;
@@ -250,7 +249,7 @@ public class BodyMorphQuirk extends Skill {
         double half = (mastered ? CONFIG.smashSizeMastered : CONFIG.smashSize) * 0.5D;
         float damage = (float) (mastered ? CONFIG.smashDamageMastered : CONFIG.smashDamage);
         AABB area = new AABB(owner.getX() - half, owner.getY() - 1.0D, owner.getZ() - half, owner.getX() + half, owner.getY() + 2.0D, owner.getZ() + half);
-        for (LivingEntity target : level.getEntitiesOfClass(LivingEntity.class, area, target -> target != owner && target.isAlive() && HitRules.canHit(owner, target))) {
+        for (LivingEntity target : level.getEntitiesOfClass(LivingEntity.class, area, target -> target != owner && target.isAlive())) {
             hit(smash.instance(), owner, target, damage + getBonusDamage(owner, CONFIG.smashDamagePercent), SMASH); // add physical damage % here
             target.push(0.0D, 0.4D, 0.0D);
             target.hurtMarked = true;
@@ -316,8 +315,8 @@ public class BodyMorphQuirk extends Skill {
 
         LivingEntity target = MultiArms.getNearbyTarget(entity, CONFIG.grabRange + entity.getBbWidth());
         if (target != null) {
-            if (!MultiArms.canGrab(entity, target)) {
-                fail(entity, MultiArms.getGrabFail(target));
+            if (!MultiArms.canGrab(target)) {
+                fail(entity, "tracadamia.skill.arms.boss");
                 return;
             }
 
@@ -417,8 +416,8 @@ public class BodyMorphQuirk extends Skill {
                 return false;
             }
 
-            if (!MultiArms.canGrab(entity, target)) {
-                fail(entity, MultiArms.getGrabFail(target));
+            if (!MultiArms.canGrab(target)) {
+                fail(entity, "tracadamia.skill.arms.boss");
                 return false;
             }
 

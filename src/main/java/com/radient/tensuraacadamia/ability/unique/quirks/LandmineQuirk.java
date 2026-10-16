@@ -4,7 +4,6 @@ import com.radient.tensuraacadamia.TensuraAcadamia;
 import com.radient.tensuraacadamia.config.skills.QuirkSkillsConfig;
 import com.radient.tensuraacadamia.regestry.skills.QuirkSkills;
 import com.radient.tensuraacadamia.util.GroundBlocks;
-import com.radient.tensuraacadamia.util.HitRules;
 import io.github.manasmods.manascore.config.ConfigRegistry;
 import io.github.manasmods.manascore.skill.api.ManasSkillInstance;
 import io.github.manasmods.manascore.skill.api.SkillAPI;
@@ -29,6 +28,7 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.OwnableEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.level.ClipContext;
@@ -281,6 +281,7 @@ public class LandmineQuirk extends Skill {
         instance.addMasteryPoint(entity);
     }
 
+    // true once the mine goes off or is gone
     private static boolean tickMine(MinecraftServer server, Mine mine, long time) {
         ServerLevel level = server.getLevel(mine.dimension());
         if (level == null || !level.isLoaded(mine.pos())) {
@@ -303,7 +304,7 @@ public class LandmineQuirk extends Skill {
         }
 
         AABB trigger = new AABB(mine.pos().above()).setMaxY(mine.pos().getY() + 1.0D + MINE_TRIGGER_HEIGHT);
-        boolean stepped = !level.getEntitiesOfClass(LivingEntity.class, trigger, target -> target != owner && target.isAlive() && !target.isSpectator() && HitRules.canHit(owner, target)).isEmpty();
+        boolean stepped = !level.getEntitiesOfClass(LivingEntity.class, trigger, target -> target != owner && target.isAlive() && !target.isSpectator() && !isAlly(owner, target)).isEmpty();
         if (!stepped) {
             return false;
         }
@@ -381,6 +382,7 @@ public class LandmineQuirk extends Skill {
         instance.addMasteryPoint(entity);
     }
 
+    // A bombed target that dies blows up
     @SubscribeEvent
     public static void onDeath(LivingDeathEvent event) {
         LivingEntity target = event.getEntity();
@@ -414,13 +416,14 @@ public class LandmineQuirk extends Skill {
         explode(level, instance, owner, center, size, damage, mode, breakBlocks, null);
     }
 
+    // Hurts everything in the blast
     private static void explode(ServerLevel level, ManasSkillInstance instance, LivingEntity owner, Vec3 center, double size, float damage, int mode, boolean breakBlocks, @Nullable LivingEntity skip) {
         double radius = size * 0.5D;
         DamageSource source = ((Skill) instance.getSkill()).createSource(instance, owner, owner instanceof Player ? DamageTypes.PLAYER_EXPLOSION : DamageTypes.EXPLOSION, mode);
         blasting = new Blast(instance, owner, level);
         try {
             for (LivingEntity target : level.getEntitiesOfClass(LivingEntity.class, new AABB(center, center).inflate(radius),
-                    target -> target != owner && target != skip && target.isAlive() && !target.isSpectator() && HitRules.canHit(owner, target))) {
+                    target -> target != owner && target != skip && target.isAlive() && !target.isSpectator() && !isAlly(owner, target))) {
                 target.invulnerableTime = 0;
                 target.hurt(source, damage);
                 Vec3 away = target.position().subtract(center);
@@ -441,6 +444,7 @@ public class LandmineQuirk extends Skill {
         playSound(level, center, SoundEvents.GENERIC_EXPLODE.value(), (float) Math.min(4.0D, 0.6D + radius * 0.3D), (float) Math.max(0.6D, 1.4D - radius * 0.1D));
     }
 
+    // grief rules
     @SubscribeEvent
     public static void onDetonate(ExplosionEvent.Detonate event) {
         Blast blast = blasting;
@@ -450,6 +454,10 @@ public class LandmineQuirk extends Skill {
 
         event.getAffectedBlocks().removeIf(pos -> !GroundBlocks.canBreak(blast.level(), blast.instance(), blast.owner(), pos));
         event.getAffectedBlocks().forEach(pos -> GroundBlocks.griefed(blast.level(), blast.instance(), blast.owner(), pos));
+    }
+
+    private static boolean isAlly(LivingEntity owner, LivingEntity target) {
+        return owner.isAlliedTo(target) || target instanceof OwnableEntity ownable && owner.getUUID().equals(ownable.getOwnerUUID());
     }
 
     private static @Nullable LivingEntity findOwner(MinecraftServer server, ServerLevel level, UUID uuid) {

@@ -3,21 +3,17 @@ package com.radient.tensuraacadamia.ability.unique.quirks;
 import com.radient.tensuraacadamia.TensuraAcadamia;
 import com.radient.tensuraacadamia.config.skills.QuirkSkillsConfig;
 import com.radient.tensuraacadamia.regestry.skills.QuirkSkills;
-import com.radient.tensuraacadamia.util.HitRules;
 import com.radient.tensuraacadamia.util.Modifiers;
 import com.radient.tensuraacadamia.util.SizeReach;
 import io.github.manasmods.manascore.config.ConfigRegistry;
 import io.github.manasmods.manascore.skill.api.ManasSkillInstance;
 import io.github.manasmods.manascore.skill.api.SkillAPI;
-import io.github.manasmods.tensura.ability.SkillHelper;
 import io.github.manasmods.tensura.ability.skill.Skill;
 import io.github.manasmods.tensura.particle.TensuraParticleHelper;
 import io.github.manasmods.tensura.particle.TensuraParticleUtils;
 import io.github.manasmods.tensura.registry.sound.TensuraSoundEvents;
 import io.github.manasmods.tensura.util.EnergyHelper;
 import net.minecraft.ChatFormatting;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -28,16 +24,10 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
@@ -55,7 +45,6 @@ public class BodyBulkQuirk extends Skill {
     private static final QuirkSkillsConfig.BodyBulk CONFIG = ConfigRegistry.getConfig(QuirkSkillsConfig.class).BodyBulk;
 
     private static final int BODY_BULK = 0;
-    private static final int SLAM = 1;
     private static final String BULK_TAG = "bulk";
     private static final ResourceLocation BULK = ResourceLocation.fromNamespaceAndPath(TensuraAcadamia.MODID, "body_bulk");
     private static final double MULTIPLIER_STEP = 0.05D;
@@ -77,31 +66,17 @@ public class BodyBulkQuirk extends Skill {
 
     @Override
     public double getAuraCost(LivingEntity entity, ManasSkillInstance instance, int mode) {
-        return mode == SLAM ? CONFIG.slamAuraCost : CONFIG.auraCostPerSize * CONFIG.growthPerTick;
-    }
-
-    @Override
-    public int getModes(ManasSkillInstance instance) {
-        return 2;
-    }
-
-    @Override
-    public int nextMode(LivingEntity entity, ManasSkillInstance instance, int mode, boolean reverse) {
-        return mode == BODY_BULK ? SLAM : BODY_BULK;
+        return CONFIG.auraCostPerSize * CONFIG.growthPerTick;
     }
 
     @Override
     public String getModeId(ManasSkillInstance instance, int mode) {
-        return switch (mode) {
-            case BODY_BULK -> "body_bulk.body_bulk";
-            case SLAM -> "body_bulk.slam";
-            default -> super.getModeId(instance, mode);
-        };
+        return mode == BODY_BULK ? "body_bulk.body_bulk" : super.getModeId(instance, mode);
     }
 
     @Override
     public boolean canIgnoreCoolDown(ManasSkillInstance instance, LivingEntity entity, int mode) {
-        return mode == BODY_BULK && entity.isShiftKeyDown() || super.canIgnoreCoolDown(instance, entity, mode);
+        return entity.isShiftKeyDown() || super.canIgnoreCoolDown(instance, entity, mode);
     }
 
     public static Optional<ManasSkillInstance> getBodyBulk(LivingEntity entity) {
@@ -137,17 +112,11 @@ public class BodyBulkQuirk extends Skill {
         Modifiers.set(entity, Attributes.SCALE, BULK, gained, AttributeModifier.Operation.ADD_VALUE);
         Modifiers.set(entity, Attributes.ATTACK_DAMAGE, BULK, CONFIG.damagePerSize * gained * getStressMultiplier(entity), AttributeModifier.Operation.ADD_VALUE);
         Modifiers.set(entity, Attributes.ARMOR, BULK, CONFIG.armorPerSize * gained, AttributeModifier.Operation.ADD_VALUE);
-        Modifiers.set(entity, Attributes.MAX_HEALTH, BULK, CONFIG.healthPercentPerSize * gained, AttributeModifier.Operation.ADD_MULTIPLIED_BASE);
         SizeReach.update(entity);
     }
 
     @Override
     public void onPressed(ManasSkillInstance instance, LivingEntity entity, int keyNumber, int mode) {
-        if (mode == SLAM && entity.level() instanceof ServerLevel level) {
-            slam(level, instance, entity);
-            return;
-        }
-
         if (mode != BODY_BULK || !(entity.level() instanceof ServerLevel level) || !entity.isShiftKeyDown() || getGained(instance) <= 0.0D) {
             return;
         }
@@ -206,50 +175,6 @@ public class BodyBulkQuirk extends Skill {
         if (mode == BODY_BULK && heldTicks > 0) {
             instance.setCoolDown(CONFIG.cooldown, BODY_BULK);
         }
-    }
-
-    private static void slam(ServerLevel level, ManasSkillInstance instance, LivingEntity entity) {
-        if (EnergyHelper.isOutOfEnergy(entity, instance, SLAM)) {
-            return;
-        }
-
-        double size = entity.getScale();
-        Vec3 forward = Vec3.directionFromRotation(0.0F, entity.getYRot());
-        Vec3 point = entity.position().add(forward.scale(entity.getBbWidth() * 0.5D + size));
-        double slamRadius = CONFIG.slamRadius * size;
-        double shockRadius = Math.max(slamRadius, CONFIG.slamShockwaveRadius * size);
-        float melee = (float) entity.getAttributeValue(Attributes.ATTACK_DAMAGE);
-        DamageSource source = ((Skill) instance.getSkill()).createSource(instance, entity, entity instanceof Player ? DamageTypes.PLAYER_ATTACK : DamageTypes.MOB_ATTACK, SLAM);
-        for (LivingEntity target : level.getEntitiesOfClass(LivingEntity.class, new AABB(point, point).inflate(shockRadius, 2.0D + size, shockRadius),
-                target -> target != entity && target.isAlive() && !target.isSpectator() && !MultiArms.isHoldPair(entity, target) && HitRules.canHit(entity, target))) {
-            Vec3 away = new Vec3(target.getX() - point.x, 0.0D, target.getZ() - point.z);
-            double distance = away.length() - target.getBbWidth() * 0.5D;
-            if (distance > shockRadius) {
-                continue;
-            }
-
-            boolean slammed = distance <= slamRadius;
-            target.invulnerableTime = 0;
-            target.hurt(source, melee * (float) (slammed ? CONFIG.slamDamage : CONFIG.slamShockwaveDamage));
-            Vec3 push = away.lengthSqr() < 1.0E-4D ? forward : away.normalize();
-            SkillHelper.knockBack(target, entity, instance, push, slammed ? 0.4D : 0.8D, 0.0D, slammed ? 0.6D : 0.3D);
-            target.hurtMarked = true;
-        }
-
-        entity.swing(InteractionHand.MAIN_HAND, true);
-        BlockState ground = level.getBlockState(BlockPos.containing(point.x, entity.getY() - 0.5D, point.z));
-        if (!ground.isAir()) {
-            level.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, ground), point.x, entity.getY() + 0.1D, point.z, 40, slamRadius * 0.5D, 0.2D, slamRadius * 0.5D, 0.2D);
-        }
-
-        VibrateQuirk.shakeGround(level, point, shockRadius, 8);
-        level.sendParticles(ImpactRecoilQuirk.IMPACT_SHOCKWAVE, point.x, entity.getY() + 0.1D, point.z, 0, 0.0D, 1.0D, 0.0D, slamRadius / 1.5D);
-        level.sendParticles(ImpactRecoilQuirk.IMPACT_SHOCKWAVE, point.x, entity.getY() + 0.1D, point.z, 0, 0.0D, 1.0D, 0.0D, shockRadius / 1.5D);
-        level.sendParticles(ParticleTypes.EXPLOSION, point.x, entity.getY() + 0.3D, point.z, 1, 0.0D, 0.0D, 0.0D, 0.0D);
-        level.playSound(null, point.x, point.y, point.z, SoundEvents.MACE_SMASH_GROUND_HEAVY, SoundSource.PLAYERS, 2.0F, 0.7F);
-        level.playSound(null, point.x, point.y, point.z, SoundEvents.GENERIC_EXPLODE.value(), SoundSource.PLAYERS, 0.8F, 0.8F);
-        instance.setCoolDown(CONFIG.slamCooldown, SLAM);
-        instance.addMasteryPoint(entity);
     }
 
     @Override

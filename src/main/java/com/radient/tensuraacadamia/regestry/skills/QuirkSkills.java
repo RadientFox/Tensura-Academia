@@ -6,7 +6,6 @@ import com.radient.tensuraacadamia.ability.ultimate.ofausers.*;
 import com.radient.tensuraacadamia.ability.unique.quirks.DangerSenseQuirk;
 import com.radient.tensuraacadamia.ability.ultimate.AllForOne;
 import com.radient.tensuraacadamia.ability.unique.quirks.*;
-import com.radient.tensuraacadamia.ability.unique.quirks.neworder.NewOrderQuirk;
 import dev.architectury.registry.registries.RegistrySupplier;
 import io.github.manasmods.manascore.skill.api.ManasSkill;
 import io.github.manasmods.manascore.skill.impl.SkillRegistry;
@@ -111,29 +110,6 @@ public class QuirkSkills {
     public static final RegistrySupplier<GigantificationQuirk> GIGANTIFICATION = register("gigantification", GigantificationQuirk::new);
     public static final RegistrySupplier<TransformingArmsQuirk> TRANSFORMING_ARMS = register("transforming_arms", TransformingArmsQuirk::new);
     public static final RegistrySupplier<LandmineQuirk> LANDMINE = register("landmine", LandmineQuirk::new);
-    public static final RegistrySupplier<WeldQuirk> WELD = register("weld", WeldQuirk::new);
-    public static final RegistrySupplier<WhaleQuirk> WHALE = register("whale", WhaleQuirk::new);
-    public static final RegistrySupplier<WholeBodyLensQuirk> WHOLE_BODY_LENS = register("whole_body_lens", WholeBodyLensQuirk::new);
-    public static final RegistrySupplier<WingQuirk> WING = register("wing", WingQuirk::new);
-    public static final RegistrySupplier<ZombieVirusQuirk> ZOMBIE_VIRUS = register("zombie_virus", ZombieVirusQuirk::new);
-    public static final RegistrySupplier<WaterPumpQuirk> WATER_PUMP = register("water_pump", WaterPumpQuirk::new);
-    public static final RegistrySupplier<WaterGunQuirk> WATER_GUN = register("water_gun", WaterGunQuirk::new);
-    public static final RegistrySupplier<WaterControlQuirk> WATER_CONTROL = register("water_control", WaterControlQuirk::new);
-    public static final RegistrySupplier<VoyanceQuirk> VOYANCE = register("voyance", VoyanceQuirk::new);
-    public static final RegistrySupplier<ViralCosmosQuirk> VIRAL_COSMOS = register("viral_cosmos", ViralCosmosQuirk::new);
-    public static final RegistrySupplier<ToolArmsQuirk> TOOL_ARMS = register("tool_arms", ToolArmsQuirk::new);
-    public static final RegistrySupplier<TongueTankQuirk> TONGUE_TANK = register("tongue_tank", TongueTankQuirk::new);
-    public static final RegistrySupplier<PainBlockerQuirk> PAIN_BLOCKER = register("pain_blocker", PainBlockerQuirk::new);
-    public static final RegistrySupplier<FierceGainsQuirk> FIERCE_GAINS = register("fierce_gains", FierceGainsQuirk::new);
-    public static final RegistrySupplier<MuscleExpansionQuirk> MUSCLE_EXPANSION = register("muscle_expansion", MuscleExpansionQuirk::new);
-    public static final RegistrySupplier<TwinImpactQuirk> TWIN_IMPACT = register("twin_impact", TwinImpactQuirk::new);
-    public static final RegistrySupplier<TrajectQuirk> TRAJECT = register("traject", TrajectQuirk::new);
-    public static final RegistrySupplier<TreeFrogQuirk> TREE_FROG = register("tree_frog", TreeFrogQuirk::new);
-    public static final RegistrySupplier<TripodQuirk> TRIPOD = register("tripod", TripodQuirk::new);
-    public static final RegistrySupplier<WarpingQuirk> WARPING = register("warping", WarpingQuirk::new);
-    public static final RegistrySupplier<NewOrderQuirk> NEW_ORDER = register("new_order", NewOrderQuirk::new);
-
-
     public static final RegistrySupplier<DecayQuirk> DECAY = register("decay", DecayQuirk::new);
 
 
