@@ -5,13 +5,17 @@ import com.radient.tensuraacadamia.config.skills.QuirkSkillsConfig;
 import com.radient.tensuraacadamia.mixin.ServerGamePacketListenerAccessor;
 import com.radient.tensuraacadamia.regestry.skills.QuirkSkills;
 import com.radient.tensuraacadamia.util.GroundBlocks;
+import com.radient.tensuraacadamia.util.HitRules;
 import com.radient.tensuraacadamia.util.Modifiers;
 import io.github.manasmods.manascore.config.ConfigRegistry;
 import io.github.manasmods.manascore.skill.api.ManasSkillInstance;
 import io.github.manasmods.manascore.skill.api.SkillAPI;
+import io.github.manasmods.tensura.ability.SkillHelper;
 import io.github.manasmods.tensura.ability.skill.Skill;
+import io.github.manasmods.tensura.damage.TensuraDamageSource;
 import io.github.manasmods.tensura.particle.TensuraParticleHelper;
 import io.github.manasmods.tensura.particle.TensuraParticleUtils;
+import io.github.manasmods.tensura.registry.attribute.TensuraAttributes;
 import io.github.manasmods.tensura.registry.sound.TensuraSoundEvents;
 import io.github.manasmods.tensura.util.EnergyHelper;
 import net.minecraft.ChatFormatting;
@@ -58,8 +62,10 @@ import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import org.joml.Vector3f;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @EventBusSubscriber(modid = TensuraAcadamia.MODID)
 public class BruiserQuirk extends Skill {
@@ -68,6 +74,8 @@ public class BruiserQuirk extends Skill {
 
     private static final int POWER_UP = 0;
     private static final int POWER_MOVE = 1;
+    private static final int SHOULDER_CHECK = 2;
+    private static final int MODES = 3;
 
     public static final int RIGHT_ARM = 0;
     public static final int LEFT_ARM = 1;
@@ -88,21 +96,40 @@ public class BruiserQuirk extends Skill {
     private static final int STOMP_LIFTS = 12;
 
     private static final List<Leap> LEAPS = new ArrayList<>();
+    private static final List<Bash> BASHES = new ArrayList<>();
+
+    private static final class Bash {
+        private final ManasSkillInstance instance;
+        private final LivingEntity owner;
+        private final Vec3 direction;
+        private final int ticks;
+        private final Set<LivingEntity> hit = new HashSet<>();
+        private int age;
+
+        private Bash(ManasSkillInstance instance, LivingEntity owner, Vec3 direction, int ticks) {
+            this.instance = instance;
+            this.owner = owner;
+            this.direction = direction;
+            this.ticks = ticks;
+        }
+    }
 
     private static final class Leap {
         private final ManasSkillInstance instance;
         private final LivingEntity owner;
         private final long start;
+        private final boolean shockwave;
         private boolean airborne;
         private Vec3 lastPos;
         private Vec3 motion;
 
-        private Leap(ManasSkillInstance instance, LivingEntity owner, long start, Vec3 motion) {
+        private Leap(ManasSkillInstance instance, LivingEntity owner, long start, Vec3 motion, boolean shockwave) {
             this.instance = instance;
             this.owner = owner;
             this.start = start;
             this.lastPos = owner.position();
             this.motion = motion;
+            this.shockwave = shockwave;
         }
     }
 
@@ -117,17 +144,21 @@ public class BruiserQuirk extends Skill {
 
     @Override
     public double getAuraCost(LivingEntity entity, ManasSkillInstance instance, int mode) {
-        return mode == POWER_UP ? CONFIG.powerUpAuraCost : CONFIG.powerMoveAuraCost;
+        return switch (mode) {
+            case POWER_UP -> CONFIG.powerUpAuraCost;
+            case SHOULDER_CHECK -> CONFIG.shoulderCheckAuraCost;
+            default -> CONFIG.powerMoveAuraCost;
+        };
     }
 
     @Override
     public int getModes(ManasSkillInstance instance) {
-        return 2;
+        return MODES;
     }
 
     @Override
     public int nextMode(LivingEntity entity, ManasSkillInstance instance, int mode, boolean reverse) {
-        return mode == POWER_UP ? POWER_MOVE : POWER_UP;
+        return Math.floorMod(mode + (reverse ? -1 : 1), MODES);
     }
 
     @Override
@@ -135,6 +166,7 @@ public class BruiserQuirk extends Skill {
         return switch (mode) {
             case POWER_UP -> "bruiser.power_up";
             case POWER_MOVE -> "bruiser.power_move";
+            case SHOULDER_CHECK -> "bruiser.shoulder_check";
             default -> super.getModeId(instance, mode);
         };
     }
@@ -206,6 +238,10 @@ public class BruiserQuirk extends Skill {
             powerUp(level, instance, entity);
             return;
         }
+        if (mode == SHOULDER_CHECK) {
+            shoulderCheck(level, instance, entity);
+            return;
+        }
 
         if (!isPowered(instance)) {
             fail(entity, Component.translatable("tracadamia.skill.bruiser.not_powered"));
@@ -221,6 +257,69 @@ public class BruiserQuirk extends Skill {
             }
             case RIGHT_LEG -> stomp(level, instance, entity);
             case LEFT_LEG -> leap(level, instance, entity);
+        }
+    }
+
+    private static void shoulderCheck(ServerLevel level, ManasSkillInstance instance, LivingEntity entity) {
+        if (BASHES.stream().anyMatch(bash -> bash.owner == entity) || EnergyHelper.isOutOfEnergy(entity, instance, SHOULDER_CHECK)) {
+            return;
+        }
+
+        int ticks = Math.max(1, (int) Math.ceil(CONFIG.shoulderCheckDistance / CONFIG.shoulderCheckSpeed * 20.0D));
+        BASHES.add(new Bash(instance, entity, Vec3.directionFromRotation(0.0F, entity.getYRot()), ticks));
+        instance.setCoolDown(CONFIG.shoulderCheckCooldown, SHOULDER_CHECK);
+        instance.addMasteryPoint(entity);
+        entity.swing(InteractionHand.MAIN_HAND, true);
+        playSound(level, entity, SoundEvents.RAVAGER_STEP, 1.2F, 0.8F);
+        playSound(level, entity, SoundEvents.PLAYER_ATTACK_SWEEP, 1.0F, 0.6F);
+    }
+
+    private static boolean tickBash(Bash bash) {
+        LivingEntity owner = bash.owner;
+        if (!(owner.level() instanceof ServerLevel level) || !owner.isAlive() || owner.isRemoved() || owner.isPassenger() || bash.age++ >= bash.ticks) {
+            return true;
+        }
+
+        Vec3 step = bash.direction.scale(CONFIG.shoulderCheckSpeed / 20.0D);
+        DamageSource source = ((Skill) bash.instance.getSkill()).createSource(bash.instance, owner, owner instanceof Player ? DamageTypes.PLAYER_ATTACK : DamageTypes.MOB_ATTACK, SHOULDER_CHECK);
+        ((TensuraDamageSource) source).tensura$setBarrierBypassLevel(1.0F);
+        float damage = (float) getBonusDamage(owner, CONFIG.shoulderCheckDamagePercent);
+        for (LivingEntity target : level.getEntitiesOfClass(LivingEntity.class, owner.getBoundingBox().expandTowards(step).inflate(0.5D),
+                target -> target != owner && target.isAlive() && !target.isSpectator() && !bash.hit.contains(target) && HitRules.canHit(owner, target))) {
+            bash.hit.add(target);
+            breakGuard(level, target);
+            target.invulnerableTime = 0;
+            target.hurt(source, damage);
+            SkillHelper.knockBack(target, owner, bash.instance, bash.direction, 1.2D, 0.0D, 0.35D);
+            target.hurtMarked = true;
+            level.sendParticles(ParticleTypes.CRIT, target.getX(), target.getY(0.5D), target.getZ(), 12, target.getBbWidth() * 0.4D, target.getBbHeight() * 0.3D, target.getBbWidth() * 0.4D, 0.3D);
+            playSound(level, target, SoundEvents.PLAYER_ATTACK_KNOCKBACK, 1.2F, 0.7F);
+            playSound(level, target, SoundEvents.ZOMBIE_ATTACK_IRON_DOOR, 0.6F, 0.8F);
+        }
+
+        Vec3 velocity = new Vec3(step.x, owner.getDeltaMovement().y, step.z);
+        owner.setDeltaMovement(velocity);
+        owner.resetFallDistance();
+        if (owner instanceof ServerPlayer player) {
+            PacketDistributor.sendToPlayer(player, new LeapPayload(velocity.toVector3f()));
+            ((ServerGamePacketListenerAccessor) player.connection).tracadamia$setAboveGroundTickCount(0);
+        } else {
+            owner.hurtMarked = true;
+        }
+        level.sendParticles(ParticleTypes.CLOUD, owner.getX(), owner.getY() + 0.2D, owner.getZ(), 2, owner.getBbWidth() * 0.3D, 0.05D, owner.getBbWidth() * 0.3D, 0.02D);
+        return false;
+    }
+
+    private static void breakGuard(ServerLevel level, LivingEntity target) {
+        if (target instanceof Player player && player.isBlocking()) {
+            player.disableShield();
+            playSound(level, target, SoundEvents.SHIELD_BREAK, 1.0F, 0.8F);
+        }
+
+        AttributeInstance barrier = target.getAttribute(TensuraAttributes.MULTILAYER_BARRIER);
+        if (barrier != null && barrier.getValue() > 0.0D) {
+            barrier.removeModifiers();
+            playSound(level, target, TensuraSoundEvents.BARRIER_BREAK.get(), 1.0F, 1.0F);
         }
     }
 
@@ -280,7 +379,7 @@ public class BruiserQuirk extends Skill {
 
         double radius = CONFIG.punchShockwaveRadius;
         for (LivingEntity other : level.getEntitiesOfClass(LivingEntity.class, new AABB(point, point).inflate(radius),
-                other -> other != entity && other != target && other.isAlive() && !other.isSpectator() && other.getBoundingBox().getCenter().distanceTo(point) <= radius)) {
+                other -> other != entity && other != target && other.isAlive() && !other.isSpectator() && HitRules.canHit(entity, other) && other.getBoundingBox().getCenter().distanceTo(point) <= radius)) {
             hit(instance, entity, other, (float) (damage * CONFIG.punchShockwaveDamage));
             Vec3 away = other.position().subtract(point);
             other.knockback(0.8D, -away.x, -away.z);
@@ -309,7 +408,7 @@ public class BruiserQuirk extends Skill {
         double range = CONFIG.swipeRange * Math.max(1.0D, entity.getScale());
         double reach = Math.max(range, CONFIG.swipeShockwaveRadius);
         for (LivingEntity target : level.getEntitiesOfClass(LivingEntity.class, entity.getBoundingBox().inflate(reach, 2.0D, reach),
-                target -> target != entity && target.isAlive() && !target.isSpectator())) {
+                target -> target != entity && target.isAlive() && !target.isSpectator() && HitRules.canHit(entity, target))) {
             Vec3 offset = target.position().subtract(entity.position());
             double distance = offset.horizontalDistance();
             if (distance > reach || new Vec3(offset.x, 0.0D, offset.z).normalize().dot(forward) < 0.0D) {
@@ -351,7 +450,7 @@ public class BruiserQuirk extends Skill {
         double half = CONFIG.stompSize * 0.5D;
         double shock = CONFIG.stompShockwaveSize * 0.5D;
         for (LivingEntity target : level.getEntitiesOfClass(LivingEntity.class, entity.getBoundingBox().inflate(shock, 3.0D, shock),
-                target -> target != entity && target.isAlive() && !target.isSpectator())) {
+                target -> target != entity && target.isAlive() && !target.isSpectator() && HitRules.canHit(entity, target))) {
             double dx = Math.abs(target.getX() - entity.getX());
             double dz = Math.abs(target.getZ() - entity.getZ());
             if (dx <= half && dz <= half) {
@@ -410,6 +509,17 @@ public class BruiserQuirk extends Skill {
         Vec3 look = entity.getLookAngle();
         Vec3 aim = look.y < 0.0D ? Vec3.directionFromRotation(0.0F, entity.getYRot()) : look;
         Vec3 velocity = aim.add(0.0D, CONFIG.leapLift, 0.0D).normalize().scale(instance.isMastered(entity) ? CONFIG.leapSpeedMastered : CONFIG.leapSpeed);
+        launch(level, instance, entity, velocity, true);
+
+        level.sendParticles(ImpactRecoilQuirk.IMPACT_SHOCKWAVE, entity.getX(), entity.getY() + 0.1D, entity.getZ(), 0, 0.0D, 1.0D, 0.0D, 2.0D);
+        level.sendParticles(ParticleTypes.POOF, entity.getX(), entity.getY(), entity.getZ(), 16, 0.5D, 0.05D, 0.5D, 0.05D);
+        playSound(level, entity, SoundEvents.GOAT_LONG_JUMP, 1.5F, 0.6F);
+        playSound(level, entity, SoundEvents.GENERIC_EXPLODE.value(), 0.6F, 1.4F);
+        instance.setCoolDown(CONFIG.leapCooldown, POWER_MOVE);
+        instance.addMasteryPoint(entity);
+    }
+
+    public static void launch(ServerLevel level, ManasSkillInstance instance, LivingEntity entity, Vec3 velocity, boolean shockwave) {
         entity.setDeltaMovement(velocity);
         if (entity instanceof ServerPlayer player) {
             PacketDistributor.sendToPlayer(player, new LeapPayload(velocity.toVector3f()));
@@ -420,14 +530,7 @@ public class BruiserQuirk extends Skill {
 
         entity.resetFallDistance();
         LEAPS.removeIf(leap -> leap.owner == entity);
-        LEAPS.add(new Leap(instance, entity, level.getGameTime(), velocity));
-
-        level.sendParticles(ImpactRecoilQuirk.IMPACT_SHOCKWAVE, entity.getX(), entity.getY() + 0.1D, entity.getZ(), 0, 0.0D, 1.0D, 0.0D, 2.0D);
-        level.sendParticles(ParticleTypes.POOF, entity.getX(), entity.getY(), entity.getZ(), 16, 0.5D, 0.05D, 0.5D, 0.05D);
-        playSound(level, entity, SoundEvents.GOAT_LONG_JUMP, 1.5F, 0.6F);
-        playSound(level, entity, SoundEvents.GENERIC_EXPLODE.value(), 0.6F, 1.4F);
-        instance.setCoolDown(CONFIG.leapCooldown, POWER_MOVE);
-        instance.addMasteryPoint(entity);
+        LEAPS.add(new Leap(instance, entity, level.getGameTime(), velocity, shockwave));
     }
 
     private static boolean isLeapBroken(LivingEntity entity) {
@@ -447,7 +550,10 @@ public class BruiserQuirk extends Skill {
         }
 
         if (owner.onGround() && leap.airborne) {
-            land(level, leap.instance, owner);
+            if (leap.shockwave) {
+                land(level, leap.instance, owner);
+            }
+            owner.resetFallDistance();
             return true;
         }
 
@@ -486,7 +592,7 @@ public class BruiserQuirk extends Skill {
         double radius = CONFIG.leapShockwaveRadius * size;
         float damage = (float) (CONFIG.leapShockwaveDamage * size / 2.0D);
         for (LivingEntity other : level.getEntitiesOfClass(LivingEntity.class, owner.getBoundingBox().inflate(radius, 2.0D, radius),
-                other -> other != owner && other.isAlive() && !other.isSpectator() && !MultiArms.isHoldPair(owner, other) && other.position().subtract(feet).horizontalDistance() <= radius)) {
+                other -> other != owner && other.isAlive() && !other.isSpectator() && !MultiArms.isHoldPair(owner, other) && HitRules.canHit(owner, other) && other.position().subtract(feet).horizontalDistance() <= radius)) {
             hit(instance, owner, other, damage);
             Vec3 away = other.position().subtract(feet);
             other.knockback(0.8D, -away.x, -away.z);
@@ -635,6 +741,7 @@ public class BruiserQuirk extends Skill {
         setFlag(instance, BLOCKING_TAG, false);
         update(instance, entity);
         LEAPS.removeIf(leap -> leap.owner == entity);
+        BASHES.removeIf(bash -> bash.owner == entity);
     }
 
     @SubscribeEvent
@@ -642,11 +749,15 @@ public class BruiserQuirk extends Skill {
         if (!LEAPS.isEmpty()) {
             LEAPS.removeIf(BruiserQuirk::tickLeap);
         }
+        if (!BASHES.isEmpty()) {
+            BASHES.removeIf(BruiserQuirk::tickBash);
+        }
     }
 
     @SubscribeEvent
     public static void onServerStopping(ServerStoppingEvent event) {
         LEAPS.clear();
+        BASHES.clear();
     }
 
     private static void playSound(ServerLevel level, LivingEntity entity, SoundEvent sound, float volume, float pitch) {

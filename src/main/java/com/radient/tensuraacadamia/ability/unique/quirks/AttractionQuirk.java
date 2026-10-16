@@ -1,12 +1,20 @@
 package com.radient.tensuraacadamia.ability.unique.quirks;
 
 import com.radient.tensuraacadamia.TensuraAcadamia;
+import com.radient.tensuraacadamia.ability.unique.quirks.attraction.AttractionBlackHole;
+import com.radient.tensuraacadamia.ability.unique.quirks.attraction.AttractionCrash;
+import com.radient.tensuraacadamia.ability.unique.quirks.attraction.AttractionOrbit;
 import com.radient.tensuraacadamia.config.skills.QuirkSkillsConfig;
 import com.radient.tensuraacadamia.regestry.skills.QuirkSkills;
+import com.radient.tensuraacadamia.util.HitRules;
 import io.github.manasmods.manascore.config.ConfigRegistry;
+import io.github.manasmods.manascore.network.api.util.Changeable;
+import io.github.manasmods.manascore.skill.api.EntityEvents;
 import io.github.manasmods.manascore.skill.api.ManasSkillInstance;
 import io.github.manasmods.manascore.skill.api.SkillAPI;
 import io.github.manasmods.tensura.ability.skill.Skill;
+import io.github.manasmods.tensura.data.TensuraEntityTags;
+import io.github.manasmods.tensura.event.TensuraEntityEvents;
 import io.github.manasmods.tensura.registry.sound.TensuraSoundEvents;
 import io.github.manasmods.tensura.util.EnergyHelper;
 import net.minecraft.ChatFormatting;
@@ -23,7 +31,13 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.AbstractArrow;
+import net.minecraft.world.entity.projectile.Projectile;
+import net.minecraft.world.entity.projectile.ProjectileDeflection;
+import net.minecraft.world.entity.projectile.ThrownTrident;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -42,6 +56,10 @@ public class AttractionQuirk extends Skill {
     private static final QuirkSkillsConfig.Attraction CONFIG = ConfigRegistry.getConfig(QuirkSkillsConfig.class).Attraction;
 
     private static final int PULL = 0;
+    private static final int OBJECT_CRASH = 1;
+    private static final int DEBRIS_ORBIT = 2;
+    private static final int BLACK_HOLE = 3;
+    private static final int MODES = 4;
     private static final double PULL_CLOSE_ENOUGH = 1.5D;
     private static final double PULL_BREAK_RANGE = 1.5D;
     private static final double PLAYER_SPEED_SCALE = 2.16D;
@@ -61,12 +79,85 @@ public class AttractionQuirk extends Skill {
 
     @Override
     public double getAuraCost(LivingEntity entity, ManasSkillInstance instance, int mode) {
-        return CONFIG.pullAuraCost;
+        return switch (mode) {
+            case OBJECT_CRASH -> CONFIG.crashAuraCost;
+            case DEBRIS_ORBIT -> CONFIG.orbitAuraCost;
+            case BLACK_HOLE -> CONFIG.blackHoleAuraCost;
+            default -> CONFIG.pullAuraCost;
+        };
+    }
+
+    @Override
+    public int getModes(ManasSkillInstance instance) {
+        return MODES;
+    }
+
+    @Override
+    public int nextMode(LivingEntity entity, ManasSkillInstance instance, int mode, boolean reverse) {
+        int next = Math.floorMod(mode + (reverse ? -1 : 1), MODES);
+        if (next == BLACK_HOLE && !instance.isMastered(entity)) {
+            next = Math.floorMod(next + (reverse ? -1 : 1), MODES);
+        }
+        return next;
     }
 
     @Override
     public String getModeId(ManasSkillInstance instance, int mode) {
-        return mode == PULL ? "attraction.pull" : super.getModeId(instance, mode);
+        return switch (mode) {
+            case PULL -> "attraction.pull";
+            case OBJECT_CRASH -> "attraction.object_crash";
+            case DEBRIS_ORBIT -> "attraction.debris_orbit";
+            case BLACK_HOLE -> "attraction.black_hole";
+            default -> super.getModeId(instance, mode);
+        };
+    }
+
+    @Override
+    public boolean canIgnoreCoolDown(ManasSkillInstance instance, LivingEntity entity, int mode) {
+        return mode == DEBRIS_ORBIT && entity.isShiftKeyDown() && AttractionOrbit.isOrbiting(entity) || super.canIgnoreCoolDown(instance, entity, mode);
+    }
+
+    @Override
+    public void onProjectileHit(ManasSkillInstance instance, LivingEntity entity, EntityHitResult hitResult, Projectile projectile,
+                                Changeable<ProjectileDeflection> deflection, Changeable<EntityEvents.ProjectileHitResult> result) {
+        if (!instance.isToggled() || !(projectile instanceof AbstractArrow arrow) || arrow instanceof ThrownTrident || !(entity.level() instanceof ServerLevel level) || !instance.canInteractSkill(entity)) {
+            return;
+        }
+
+        ItemStack caught = arrow.pickup == AbstractArrow.Pickup.CREATIVE_ONLY ? ItemStack.EMPTY : arrow.getPickupItemStackOrigin().copy();
+        if (!caught.isEmpty() && entity instanceof Player player && !player.getInventory().add(caught)) {
+            player.drop(caught, false);
+        }
+
+        result.set(EntityEvents.ProjectileHitResult.PASS);
+        arrow.discard();
+        level.sendParticles(PULL_DUST, entity.getX(), entity.getY(0.6D), entity.getZ(), 6, 0.3D, 0.3D, 0.3D, 0.0D);
+        level.playSound(null, entity.getX(), entity.getY(), entity.getZ(), SoundEvents.ITEM_PICKUP, SoundSource.PLAYERS, 0.6F, 0.8F);
+        if (entity.getRandom().nextInt(3) == 0) {
+            instance.addMasteryPoint(entity);
+        }
+    }
+
+    @Override
+    public void onPressed(ManasSkillInstance instance, LivingEntity entity, int keyNumber, int mode) {
+        if (!(entity.level() instanceof ServerLevel level)) {
+            return;
+        }
+
+        if (mode == DEBRIS_ORBIT) {
+            if (entity.isShiftKeyDown()) {
+                AttractionOrbit.dismiss(level, entity);
+            } else {
+                AttractionOrbit.summon(level, instance, entity, mode);
+            }
+        } else if (mode == BLACK_HOLE) {
+            if (!instance.isMastered(entity)) {
+                fail(entity, "tracadamia.skill.attraction.needs_mastery");
+            } else if (AttractionBlackHole.throwOrb(level, instance, entity, mode)) {
+                instance.setCoolDown(CONFIG.blackHoleCooldown, mode);
+                instance.addMasteryPoint(entity);
+            }
+        }
     }
 
     // Attract, Passive Toggle
@@ -154,6 +245,9 @@ public class AttractionQuirk extends Skill {
 
     @Override
     public boolean onHeld(ManasSkillInstance instance, LivingEntity entity, int heldTicks, int mode) {
+        if (mode == OBJECT_CRASH && entity.level() instanceof ServerLevel level) {
+            return AttractionCrash.hold(level, instance, entity, heldTicks, mode);
+        }
         if (mode != PULL || !(entity.level() instanceof ServerLevel level)) {
             return false;
         }
@@ -191,7 +285,7 @@ public class AttractionQuirk extends Skill {
 
     private static @Nullable LivingEntity findNearest(ServerLevel level, LivingEntity entity) {
         return level.getEntitiesOfClass(LivingEntity.class, entity.getBoundingBox().inflate(CONFIG.pullRange),
-                        target -> target != entity && target.isAlive() && !target.isSpectator() && target.distanceTo(entity) <= CONFIG.pullRange)
+                        target -> target != entity && target.isAlive() && !target.isSpectator() && HitRules.canHit(entity, target) && target.distanceTo(entity) <= CONFIG.pullRange)
                 .stream()
                 .min(Comparator.comparingDouble(target -> target.distanceToSqr(entity)))
                 .orElse(null);
@@ -215,7 +309,12 @@ public class AttractionQuirk extends Skill {
         }
 
         Vec3 motion = offset.scale(pull / distance);
-        target.setDeltaMovement(target.getDeltaMovement().scale(0.4D).add(motion.scale(0.6D)));
+        Changeable<Vec3> moved = Changeable.of(target.getDeltaMovement().scale(0.4D).add(motion.scale(0.6D)));
+        if (target.getType().is(TensuraEntityTags.NO_FORCED_MOVE) || TensuraEntityEvents.FORCE_MOVEMENT_EVENT.invoker().move(target, owner, instance, moved).isFalse()) {
+            return;
+        }
+
+        target.setDeltaMovement(moved.get());
         target.hurtMarked = true;
         target.resetFallDistance();
 
@@ -239,6 +338,9 @@ public class AttractionQuirk extends Skill {
         if (mode == PULL && PULLING.remove(entity.getUUID()) != null) {
             instance.setCoolDown(CONFIG.pullCooldown, PULL);
         }
+        if (mode == OBJECT_CRASH && entity.level() instanceof ServerLevel level && AttractionCrash.isCrashing(entity)) {
+            AttractionCrash.release(level, entity, true);
+        }
     }
 
     @Override
@@ -246,6 +348,9 @@ public class AttractionQuirk extends Skill {
         super.onForgetSkill(instance, entity);
         PULLING.remove(entity.getUUID());
         ATTRACTING.remove(entity.getUUID());
+        AttractionCrash.forget(entity);
+        AttractionOrbit.forget(entity);
+        AttractionBlackHole.forget(entity);
     }
 
     @SubscribeEvent

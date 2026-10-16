@@ -4,6 +4,8 @@ import io.github.manasmods.manascore.config.api.Comment;
 import io.github.manasmods.manascore.config.api.ManasConfig;
 import io.github.manasmods.manascore.config.api.ManasSubConfig;
 
+import java.util.List;
+
 public class QuirkSkillsConfig extends ManasConfig {
 
     public Power_Stock Power_Stock = new Power_Stock();
@@ -43,6 +45,27 @@ public class QuirkSkillsConfig extends ManasConfig {
     public TransformingArms TransformingArms = new TransformingArms();
     public Landmine Landmine = new Landmine();
     public Grabbing Grabbing = new Grabbing();
+    public Weld Weld = new Weld();
+    public Whale Whale = new Whale();
+    public WholeBodyLens WholeBodyLens = new WholeBodyLens();
+    public Wing Wing = new Wing();
+    public ZombieVirus ZombieVirus = new ZombieVirus();
+    public WaterPump WaterPump = new WaterPump();
+    public WaterGun WaterGun = new WaterGun();
+    public WaterControl WaterControl = new WaterControl();
+    public Voyance Voyance = new Voyance();
+    public ViralCosmos ViralCosmos = new ViralCosmos();
+    public ToolArms ToolArms = new ToolArms();
+    public TongueTank TongueTank = new TongueTank();
+    public PainBlocker PainBlocker = new PainBlocker();
+    public FierceGains FierceGains = new FierceGains();
+    public MuscleExpansion MuscleExpansion = new MuscleExpansion();
+    public TwinImpact TwinImpact = new TwinImpact();
+    public Traject Traject = new Traject();
+    public TreeFrog TreeFrog = new TreeFrog();
+    public Tripod Tripod = new Tripod();
+    public Warping Warping = new Warping();
+    public NewOrder NewOrder = new NewOrder();
 
 
     public QuirkSkillsConfig() {
@@ -490,6 +513,9 @@ public class QuirkSkillsConfig extends ManasConfig {
         @Comment("Energy: Cooldown in seconds")
         public int energyCooldown = 0;
 
+        @Comment("Mastery: Energy each body part builds up every second while toggled on")
+        public double energyPerSecondMastered = 2.0;
+
         public SpringlikeLimbs() {
         }
     }
@@ -552,6 +578,31 @@ public class QuirkSkillsConfig extends ManasConfig {
         @Comment("Rupture: Chance to take no damage from activating it while mastered")
         public double surviveChanceMastered = 0.5;
 
+        @Comment("Arm Rupture: Aura cost")
+        public double armAuraCost = 300.0;
+        @Comment("Arm Rupture: Cooldown in seconds")
+        public int armCooldown = 5;
+        @Comment("Arm Rupture: % of max health it takes to use")
+        public double armHealthCost = 1.0 / 7.0;
+        @Comment("Arm Rupture: Damage multiplier based on max health")
+        public double armHealthMultiplier = 1.5;
+        @Comment("Arm Rupture: Damage multiplier based on max health while mastered")
+        public double armHealthMultiplierMastered = 2.0;
+        @Comment("Arm Rupture: Radius the rupture hits")
+        public double armRadius = 10.0;
+        @Comment("Arm Rupture: Speed the arm moves at")
+        public double armSpeed = 40.0;
+        @Comment("Arm Rupture: Seconds before it ruptures mid-air")
+        public double armSeconds = 3.0;
+        @Comment("Arm Rupture: Seconds for a ruptured arm to grow back")
+        public double armRegrowSeconds = 200.0;
+        @Comment("Arm Rupture: Seconds with Self Regeneration")
+        public double armRegrowSecondsSelfRegeneration = 100.0;
+        @Comment("Arm Rupture: Seconds with Ultraspeed Regeneration")
+        public double armRegrowSecondsUltraspeedRegeneration = 33.0;
+        @Comment("Arm Rupture: Seconds with Infinite Regeneration")
+        public double armRegrowSecondsInfiniteRegeneration = 8.0;
+
         public Rupture() {
         }
     }
@@ -559,27 +610,47 @@ public class QuirkSkillsConfig extends ManasConfig {
     public static class Burst extends ManasSubConfig {
         @Comment("Skill Mastery Points")
         public double masteryPoints = 2_500.0;
-        @Comment("Aura cost per activation")
+        @Comment("Body Burst: Aura cost")
         public double auraCost = 1000.0;
 
-        @Comment("Cooldown in seconds")
+        @Comment("Body Burst: Cooldown in seconds")
         public int activationCooldown = 180;
-        @Comment("Burst: Charge time in seconds")
-        public int chargeSeconds = 5;
-        @Comment("Burst: Radius ")
+        @Comment("Body Burst: Radius ")
         public double radius = 15.0;
-        @Comment("Burst: Radius  while mastered")
+        @Comment("Body Burst: Radius while mastered")
         public double radiusMastered = 25.0;
-        @Comment("Burst: Damage multiplier on max health")
+        @Comment("Body Burst: Damage multiplier based on max health")
         public double healthMultiplier = 3.0;
-        @Comment("Burst: Damage multiplier on max health while mastered")
+        @Comment("Body Burst: Damage multiplier based on max health while mastered")
         public double healthMultiplierMastered = 4.0;
-        @Comment("Burst: Explosion breaks blocks")
+        @Comment("Burst: Explosions break blocks")
         public boolean breakBlocks = true;
-        @Comment("Burst: Chance to take no damage from activating it")
+        @Comment("Body Burst: Chance to take no damage from activating it")
         public double surviveChance = 0.25;
-        @Comment("Burst: Chance to take no damage from activating it while mastered")
+        @Comment("Body Burst: Chance to take no damage from activating it while mastered")
         public double surviveChanceMastered = 0.5;
+
+        @Comment("Regenerating Body: Seconds for a limb lost to Burst to grow back")
+        public double regrowSeconds = 200.0;
+        @Comment("Regenerating Body: Seconds with Self Regeneration")
+        public double regrowSecondsSelfRegeneration = 100.0;
+        @Comment("Regenerating Body: Seconds with Ultraspeed Regeneration")
+        public double regrowSecondsUltraspeedRegeneration = 33.0;
+        @Comment("Regenerating Body: Seconds with Infinite")
+        public double regrowSecondsInfiniteRegeneration = 8.0;
+
+        @Comment("Suicide Burst: Aura cost")
+        public double suicideAuraCost = 500.0;
+        @Comment("Suicide Burst: Cooldown in seconds")
+        public int suicideCooldown = 30;
+        @Comment("Suicide Burst: % of max health the burst takes")
+        public double suicideHealthCost = 0.0;
+        @Comment("Suicide Burst: Launch speed")
+        public double suicideSpeed = 75.0;
+        @Comment("Suicide Burst: Damage multiplier based on max health for each limb")
+        public double suicideHealthMultiplier = 1.5;
+        @Comment("Suicide Burst: Damage multiplier based on max health for each limb while mastered")
+        public double suicideHealthMultiplierMastered = 2.0;
 
         public Burst() {
         }
@@ -631,6 +702,11 @@ public class QuirkSkillsConfig extends ManasConfig {
         public double damageReduction = 0.15;
         @Comment("Physical damage reduction while mastered")
         public double damageReductionMastered = 0.30;
+
+        @Comment("Rebound Attack: % of the last absorbed attack's damage added to physical attack damage")
+        public double reboundShare = 0.25;
+        @Comment("Rebound Attack: % added while mastered")
+        public double reboundShareMastered = 0.5;
 
         public ShockAbsorption() {
         }
@@ -704,6 +780,20 @@ public class QuirkSkillsConfig extends ManasConfig {
         @Comment("Lock On: Range before lock on ends, with mastery")
         public double lockOnRangeMastered = 105.0;
 
+        @Comment("On Target: Critical attack chance added while locked on")
+        public double onTargetCritChance = 100.0;
+
+        @Comment("Weakness Detection: Aura cost")
+        public double weaknessAuraCost = 200.0;
+        @Comment("Weakness Detection: Cooldown in seconds")
+        public int weaknessCooldown = 15;
+        @Comment("Weakness Detection: Seconds the weakness lasts")
+        public int weaknessSeconds = 30;
+        @Comment("Weakness Detection: Extra damage taken from the chosen type")
+        public double weaknessDamage = 0.15;
+        @Comment("Weakness Detection: Extra damage taken from the chosen type with mastery")
+        public double weaknessDamageMastered = 0.3;
+
         public Scanning() {
         }
     }
@@ -760,6 +850,71 @@ public class QuirkSkillsConfig extends ManasConfig {
         public double pullStrengthMastered = 0.8;
         @Comment("Pull: How strongly the target's running speed affects the pull")
         public double pullResistance = 1.0;
+
+        @Comment("Object Crash: Aura cost per second")
+        public double crashAuraCost = 300.0;
+        @Comment("Object Crash: Cooldown in seconds")
+        public int crashCooldown = 15;
+        @Comment("Object Crash: Size the area grows each second")
+        public double crashGrowth = 1.0;
+        @Comment("Object Crash: Size the area grows each second with mastery")
+        public double crashGrowthMastered = 3.0;
+        @Comment("Object Crash: Max size of the area")
+        public double crashMaxSize = 25.0;
+        @Comment("Object Crash: Max size of the area with mastery")
+        public double crashMaxSizeMastered = 50.0;
+        @Comment("Object Crash: Blocks pulled in each second")
+        public int crashBlocksPerSecond = 12;
+        @Comment("Object Crash: Most blocks that can be held")
+        public int crashMaxBlocks = 48;
+        @Comment("Object Crash: Most blocks that can be held with mastery")
+        public int crashMaxBlocksMastered = 96;
+        @Comment("Object Crash: Damage per hardness of each block x speed in blocks per second")
+        public double crashHardnessMultiplier = 2.0;
+        @Comment("Object Crash: Damage per hardness of each block with mastery x speed in blocks per second")
+        public double crashHardnessMultiplierMastered = 3.0;
+        @Comment("Object Crash: Speed the blocks are shot out at")
+        public double crashShotSpeed = 30.0;
+        @Comment("Object Crash: Seconds the full size has to be held before collapsing into a black hole")
+        public int collapseChargeSeconds = 5;
+        @Comment("Object Crash: Width of the area the collapsed black hole absorbs")
+        public double collapseSize = 75.0;
+        @Comment("Object Crash: Gravity damage of the collapsed black hole's explosion")
+        public double collapseDamage = 2_500.0;
+        @Comment("Object Crash: Seconds the collapsed black hole absorbs blocks before exploding")
+        public int collapseSeconds = 6;
+
+        @Comment("Debris Orbit: Aura cost")
+        public double orbitAuraCost = 200.0;
+        @Comment("Debris Orbit: Cooldown in seconds")
+        public int orbitCooldown = 20;
+        @Comment("Debris Orbit: Blocks pulled in")
+        public int orbitBlocks = 3;
+        @Comment("Debris Orbit: Blocks pulled in with mastery")
+        public int orbitBlocksMastered = 6;
+        @Comment("Debris Orbit: Range blocks are pulled from")
+        public double orbitRange = 6.0;
+        @Comment("Debris Orbit: Seconds the blocks orbit")
+        public int orbitSeconds = 35;
+        @Comment("Debris Orbit: Hardness a block needs to be able to take more than one hit")
+        public double orbitHardHardness = 50.0;
+        @Comment("Debris Orbit: Hits a hard block can take")
+        public int orbitHardHits = 3;
+
+        @Comment("Miniature Black Hole: Aura cost")
+        public double blackHoleAuraCost = 3_000.0;
+        @Comment("Miniature Black Hole: Cooldown in seconds")
+        public int blackHoleCooldown = 30;
+        @Comment("Miniature Black Hole: Range before it expands")
+        public double blackHoleRange = 48.0;
+        @Comment("Miniature Black Hole: Speed")
+        public double blackHoleSpeed = 30.0;
+        @Comment("Miniature Black Hole: Width of the area it absorbs")
+        public double blackHoleSize = 20.0;
+        @Comment("Miniature Black Hole: Gravity damage of the explosion")
+        public double blackHoleDamage = 500.0;
+        @Comment("Miniature Black Hole: Seconds it absorbs blocks before exploding")
+        public int blackHoleSeconds = 2;
 
         public Attraction() {
         }
@@ -1097,10 +1252,6 @@ public class QuirkSkillsConfig extends ManasConfig {
         public double floatAuraCost = 150.0;
         @Comment("Zero Gravity: Cooldown in seconds")
         public int floatCooldown = 1;
-        @Comment("Zero Gravity: Reach")
-        public double floatRange = 3.0;
-        @Comment("Zero Gravity: Reach with mastery")
-        public double floatRangeMastered = 5.0;
         @Comment("Zero Gravity: Most targets/blocks floating at once")
         public int maxFloats = 3;
         @Comment("Zero Gravity: Most targets/blocks floating at once with mastery")
@@ -1214,6 +1365,8 @@ public class QuirkSkillsConfig extends ManasConfig {
         public double damagePerSize = 100.0;
         @Comment("Body Bulk: Armor per size gained")
         public double armorPerSize = 15.0;
+        @Comment("Body Bulk: % of max health added per size gained")
+        public double healthPercentPerSize = 0.1;
         @Comment("Body Bulk: Reach per size")
         public double reachPerSize = 1.0;
 
@@ -1223,6 +1376,19 @@ public class QuirkSkillsConfig extends ManasConfig {
         public double stressMaxMultiplier = 2.0;
         @Comment("Stress Overload: Seconds for the Body Bulk damage to double")
         public double stressDoubleSeconds = 25.0;
+
+        @Comment("Slam: Aura cost")
+        public double slamAuraCost = 300.0;
+        @Comment("Slam: Cooldown in seconds")
+        public int slamCooldown = 8;
+        @Comment("Slam: Radius of the slam, grows with size")
+        public double slamRadius = 2.0;
+        @Comment("Slam: Radius of the shockwave, grows with size")
+        public double slamShockwaveRadius = 6.0;
+        @Comment("Slam: Melee damage multiplier for targets hit by the slam")
+        public double slamDamage = 1.25;
+        @Comment("Slam: Melee damage multiplier for targets hit by the shockwave")
+        public double slamShockwaveDamage = 0.75;
 
         public BodyBulk() {
         }
@@ -1329,6 +1495,17 @@ public class QuirkSkillsConfig extends ManasConfig {
         @Comment("Left Leg: Landing shockwave damage, dealt as this * size / 2")
         public double leapShockwaveDamage = 100.0;
 
+        @Comment("Shoulder Check: Aura cost")
+        public double shoulderCheckAuraCost = 400.0;
+        @Comment("Shoulder Check: Cooldown in seconds")
+        public int shoulderCheckCooldown = 6;
+        @Comment("Shoulder Check: % of melee damage dealt to everything you go through")
+        public double shoulderCheckDamagePercent = 1.15;
+        @Comment("Shoulder Check: Blocks travelled")
+        public double shoulderCheckDistance = 12.0;
+        @Comment("Shoulder Check: Speed")
+        public double shoulderCheckSpeed = 32.0;
+
         public Bruiser() {
         }
     }
@@ -1353,6 +1530,24 @@ public class QuirkSkillsConfig extends ManasConfig {
         public double growthPerTick = 0.02;
         @Comment("Enhance: Cooldown in seconds")
         public int cooldown = 0;
+
+        @Comment("Toughen Up: % of damage taken away for each 1% of health missing")
+        public double toughenDamageReduction = 0.005;
+
+        @Comment("Charge: Aura cost")
+        public double chargeAuraCost = 300.0;
+        @Comment("Charge: Cooldown in seconds")
+        public int chargeCooldown = 8;
+        @Comment("Charge: Seconds the charge can be held")
+        public double chargeHoldSeconds = 6.0;
+        @Comment("Charge: Seconds the charge can be held with mastery")
+        public double chargeHoldSecondsMastered = 8.0;
+        @Comment("Charge: Speed in blocks per second")
+        public double chargeSpeed = 22.0;
+        @Comment("Charge: Damage dealt for each point of armor")
+        public double chargeDamagePerArmor = 1.0;
+        @Comment("Charge: % of the charge damage blown away blocks deal")
+        public double chargeDebrisDamage = 0.5;
 
         public Endurance() {
         }
@@ -1523,9 +1718,9 @@ public class QuirkSkillsConfig extends ManasConfig {
         @Comment("Kick: % of physical damage added with mastery")
         public double kickDamagePercentMastered = 1.1;
         @Comment("Kick: Blocks a kicked target is knocked back")
-        public double kickKnockback = 6.0;
+        public double kickKnockback = 10.0;
         @Comment("Kick: Blocks of knockback added per size gained")
-        public double kickKnockbackPerSize = 3.0;
+        public double kickKnockbackPerSize = 6.0;
         @Comment("Kick: Blocks kicked up at normal size")
         public int kickBlocks = 8;
         @Comment("Kick: Blocks kicked up per size gained")
@@ -1749,6 +1944,1146 @@ public class QuirkSkillsConfig extends ManasConfig {
         public int hostileHoldSeconds = 7;
 
         public Grabbing() {
+        }
+    }
+
+    public static class Weld extends ManasSubConfig {
+        @Comment("Skill Mastery Points")
+        public double masteryPoints = 2_500.0;
+        @Comment("Weld, Arrest, Weldcraft, Attach and Transport: Range")
+        public double targetRange = 8.0;
+
+        @Comment("Weld: Aura cost")
+        public double weldAuraCost = 200.0;
+        @Comment("Weld: Cooldown in seconds")
+        public int weldCooldown = 10;
+        @Comment("Weld: Seconds the target is anchored to the ground")
+        public int weldSeconds = 15;
+
+        @Comment("Arrest: Aura cost")
+        public double arrestAuraCost = 200.0;
+        @Comment("Arrest: Cooldown in seconds")
+        public int arrestCooldown = 10;
+        @Comment("Arrest: Seconds the target can't use active abilities")
+        public int arrestSeconds = 15;
+
+        @Comment("Weldcraft: Aura cost")
+        public double weldcraftAuraCost = 400.0;
+        @Comment("Weldcraft: Cooldown in seconds")
+        public int weldcraftCooldown = 20;
+        @Comment("Weldcraft: Seconds the target can't move, fly, see or activate skills")
+        public int weldcraftSeconds = 15;
+
+        @Comment("Attach: Aura cost")
+        public double attachAuraCost = 100.0;
+        @Comment("Attach: Cooldown in seconds")
+        public int attachCooldown = 3;
+
+        @Comment("Transport: Aura cost")
+        public double transportAuraCost = 100.0;
+        @Comment("Transport: Cooldown in seconds")
+        public int transportCooldown = 2;
+        @Comment("Transport: Max targets welded onto the user at once")
+        public int maxTransported = 3;
+
+        public Weld() {
+        }
+    }
+
+    public static class Whale extends ManasSubConfig {
+        @Comment("Skill Mastery Points")
+        public double masteryPoints = 2_500.0;
+
+        @Comment("Click Sound: Aura cost")
+        public double clickAuraCost = 300.0;
+        @Comment("Click Sound: Cooldown in seconds")
+        public int clickCooldown = 15;
+        @Comment("Click Sound: Width of the area around the user")
+        public double clickSize = 10.0;
+        @Comment("Click Sound: Seconds the targets are paralyzed")
+        public int clickStunSeconds = 3;
+
+        @Comment("Whale Strike: Aura cost")
+        public double strikeAuraCost = 200.0;
+        @Comment("Whale Strike: Cooldown in seconds")
+        public int strikeCooldown = 5;
+        @Comment("Whale Strike: Reach of the headbutt")
+        public double strikeRange = 5.0;
+        @Comment("Whale Strike: Water damage")
+        public double strikeDamage = 50.0;
+        @Comment("Whale Strike: Water damage with mastery")
+        public double strikeDamageMastered = 100.0;
+        @Comment("Whale Strike: % of physical damage added")
+        public double strikeDamagePercent = 1.0;
+        @Comment("Whale Strike: Knockback strength")
+        public double strikeKnockback = 1.5;
+
+        public Whale() {
+        }
+    }
+
+    public static class WholeBodyLens extends ManasSubConfig {
+        @Comment("Skill Mastery Points")
+        public double masteryPoints = 2_500.0;
+        @Comment("Light Affinity: Light boost added")
+        public double lightBoost = 1.0;
+
+        @Comment("Light Charge Up: Charge gained every second under the sun")
+        public double sunCharge = 5.0;
+        @Comment("Light Charge Up: Charge gained every second under the sun with mastery")
+        public double sunChargeMastered = 10.0;
+        @Comment("Light Charge Up: Charge gained per point of light damage taken")
+        public double lightDamageCharge = 0.2;
+        @Comment("Light Charge Up: Most light that can be stored")
+        public double maxCharge = 1_500.0;
+
+        @Comment("Condensed Light: Aura cost")
+        public double beamAuraCost = 200.0;
+        @Comment("Condensed Light: Cooldown in seconds")
+        public int beamCooldown = 5;
+        @Comment("Condensed Light: Range ")
+        public double beamRange = 40.0;
+        @Comment("Condensed Light: Light damage per charge")
+        public double beamDamagePerCharge = 1.0;
+
+        @Comment("Flash Capture: Aura cost")
+        public double flashAuraCost = 200.0;
+        @Comment("Flash Capture: Cooldown in seconds")
+        public int flashCooldown = 10;
+        @Comment("Flash Capture: Radius enemies get blinded")
+        public double flashRadius = 5.0;
+        @Comment("Flash Capture: Radius enemies get blinded with mastery")
+        public double flashRadiusMastered = 10.0;
+        @Comment("Flash Capture: Seconds enemies stay blinded")
+        public double flashSeconds = 6.0;
+
+        @Comment("Lens Array: Aura cost")
+        public double lensAuraCost = 300.0;
+        @Comment("Lens Array: Cooldown in seconds")
+        public int lensCooldown = 20;
+        @Comment("Lens Array: Radius hidden enemies get revealed")
+        public double lensRadius = 10.0;
+        @Comment("Lens Array: Radius hidden enemies get revealed")
+        public double lensRadiusMastered = 15.0;
+        @Comment("Lens Array: Seconds they stay revealed")
+        public double lensSeconds = 30.0;
+        @Comment("Lens Array: Highest Presence Concealment it can see through")
+        public int lensConcealment = 2;
+        @Comment("Lens Array: Highest Presence Concealment it can see through with mastery")
+        public int lensConcealmentMastered = 3;
+
+        public WholeBodyLens() {
+        }
+    }
+
+    public static class Wing extends ManasSubConfig {
+        @Comment("Skill Mastery Points")
+        public double masteryPoints = 2_500.0;
+        @Comment("Air Affinity: Wind boost added")
+        public double airBoost = 1.0;
+        @Comment("Flight: Flight speed multiplier")
+        public double flightSpeedMultiplier = 1.25;
+
+        @Comment("Boost: Aura cost every second")
+        public double boostAuraCost = 50.0;
+        @Comment("Boost: Speed in blocks per second")
+        public double boostSpeed = 50.0;
+        @Comment("Boost: Speed multiplier with mastery")
+        public double boostSpeedMasteredMultiplier = 1.35;
+
+        @Comment("Sky Hunter: Damage added while in the air")
+        public double skyHunterDamage = 10.0;
+        @Comment("Sky Hunter: Damage added while in the air with mastery")
+        public double skyHunterDamageMastered = 20.0;
+
+        @Comment("Airborne: Aura cost")
+        public double airborneAuraCost = 300.0;
+        @Comment("Airborne: Cooldown in seconds")
+        public int airborneCooldown = 8;
+        @Comment("Airborne: Blocks the user flies up")
+        public double airborneHeight = 50.0;
+        @Comment("Airborne: Radius of the takeoff blast")
+        public double airborneRadius = 5.0;
+        @Comment("Airborne: Radius of the takeoff blast with mastery")
+        public double airborneRadiusMastered = 10.0;
+        @Comment("Airborne: Wind damage on takeoff")
+        public double airborneDamage = 75.0;
+        @Comment("Airborne: Wind damage with mastery")
+        public double airborneDamageMastered = 150.0;
+
+        @Comment("Dive: Aura cost")
+        public double diveAuraCost = 200.0;
+        @Comment("Dive: Cooldown in seconds")
+        public int diveCooldown = 5;
+        @Comment("Dive: Starting speed in blocks per second")
+        public double diveSpeed = 60.0;
+        @Comment("Dive: Speed added each time the dive speeds up")
+        public double diveSpeedIncrease = 20.0;
+        @Comment("Dive: Ticks between each speed up")
+        public int diveSpeedTicks = 10;
+        @Comment("Dive: Fastest the dive can get")
+        public double diveMaxSpeed = 400.0;
+        @Comment("Dive: Shockwave damage per size at the starting speed")
+        public double diveDamage = 50.0;
+        @Comment("Dive: Shockwave radius per size at the starting speed")
+        public double diveRadius = 4.0;
+        @Comment("Dive: Range to lock onto a target")
+        public double diveTargetRange = 64.0;
+        @Comment("Dive: Degrees a target can be locked onto")
+        public double diveAimDegrees = 15.0;
+
+        public Wing() {
+        }
+    }
+
+    public static class ZombieVirus extends ManasSubConfig {
+        @Comment("Skill Mastery Points")
+        public double masteryPoints = 2_500.0;
+
+        @Comment("Zombie Creation: Aura cost")
+        public double creationAuraCost = 200.0;
+        @Comment("Zombie Creation: Cooldown in seconds")
+        public int creationCooldown = 3;
+        @Comment("Zombie Creation: Multiplier of the target's EP needed")
+        public double epMultiplier = 5.0;
+        @Comment("Zombie Creation: Chance a hit turns the target into a zombie")
+        public double chance = 0.5;
+        @Comment("Zombie Creation: Chance with mastery")
+        public double chanceMastered = 1.0;
+        @Comment("Zombie Creation: Chance against abnormal condition resistance")
+        public double resistantChance = 0.25;
+        @Comment("Zombie Creation: Chance against abnormal condition resistance with mastery")
+        public double resistantChanceMastered = 0.5;
+        @Comment("Zombie Creation: Chance against abnormal condition nullification")
+        public double nullifiedChance = 0.12;
+        @Comment("Zombie Creation: Chance against abnormal condition nullification with mastery")
+        public double nullifiedChanceMastered = 0.25;
+        @Comment("Zombie Creation: Seconds before a zombie dies")
+        public int zombieSeconds = 180;
+        @Comment("Zombie Creation: Max zombie count")
+        public int maxZombies = 15;
+        @Comment("Zombie Creation: Entities that cant become zombies")
+        public List<String> blacklist = List.of("tensura:training_dummy");
+        @Comment("Zombie Creation: Mods whose entities can't become zombies")
+        public List<String> modBlacklist = List.of();
+
+        @Comment("Zombification End: Aura cost")
+        public double endAuraCost = 100.0;
+        @Comment("Zombification End: Cooldown in seconds")
+        public int endCooldown = 10;
+
+        @Comment("Virus Cloud: Aura cost every second it's held")
+        public double cloudAuraCost = 150.0;
+        @Comment("Virus Cloud: Cooldown in seconds")
+        public int cloudCooldown = 10;
+        @Comment("Virus Cloud: Width of the cloud")
+        public double cloudSize = 7.5;
+        @Comment("Virus Cloud: Width of the cloud with mastery")
+        public double cloudSizeMastered = 15.0;
+        @Comment("Virus Cloud: Seconds between infection rolls for everything inside")
+        public int cloudInfectSeconds = 2;
+
+        @Comment("Horde Call: Aura cost")
+        public double hordeAuraCost = 100.0;
+        @Comment("Horde Call: Cooldown in seconds")
+        public int hordeCooldown = 3;
+        @Comment("Horde Call: Range of zombies that hear it")
+        public double hordeRange = 64.0;
+
+        public ZombieVirus() {
+        }
+    }
+
+    public static class WaterPump extends ManasSubConfig {
+        @Comment("Skill Mastery Points")
+        public double masteryPoints = 2_500.0;
+        @Comment("Water Affinity: Water boost added")
+        public double waterBoost = 0.25;
+        @Comment("Water Affinity: Water boost added with mastery")
+        public double waterBoostMastered = 0.5;
+
+        @Comment("Water Beam: Aura cost every second")
+        public double beamAuraCost = 50.0;
+        @Comment("Water Beam: Range")
+        public double beamRange = 20.0;
+        @Comment("Water Beam: Water damage")
+        public double beamDamage = 50.0;
+        @Comment("Water Beam: Ticks between hits")
+        public int beamHitTicks = 10;
+
+        @Comment("Hydro Cannon: Aura cost")
+        public double cannonAuraCost = 500.0;
+        @Comment("Hydro Cannon: Cooldown in seconds")
+        public int cannonCooldown = 15;
+        @Comment("Hydro Cannon: Water damage")
+        public double cannonDamage = 350.0;
+        @Comment("Hydro Cannon: Size of the water ball")
+        public double cannonSize = 3.0;
+
+        public WaterPump() {
+        }
+    }
+
+    public static class WaterGun extends ManasSubConfig {
+        @Comment("Skill Mastery Points")
+        public double masteryPoints = 2_500.0;
+        @Comment("Water Affinity: Water boost added")
+        public double waterBoost = 0.5;
+        @Comment("Water Affinity: Water boost added with mastery")
+        public double waterBoostMastered = 1.5;
+
+        @Comment("Spray: Aura cost every second")
+        public double sprayAuraCost = 20.0;
+        @Comment("Spray: Range")
+        public double sprayRange = 10.0;
+        @Comment("Spray: Water damage")
+        public double sprayDamage = 15.0;
+        @Comment("Spray: Ticks between hits")
+        public int sprayHitTicks = 10;
+
+        @Comment("Water Bullet: Aura cost")
+        public double bulletAuraCost = 150.0;
+        @Comment("Water Bullet: Cooldown in seconds")
+        public int bulletCooldown = 3;
+        @Comment("Water Bullet: Ticks spent charging")
+        public int bulletChargeTicks = 10;
+        @Comment("Water Bullet: Water damage")
+        public double bulletDamage = 75.0;
+
+        @Comment("Water Jet: Aura cost every second")
+        public double jetAuraCost = 20.0;
+        @Comment("Water Jet: Upward speed in blocks per second")
+        public double jetLift = 20.0;
+
+        public WaterGun() {
+        }
+    }
+
+    public static class WaterControl extends ManasSubConfig {
+        @Comment("Skill Mastery Points")
+        public double masteryPoints = 2_500.0;
+        @Comment("Water Affinity: Water boost added")
+        public double waterBoost = 2.0;
+        @Comment("Range of the water sources")
+        public double waterRange = 8.0;
+        @Comment("Water Ball: Water sources used")
+        public int ballSourcesUsed = 1;
+        @Comment("Suffocation: Water sources used")
+        public int suffocationSourcesUsed = 1;
+        @Comment("Tidal Wave: Water sources used")
+        public int waveSourcesUsed = 1;
+
+        @Comment("Water Ball: Aura cost")
+        public double ballAuraCost = 200.0;
+        @Comment("Water Ball: Cooldown in seconds")
+        public int ballCooldown = 3;
+        @Comment("Water Ball: Water damage")
+        public double ballDamage = 100.0;
+        @Comment("Water Ball: Water damage with mastery")
+        public double ballDamageMastered = 150.0;
+
+        @Comment("Suffocation: Aura cost")
+        public double suffocationAuraCost = 400.0;
+        @Comment("Suffocation: Cooldown in seconds")
+        public int suffocationCooldown = 20;
+        @Comment("Suffocation: Range")
+        public double suffocationRange = 15.0;
+        @Comment("Suffocation: Seconds the target is trapped")
+        public int suffocationSeconds = 6;
+        @Comment("Suffocation: Damage every second once the target is out of air")
+        public double suffocationDamage = 20.0;
+
+        @Comment("Tidal Wave: Aura cost")
+        public double waveAuraCost = 500.0;
+        @Comment("Tidal Wave: Cooldown in seconds")
+        public int waveCooldown = 15;
+        @Comment("Tidal Wave: Water damage")
+        public double waveDamage = 150.0;
+        @Comment("Tidal Wave: Water damage with mastery")
+        public double waveDamageMastered = 225.0;
+        @Comment("Tidal Wave: Width of the wave")
+        public double waveWidth = 8.0;
+        @Comment("Tidal Wave: Blocks the wave travels")
+        public double waveDistance = 16.0;
+
+        public WaterControl() {
+        }
+    }
+
+    public static class Voyance extends ManasSubConfig {
+        @Comment("Skill Mastery Points")
+        public double masteryPoints = 2_500.0;
+        @Comment("Voyance: Aura cost to activate")
+        public double auraCost = 200.0;
+        @Comment("Voyance: Sight range")
+        public int sightRange = 24;
+        @Comment("Voyance: Projectile dodge chance while active")
+        public double dodgeChance = 50.0;
+
+        public Voyance() {
+        }
+    }
+
+    public static class ViralCosmos extends ManasSubConfig {
+        @Comment("Skill Mastery Points")
+        public double masteryPoints = 2_500.0;
+
+        @Comment("Crop Growth: Width of the area crops grow faster in")
+        public int cropRange = 10;
+        @Comment("Crop Growth: Width of the area crops grow faster in with mastery")
+        public int cropRangeMastered = 20;
+        @Comment("Crop Growth: Crop growth multiplier")
+        public double cropGrowth = 5.0;
+
+        @Comment("Petal Release: Aura cost")
+        public double releaseAuraCost = 200.0;
+        @Comment("Petal Release: Cooldown in seconds")
+        public int releaseCooldown = 5;
+        @Comment("Petal Release: Range")
+        public double releaseRange = 20.0;
+        @Comment("Petal Release: Poison damage/healing")
+        public double releaseDamage = 150.0;
+        @Comment("Petal Release: Poison damage/healing with mastery")
+        public double releaseDamageMastered = 300.0;
+
+        @Comment("Petal Swarm: Aura cost")
+        public double swarmAuraCost = 400.0;
+        @Comment("Petal Swarm: Cooldown in seconds")
+        public int swarmCooldown = 20;
+        @Comment("Petal Swarm: Seconds the swarm lasts")
+        public int swarmSeconds = 10;
+        @Comment("Petal Swarm: Width of the swarm")
+        public double swarmSize = 10.0;
+        @Comment("Petal Swarm: Width of the swarm with mastery")
+        public double swarmSizeMastered = 15.0;
+        @Comment("Petal Swarm: Poison damage every second")
+        public double swarmDamage = 50.0;
+        @Comment("Petal Swarm: Poison damage every second with mastery")
+        public double swarmDamageMastered = 100.0;
+        @Comment("Petal Swarm: Healing every second")
+        public double swarmHeal = 100.0;
+        @Comment("Petal Swarm: Healing every second with mastery")
+        public double swarmHealMastered = 200.0;
+
+        @Comment("Flower Growth: Aura cost")
+        public double growthAuraCost = 300.0;
+        @Comment("Flower Growth: Cooldown in seconds")
+        public int growthCooldown = 30;
+        @Comment("Flower Growth: Range")
+        public double growthRange = 10.0;
+        @Comment("Flower Growth: Seconds the flower lasts")
+        public int growthSeconds = 30;
+        @Comment("Flower Growth: Width of the poison flower's gas")
+        public double poisonGasSize = 5.0;
+        @Comment("Flower Growth: Lethal poison damage every second from the smaller flowers")
+        public double lethalPoisonDamage = 10.0;
+        @Comment("Flower Growth: % of max HP added to the lethal poison damage")
+        public double lethalPoisonPercent = 0.05;
+        @Comment("Flower Growth: Slowness level on the poison flower's host")
+        public int poisonSlowness = 1;
+        @Comment("Flower Growth: Multiplier of MP and aura cost for the poison flower's host")
+        public double poisonCostMultiplier = 2.0;
+        @Comment("Flower Growth: Width of the healing flower's gas")
+        public double healingGasSize = 5.0;
+        @Comment("Flower Growth: Width of the healing flower's gas with mastery")
+        public double healingGasSizeMastered = 10.0;
+        @Comment("Flower Growth: Seconds between the healing flower's gas")
+        public int healingGasSeconds = 5;
+        @Comment("Flower Growth: % of max HP the healing gas takes")
+        public double healingDrain = 0.05;
+        @Comment("Flower Growth: % of max HP taken from targets with abnormal condition resistance")
+        public double healingDrainResisted = 0.02;
+        @Comment("Flower Growth: Damage the healing flower's host can take before it breaks")
+        public double flowerHealth = 500.0;
+
+        public ViralCosmos() {
+        }
+    }
+
+    public static class ToolArms extends ManasSubConfig {
+        @Comment("Skill Mastery Points")
+        public double masteryPoints = 2_500.0;
+        @Comment("Mining Boost: Mining speed added per arm")
+        public double miningBoost = 0.25;
+        @Comment("Mining Boost: Mining speed added per arm with mastery")
+        public double miningBoostMastered = 0.5;
+        @Comment("Parry: Chance for each arm to parry")
+        public double parryChance = 0.05;
+        @Comment("Parry: Chance for each arm to parry with mastery")
+        public double parryChanceMastered = 0.1;
+
+        @Comment("Arm Creation: Aura cost per arm")
+        public double armAuraCost = 50.0;
+        @Comment("Arm Creation: Cooldown in seconds")
+        public int armCooldown = 0;
+
+        public ToolArms() {
+        }
+    }
+
+    public static class TongueTank extends ManasSubConfig {
+        @Comment("Skill Mastery Points")
+        public double masteryPoints = 2_500.0;
+
+        @Comment("Tongue Tank: Aura cost")
+        public double auraCost = 100.0;
+        @Comment("Tongue Tank: Cooldown in seconds")
+        public int cooldown = 2;
+        @Comment("Tongue Tank: Max charge")
+        public double maxCharge = 50.0;
+        @Comment("Tongue Tank: Max charge with mastery")
+        public double maxChargeMastered = 100.0;
+        @Comment("Tongue Tank: Charge built up every second")
+        public double chargePerSecond = 10.0;
+        @Comment("Tongue Tank: Damage per charge")
+        public double damagePerCharge = 5.0;
+        @Comment("Tongue Tank: Range of the shot")
+        public double range = 40.0;
+        @Comment("Tongue Tank: Charge needed to explode")
+        public double explosionCharge = 50.0;
+        @Comment("Tongue Tank: Size of the explosion at that charge")
+        public double explosionSize = 5.0;
+        @Comment("Tongue Tank: Charge for every +1 explosion size")
+        public double chargePerExplosionSize = 5.0;
+        @Comment("Tongue Tank: Explosions break blocks")
+        public boolean explosionBreaksBlocks = true;
+        @Comment("Tongue Tank: Speed the user is knocked back per charge")
+        public double recoilPerCharge = 0.03;
+        @Comment("Tongue Tank: % of the shot's damage dealt as fire")
+        public double fireDamagePercent = 0.5;
+        @Comment("Tongue Tank: Seconds targets hit are set on fire for")
+        public double burnSeconds = 3.0;
+        @Comment("Ammo Regeneration: Most charge it builds up with mastery")
+        public double ammoCap = 50.0;
+
+        @Comment("Barrage Shot: Aura cost")
+        public double barrageAuraCost = 150.0;
+        @Comment("Barrage Shot: Cooldown in seconds")
+        public int barrageCooldown = 4;
+        @Comment("Barrage Shot: Number of shots")
+        public int barrageShots = 3;
+        @Comment("Barrage Shot: Charge each shot fires with")
+        public double barrageCharge = 15.0;
+        @Comment("Barrage Shot: Ticks between shots")
+        public int barrageShotTicks = 4;
+
+        @Comment("Point Blank: Aura cost")
+        public double pointBlankAuraCost = 150.0;
+        @Comment("Point Blank: Cooldown in seconds")
+        public int pointBlankCooldown = 6;
+        @Comment("Point Blank: Range to grab a target")
+        public double pointBlankRange = 3.0;
+        @Comment("Point Blank: Charge the shot hits as")
+        public double pointBlankCharge = 35.0;
+        @Comment("Point Blank: Charge the shot hits as with mastery")
+        public double pointBlankChargeMastered = 70.0;
+
+        @Comment("Air Dive: Landing speed needed for a shockwave")
+        public double diveMinSpeed = 0.6;
+        @Comment("Air Dive: Largest shockwave radius")
+        public double diveMaxRadius = 15.0;
+        @Comment("Air Dive: Shockwave radius per block of landing speed")
+        public double diveRadiusPerSpeed = 2.5;
+        @Comment("Air Dive: Shockwave damage per block of landing speed")
+        public double diveDamagePerSpeed = 50.0;
+
+        public TongueTank() {
+        }
+    }
+
+    public static class PainBlocker extends ManasSubConfig {
+        @Comment("Skill Mastery Points")
+        public double masteryPoints = 2_500.0;
+
+        @Comment("Damage Mitigation: Aura cost")
+        public double mitigationAuraCost = 300.0;
+        @Comment("Damage Mitigation: Cooldown in seconds")
+        public int mitigationCooldown = 30;
+        @Comment("Damage Mitigation: Seconds damage is stored for")
+        public int mitigationSeconds = 15;
+        @Comment("Damage Mitigation: Seconds damage is stored for with mastery")
+        public int mitigationSecondsMastered = 30;
+
+        public PainBlocker() {
+        }
+    }
+
+    public static class FierceGains extends ManasSubConfig {
+        @Comment("Skill Mastery Points")
+        public double masteryPoints = 2_500.0;
+        @Comment("Hardened Muscles: Armor added")
+        public double armor = 15.0;
+        @Comment("Hardened Muscles: Armor added with mastery")
+        public double armorMastered = 30.0;
+
+        @Comment("Body Block: Aura cost")
+        public double blockAuraCost = 100.0;
+        @Comment("Body Block: Max seconds it can be held")
+        public int blockSeconds = 5;
+        @Comment("Body Block: Cooldown in seconds")
+        public int blockCooldown = 5;
+
+        @Comment("Combat Pump: Damage taken for each stack")
+        public double pumpDamagePerStackTaken = 50.0;
+        @Comment("Combat Pump: Physical damage added per stack")
+        public double pumpDamagePerStack = 25.0;
+        @Comment("Combat Pump: Max stacks")
+        public int pumpMaxStacks = 10;
+        @Comment("Combat Pump: Max stacks with mastery")
+        public int pumpMaxStacksMastered = 15;
+        @Comment("Combat Pump: Seconds without being attacked before a stack is lost")
+        public int pumpDecaySeconds = 10;
+
+        @Comment("Power Roar: Aura cost")
+        public double roarAuraCost = 500.0;
+        @Comment("Power Roar: Cooldown in seconds")
+        public int roarCooldown = 15;
+        @Comment("Power Roar: Sound damage")
+        public double roarDamage = 250.0;
+        @Comment("Power Roar: Width of the area")
+        public double roarSize = 5.0;
+        @Comment("Power Roar: Width of the area with mastery")
+        public double roarSizeMastered = 10.0;
+        @Comment("Power Roar: Seconds targets are paralyzed")
+        public int roarParalysisSeconds = 5;
+        @Comment("Power Roar: Seconds targets are paralyzed with mastery")
+        public int roarParalysisSecondsMastered = 10;
+        @Comment("Power Roar: Combat Pump stacks gained")
+        public int roarStacks = 2;
+        @Comment("Power Roar: Combat Pump stacks gained with mastery")
+        public int roarStacksMastered = 4;
+
+        @Comment("Limit Break: Aura cost")
+        public double limitBreakAuraCost = 2_000.0;
+        @Comment("Limit Break: Cooldown in seconds")
+        public int limitBreakCooldown = 600;
+        @Comment("Limit Break: Seconds Combat Pump has no cap")
+        public int limitBreakSeconds = 60;
+        @Comment("Limit Break: Weakness level afterwards")
+        public int limitBreakWeakness = 5;
+        @Comment("Limit Break: Seconds of weakness, fragility and paralysis afterwards")
+        public int limitBreakAfterSeconds = 300;
+
+        @Comment("Stack Breaker: Aura cost")
+        public double stackBreakerAuraCost = 500.0;
+        @Comment("Stack Breaker: Cooldown in seconds")
+        public int stackBreakerCooldown = 10;
+
+        public FierceGains() {
+        }
+    }
+
+    public static class MuscleExpansion extends ManasSubConfig {
+        @Comment("Skill Mastery Points")
+        public double masteryPoints = 2_500.0;
+        @Comment("Big Muscles: Physical damage added")
+        public double bigMusclesDamage = 20.0;
+        @Comment("Grabs: Max size multiplier of the target")
+        public double grabMaxSize = 1.5;
+        @Comment("Grabs: Max size multiplier of the target with mastery")
+        public double grabMaxSizeExpanded = 2.5;
+        @Comment("Grabs: Reach")
+        public double grabRange = 3.0;
+
+        @Comment("Muscle Expansion: Aura cost")
+        public double expansionAuraCost = 200.0;
+        @Comment("Muscle Expansion: Arm size")
+        public double expansionSize = 1.25;
+        @Comment("Muscle Expansion: Arm size with mastery")
+        public double expansionSizeMastered = 1.5;
+        @Comment("Muscle Expansion: Physical damage multiplier")
+        public double expansionDamage = 1.15;
+        @Comment("Muscle Expansion: Physical damage multiplier with mastery")
+        public double expansionDamageMastered = 1.3;
+
+        @Comment("Muscle Armor: % of damage taken the expanded muscles absorb")
+        public double muscleArmorReduction = 0.05;
+        @Comment("Muscle Armor: % of damage taken the expanded muscles absorb with mastery")
+        public double muscleArmorReductionMastered = 0.1;
+        @Comment("Muscle Armor: Damage the muscles can absorb before they go back to normal")
+        public double muscleArmorHealth = 600.0;
+        @Comment("Muscle Armor: Cooldown in seconds after the muscles give out")
+        public int muscleArmorBrokenCooldown = 30;
+
+        @Comment("Slam: Aura cost")
+        public double slamAuraCost = 300.0;
+        @Comment("Slam: Cooldown in seconds")
+        public int slamCooldown = 6;
+        @Comment("Slam: Damage")
+        public double slamDamage = 75.0;
+        @Comment("Slam: Damage with mastery")
+        public double slamDamageMastered = 150.0;
+        @Comment("Slam: % of physical damage added")
+        public double slamDamagePercent = 0.5;
+        @Comment("Slam: Crater radius")
+        public double craterRadius = 2.0;
+        @Comment("Slam: Crater radius with mastery")
+        public double craterRadiusMastered = 3.0;
+
+        @Comment("Choke Hits: Aura cost every second")
+        public double chokeAuraCost = 50.0;
+        @Comment("Choke Hits: Ticks between each hit")
+        public int chokeHitTicks = 8;
+        @Comment("Choke Hits: % of physical damage each hit deals")
+        public double chokeDamagePercent = 0.5;
+
+        @Comment("Arm Propulsion: Aura cost")
+        public double propulsionAuraCost = 150.0;
+        @Comment("Arm Propulsion: Cooldown in seconds")
+        public int propulsionCooldown = 4;
+        @Comment("Arm Propulsion: Distance launched")
+        public double propulsionDistance = 30.0;
+        @Comment("Arm Propulsion: % of the distance when used in the air with mastery")
+        public double propulsionAirShare = 0.5;
+        @Comment("Arm Propulsion: Distance multiplier while the muscles are expanded")
+        public double propulsionExpandedMultiplier = 2.0;
+
+        public MuscleExpansion() {
+        }
+    }
+
+    public static class TwinImpact extends ManasSubConfig {
+        @Comment("Skill Mastery Points")
+        public double masteryPoints = 2_500.0;
+
+        @Comment("Twin Impact: % of the damage the first hit deals")
+        public double firstHitDamage = 0.75;
+        @Comment("Twin Impact: % of the original damage the second impact deals")
+        public double secondHitDamage = 1.25;
+        @Comment("Twin Impact: % of the original damage the second impact deals with mastery")
+        public double secondHitDamageMastered = 1.5;
+        @Comment("Twin Impact: Seconds before the second impact")
+        public double secondHitSeconds = 2.0;
+
+        @Comment("Stored Echo: Targets marked at once")
+        public int echoMarks = 1;
+        @Comment("Stored Echo: Targets marked at once with mastery")
+        public int echoMarksMastered = 3;
+        @Comment("Stored Echo: Range marks are removed at")
+        public double echoRange = 64.0;
+        @Comment("Follow Up: % of extra damage marked targets take")
+        public double followUpDamage = 0.15;
+
+        @Comment("Pulling Strike: Aura cost")
+        public double pullAuraCost = 200.0;
+        @Comment("Pulling Strike: Cooldown in seconds")
+        public int pullCooldown = 6;
+        @Comment("Pulling Strike: Range to a marked target")
+        public double pullRange = 32.0;
+        @Comment("Pulling Strike: % of the way back the target is pulled")
+        public double pullShare = 0.7;
+        @Comment("Pulling Strike: Blocks the target stops short of the user")
+        public double pullStopDistance = 3.0;
+
+        public TwinImpact() {
+        }
+    }
+
+    public static class Traject extends ManasSubConfig {
+        @Comment("Skill Mastery Points")
+        public double masteryPoints = 2_500.0;
+
+        @Comment("Attack Redirect: Aura cost")
+        public double redirectAuraCost = 200.0;
+        @Comment("Attack Redirect: Cooldown in seconds")
+        public int redirectCooldown = 20;
+        @Comment("Attack Redirect: Seconds projectiles are sent back")
+        public int redirectSeconds = 5;
+        @Comment("Attack Redirect: Seconds projectiles are sent back with mastery")
+        public int redirectSecondsMastered = 10;
+
+        @Comment("Forced Vector: Aura cost")
+        public double forcedVectorAuraCost = 300.0;
+        @Comment("Forced Vector: Cooldown in seconds")
+        public int forcedVectorCooldown = 10;
+        @Comment("Forced Vector: Range")
+        public double forcedVectorRange = 24.0;
+        @Comment("Forced Vector: Speed the target is sent at")
+        public double forcedVectorSpeed = 2.5;
+        @Comment("Forced Vector: Damage is block hardness X speed in blocks per second X this")
+        public double forcedVectorDamageScale = 1.0;
+        @Comment("Forced Vector: Hardness used for unbreakable blocks")
+        public double forcedVectorUnbreakableHardness = 50.0;
+
+        @Comment("Ricochet Shot: Aura cost")
+        public double ricochetAuraCost = 150.0;
+        @Comment("Ricochet Shot: Cooldown in seconds")
+        public int ricochetCooldown = 8;
+        @Comment("Ricochet Shot: Range to bounce to the next target")
+        public double ricochetRange = 8.0;
+        @Comment("Ricochet Shot: Range to bounce to the next target with mastery")
+        public double ricochetRangeMastered = 16.0;
+
+        @Comment("Trajectory Change: Aura cost")
+        public double markAuraCost = 100.0;
+        @Comment("Trajectory Change: Cooldown in seconds")
+        public int markCooldown = 3;
+        @Comment("Trajectory Change: Range to mark a target")
+        public double markRange = 64.0;
+
+        public Traject() {
+        }
+    }
+
+    public static class TreeFrog extends ManasSubConfig {
+        @Comment("Skill Mastery Points")
+        public double masteryPoints = 2_500.0;
+
+        @Comment("Webbed Feet: Swim speed added")
+        public double swimSpeed = 1.0;
+
+        @Comment("Toxin Skin: Seconds of fatal poison")
+        public int toxinSeconds = 5;
+        @Comment("Toxin Skin: Fatal poison level")
+        public int toxinAmplifier = 1;
+        @Comment("Toxin Skin: Fatal poison level with mastery")
+        public int toxinAmplifierMastered = 2;
+
+        @Comment("Poison Boost: Poison boost added")
+        public double poisonBoost = 1.0;
+        @Comment("Toxic Hands: % of the user's damage dealt as poison damage")
+        public double toxicHandsShare = 1.0;
+
+        @Comment("Climb: Aura cost")
+        public double climbAuraCost = 20.0;
+
+        @Comment("Camouflage: Aura cost")
+        public double camouflageAuraCost = 150.0;
+        @Comment("Camouflage: Cooldown in seconds")
+        public int camouflageCooldown = 10;
+        @Comment("Camouflage: Seconds it lasts")
+        public int camouflageSeconds = 30;
+        @Comment("Camouflage: Presence Concealment level")
+        public int camouflageLevel = 2;
+
+        @Comment("Tongue Snatch: Aura cost")
+        public double tongueAuraCost = 150.0;
+        @Comment("Tongue Snatch: Cooldown in seconds")
+        public int tongueCooldown = 6;
+        @Comment("Tongue Snatch: Range")
+        public double tongueRange = 15.0;
+        @Comment("Tongue Snatch: Range with mastery")
+        public double tongueRangeMastered = 30.0;
+        @Comment("Tongue Slam: Cooldown in seconds")
+        public int tongueSlamCooldown = 12;
+        @Comment("Tongue Slam: Damage")
+        public double tongueSlamDamage = 25.0;
+        @Comment("Tongue Slam: Damage added per hardness of the block it's slammed onto")
+        public double tongueSlamHardnessMultiplier = 2.0;
+        @Comment("Tongue Slam: Damage added per hardness of the block it's slammed onto with mastery")
+        public double tongueSlamHardnessMultiplierMastered = 3.0;
+        @Comment("Tongue Slam: Seconds of fatal poison afterwards")
+        public int tongueSlamPoisonSeconds = 15;
+
+        public TreeFrog() {
+        }
+    }
+
+    public static class Tripod extends ManasSubConfig {
+        @Comment("Skill Mastery Points")
+        public double masteryPoints = 2_500.0;
+
+        @Comment("Grounded Guard: Armor while on the ground")
+        public double groundedArmor = 15.0;
+        @Comment("Third Leg: % of movement speed added")
+        public double thirdLegSpeed = 0.33;
+
+        @Comment("Defensive Stance: Aura cost")
+        public double stanceAuraCost = 200.0;
+        @Comment("Defensive Stance: Cooldown in seconds")
+        public int stanceCooldown = 12;
+        @Comment("Defensive Stance: Seconds the counter window lasts")
+        public double stanceSeconds = 3.0;
+        @Comment("Defensive Stance: Seconds the counter window lasts with mastery")
+        public double stanceSecondsMastered = 5.0;
+
+        @Comment("Pin and Stomp: Aura cost")
+        public double stompAuraCost = 150.0;
+        @Comment("Pin and Stomp: Cooldown in seconds")
+        public int stompCooldown = 6;
+        @Comment("Pin and Stomp: Range to the target")
+        public double stompRange = 4.0;
+        @Comment("Pin and Stomp: Physical attack damage multiplier")
+        public double stompDamage = 1.25;
+        @Comment("Pin and Stomp: Seconds the target stays pinned")
+        public double pinSeconds = 2.0;
+
+        public Tripod() {
+        }
+    }
+
+    public static class Warping extends ManasSubConfig {
+        @Comment("Skill Mastery Points")
+        public double masteryPoints = 2_500.0;
+        @Comment("Spatial Boost: Space boost added")
+        public double spaceBoost = 1.0;
+        @Comment("Warping: Entity allies have to be within this range to warp / be warped")
+        public double allyRange = 30.0;
+
+        @Comment("Warping: Aura cost per warp")
+        public double warpAuraCost = 500.0;
+        @Comment("Warping: Cooldown in seconds")
+        public int warpCooldown = 5;
+        @Comment("Warping: Seconds warp takes to activate")
+        public double warpActivationSeconds = 1.5;
+
+        @Comment("Goop Defense: Aura cost per projectile")
+        public double goopAuraCost = 5_000.0;
+        @Comment("Goop Defense: Radius that projectiles get absorbed")
+        public double goopRadius = 7.0;
+
+        @Comment("Emergency Exit: Cooldown in seconds")
+        public int emergencyCooldown = 300;
+        @Comment("Emergency Exit: % of max HP the user is left with")
+        public double emergencyHealth = 0.1;
+
+        public Warping() {
+        }
+    }
+
+    public static class NewOrder extends ManasSubConfig {
+        @Comment("Skill Mastery Points")
+        public double masteryPoints = 5_000.0;
+
+        @Comment("Say My Name: Aura cost to call out a name")
+        public double nameAuraCost = 100.0;
+        @Comment("Say My Name: Cooldown in seconds")
+        public int nameCooldown = 1;
+        @Comment("Say My Name: Seconds a called out name stays ready for a rule")
+        public int nameMemorySeconds = 30;
+
+        @Comment("Rules: Aura cost to make a rule")
+        public double ruleAuraCost = 4_000.0;
+        @Comment("Rules: Cooldown in seconds after making a rule")
+        public int ruleCooldown = 2;
+
+        @Comment("Harden Into My Shape: Ticks after the user's hit that the air copy attacks")
+        public int hardenDelayTicks = 10;
+        @Comment("Harden Into My Shape: % of the user's melee damage the air copy deals as wind damage")
+        public double hardenDamageMultiplier = 1.15;
+        @Comment("Harden Into My Shape: Size of the air copy compared to the user")
+        public double hardenSize = 4.0;
+
+
+        @Comment("No Longer Exist: Range")
+        public double vacuumRange = 32.0;
+        @Comment("No Longer Exist: Radius of the vacuum")
+        public double vacuumRadius = 20.0;
+        @Comment("No Longer Exist: Seconds the vacuum lasts")
+        public int vacuumSeconds = 10;
+        @Comment("No Longer Exist: Cooldown in seconds")
+        public int vacuumCooldown = 7;
+        @Comment("No Longer Exist: Aura cost per vacuum")
+        public double vacuumAuraCost = 5_000.0;
+        @Comment("No Longer Exist: Air taken each tick")
+        public int vacuumAirDrain = 15;
+        @Comment("No Longer Exist: Ticks between suffocation hits")
+        public int vacuumDamageInterval = 10;
+        @Comment("No Longer Exist: Suffocation damage per hit")
+        public double vacuumDamage = 2.0;
+        @Comment("No Longer Exist: % of max HP added to each suffocation hit")
+        public double vacuumHealthDamage = 0.05;
+
+        @Comment("The Air Will Restrain You: Range")
+        public double restrainRange = 25.0;
+        @Comment("The Air Will Restrain You: Seconds the cage traps the target")
+        public int restrainSeconds = 7;
+        @Comment("The Air Will Restrain You: Cooldown in seconds")
+        public int restrainCooldown = 15;
+        @Comment("The Air Will Restrain You: Aura cost")
+        public double restrainAuraCost = 1_000.0;
+
+        @Comment("The Air Will Explode: Range")
+        public double explodeRange = 45.0;
+        @Comment("The Air Will Explode: Width of the explosion")
+        public double explodeSize = 10.0;
+        @Comment("The Air Will Explode: Wind damage")
+        public double explodeDamage = 150.0;
+        @Comment("The Air Will Explode: Cooldown in seconds")
+        public int explodeCooldown = 2;
+        @Comment("The Air Will Explode: Aura cost")
+        public double explodeAuraCost = 500.0;
+
+        @Comment("The Air Will Protect Me: Barrier HP")
+        public double protectHealth = 500.0;
+        @Comment("The Air Will Protect Me: Barrier HP with mastery")
+        public double protectHealthMastered = 1_000.0;
+        @Comment("The Air Will Protect Me: Cooldown in seconds")
+        public int protectCooldown = 30;
+        @Comment("The Air Will Protect Me: Aura cost")
+        public double protectAuraCost = 2_000.0;
+
+        @Comment("The Air Is My Weapon: % of physical damage each punch deals as wind damage")
+        public double weaponDamagePercent = 0.75;
+        @Comment("The Air Is My Weapon: Arms")
+        public int weaponArms = 6;
+        @Comment("The Air Is My Weapon: Punches each arm throws")
+        public int weaponPunches = 2;
+        @Comment("The Air Is My Weapon: Range")
+        public double weaponRange = 6.0;
+        @Comment("The Air Is My Weapon: Cooldown in seconds")
+        public int weaponCooldown = 6;
+        @Comment("The Air Is My Weapon: Aura cost")
+        public double weaponAuraCost = 1_500.0;
+
+        @Comment("Enhance My Form: Melee damage added")
+        public double enhanceAttackDamage = 250.0;
+        @Comment("Enhance My Form: Armor added")
+        public double enhanceArmor = 70.0;
+        @Comment("Enhance My Form: Size added")
+        public double enhanceScale = 0.25;
+        @Comment("Enhance My Form: % of damage added to every rule's attacks")
+        public double enhanceRuleDamagePercent = 0.5;
+        @Comment("Enhance My Form: Body Of Air damage reduction")
+        public double enhanceBodyDamageReduction = 0.5;
+
+        @Comment("Soul Will Not Degrade: Soul damage reduction")
+        public double soulDamageMultiplier = 0.5;
+
+        @Comment("To Become Unseen: Presence concealment added")
+        public double unseenConcealment = 2.0;
+        @Comment("To See All: Presence sense added")
+        public double seeAllPresenceSense = 2.0;
+
+        @Comment("My Body Will Heal: Infinite Regeneration's magicule cost reduction")
+        public double healCostReduction = 0.5;
+
+        @Comment("Weakness: % of the target's damage taken away")
+        public double weaknessDamageReduction = 0.15;
+
+        @Comment("Crumble: % of the target's armor taken away")
+        public double crumbleArmorReduction = 0.5;
+
+        @Comment("Can Not Move: Seconds before the rule ends, just for balancing")
+        public int noMoveSeconds = 15;
+
+        @Comment("Will Die: Multiplier of the target's EP the user needs to use")
+        public double willDieEpMultiplier = 5.0;
+
+        @Comment("New Order Rebel: Seconds it keeps destroying quirks, one per second")
+        public int rebelSeconds = 60;
+
+        @Comment("Become My Shield: Range a projectile must be to create a wall")
+        public double shieldRange = 10.0;
+        @Comment("Become My Shield: Aura cost per wall")
+        public double shieldAuraCost = 200.0;
+        @Comment("Become My Shield: Seconds a wall last")
+        public int shieldWallSeconds = 3;
+        @Comment("Become My Shield: Wall height")
+        public int shieldWallHeight = 3;
+        @Comment("Become My Shield: Wall width")
+        public int shieldWallWidth = 3;
+
+        @Comment("Become My Fist: % of the user's melee damage each of the two fists deals as earth damage")
+        public double fistDamageMultiplier = 0.75;
+        @Comment("Become My Fist: Cooldown in seconds")
+        public int fistCooldown = 1;
+
+        @Comment("The Ground Is Slippery: Width of the area")
+        public double slipperySize = 50.0;
+
+        @Comment("The Ground Is Elastic: Width of the area")
+        public double elasticSize = 50.0;
+        @Comment("The Ground Is Elastic: Jump strength added")
+        public double elasticJumpStrength = 0.3;
+
+        @Comment("The Ground Isn't Affected By Gravity: Width of the area")
+        public double noFallSize = 50.0;
+
+        @Comment("The Ground Is Spiky: Range")
+        public double spikyRange = 30.0;
+        @Comment("The Ground Is Spiky: Spikes")
+        public int spikyCount = 1;
+        @Comment("The Ground Is Spiky: Spikes with mastery")
+        public int spikyCountMastered = 3;
+        @Comment("The Ground Is Spiky: Earth damage per spike")
+        public double spikyDamage = 150.0;
+        @Comment("The Ground Is Spiky: Earth damage per spike with mastery")
+        public double spikyDamageMastered = 250.0;
+        @Comment("The Ground Is Spiky: Cooldown in seconds")
+        public int spikyCooldown = 6;
+        @Comment("The Ground Is Spiky: Aura cost")
+        public double spikyAuraCost = 500.0;
+
+        @Comment("Thunder Strike: Aura cost")
+        public double thunderAuraCost = 3_000.0;
+        @Comment("Thunder Strike: Cooldown in seconds")
+        public int thunderCooldown = 10;
+        @Comment("Thunder Strike: Lightning damage")
+        public double thunderDamage = 400.0;
+        @Comment("Thunder Strike: Range")
+        public double thunderRange = 40.0;
+
+        @Comment("Solar Beam: Aura cost")
+        public double solarAuraCost = 3_000.0;
+        @Comment("Solar Beam: Cooldown in seconds")
+        public int solarCooldown = 15;
+        @Comment("Solar Beam: Damage")
+        public double solarBeamDamage = 100.0;
+        @Comment("Solar Beam: Range in blocks")
+        public double solarBeamRange = 30.0;
+        @Comment("Solar Beam: Seconds the beam fires")
+        public int solarBeamSeconds = 4;
+
+        @Comment("Body of Air: Aura cost")
+        public double bodyAuraCost = 2_000.0;
+        @Comment("Body of Air: Multiplier of the player's HP the construct has")
+        public double bodyHealthMultiplier = 10.0;
+        @Comment("Body of Air: Cooldown in seconds after the construct is broken")
+        public int bodyBreakCooldown = 180;
+        @Comment("Body of Air: Cooldown in seconds after exiting")
+        public int bodyExitCooldown = 5;
+        @Comment("Body of Air: Wind boost added while inside")
+        public double bodyWindBoost = 1.0;
+        @Comment("Body of Air: Seconds between the construct healing itself")
+        public int bodyRegenSeconds = 5;
+        @Comment("Body of Air: % of the construct's max HP healed")
+        public double bodyRegenPercent = 0.05;
+        @Comment("Body of Air: Seconds out of combat before the construct starts healing")
+        public int bodyCombatSeconds = 10;
+
+        @Comment("Fist Bump To The Earth: Aura cost")
+        public double fistBumpAuraCost = 4_000.0;
+        @Comment("Fist Bump To The Earth: Cooldown in seconds")
+        public int fistBumpCooldown = 15;
+        @Comment("Fist Bump To The Earth: % of physical damage dealt as wind damage")
+        public double fistBumpDamagePercent = 150.0;
+        @Comment("Fist Bump To The Earth: Width of the explosion")
+        public double fistBumpSize = 25.0;
+        @Comment("Fist Bump To The Earth: Height of the explosion")
+        public double fistBumpHeight = 15.0;
+        @Comment("Fist Bump To The Earth: Shatters the ground?")
+        public boolean fistBumpBreaksBlocks = true;
+
+        @Comment("Air Spear: Aura cost")
+        public double spearAuraCost = 3_000.0;
+        @Comment("Air Spear: Cooldown in seconds")
+        public int spearCooldown = 15;
+        @Comment("Air Spear: Wind damage")
+        public double spearDamage = 750.0;
+        @Comment("Air Spear: Width of the area the spear hits")
+        public double spearSize = 5.0;
+        @Comment("Air Spear: Width of the area the spear hits with mastery")
+        public double spearSizeMastered = 8.0;
+        @Comment("Air Spear: Width of the shockwave")
+        public double spearShockwaveSize = 15.0;
+        @Comment("Air Spear: Width of the shockwave with mastery")
+        public double spearShockwaveSizeMastered = 24.0;
+        @Comment("Air Spear: % of the spear's damage the shockwave deals")
+        public double spearShockwaveDamagePercent = 0.75;
+
+        @Comment("Wind Clap: Aura cost")
+        public double clapAuraCost = 3_000.0;
+        @Comment("Wind Clap: Cooldown in seconds")
+        public int clapCooldown = 15;
+        @Comment("Wind Clap: Wind damage")
+        public double clapDamage = 600.0;
+        @Comment("Wind Clap: Range")
+        public double clapRange = 15.0;
+        @Comment("Wind Clap: Blocks the target is knocked away")
+        public double clapKnockback = 25.0;
+
+        public NewOrder() {
         }
     }
 }

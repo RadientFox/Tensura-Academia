@@ -5,8 +5,6 @@
   "compatibilityLevel": "JAVA_21",
   "mixins": [
     "ReincarnationSkillPoolMixin",
-    "InventoryMenuMixin",
-    "ServerGamePacketListenerMixin",
     "ServerGamePacketListenerAccessor",
     "VibrationTargetingMixin",
     "BlockDropsMixin",
@@ -14,18 +12,30 @@
     "LivingEntityClimbMixin",
     "LightningBoltAccessor",
     "LivingEntityFloatMixin",
-    "EntityPushMixin"
+    "EntityPushMixin",
+    "HeldPassengerMixin",
+    "EnergyCostMixin",
+    "BarrierEffectMixin",
+    "SkillSealMixin",
+    "FoodDataMixin",
+    "WaterWalkMixin",
+    "GroundFrictionMixin",
+    "GroundBounceMixin",
+    "FallingBlockMixin",
+    "RegenerationCostMixin"
   ],
   "client": [
     "SkillCreationScreenMixin",
     "SmokescreenPresenceSenseMixin",
-    "CreativeInventoryMixin",
     "client.ElasticityJumpKeyMixin",
     "client.AcceleratorRingsFlightMixin",
     "client.PermeationPhaseMovementMixin",
     "client.LevelRendererAccessor",
     "client.PlayerModelMixin",
-    "client.MinecraftMarkGlowMixin"
+    "client.MinecraftMarkGlowMixin",
+    "client.WingFlightRendererMixin",
+    "client.GeoArmorRendererMixin",
+    "client.BossHealthOverlayAccessor"
   ],
   "injectors": {
     "defaultRequire": 1

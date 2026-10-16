@@ -4,6 +4,7 @@ import com.radient.tensuraacadamia.TensuraAcadamia;
 import com.radient.tensuraacadamia.config.skills.QuirkSkillsConfig;
 import com.radient.tensuraacadamia.regestry.skills.QuirkSkills;
 import com.radient.tensuraacadamia.util.DamageReduction;
+import com.radient.tensuraacadamia.util.HitRules;
 import io.github.manasmods.manascore.config.ConfigRegistry;
 import io.github.manasmods.manascore.network.api.util.Changeable;
 import io.github.manasmods.manascore.skill.api.ManasSkillInstance;
@@ -247,7 +248,7 @@ public class TailQuirk extends Skill {
         boolean mastered = instance.isMastered(entity);
         double radius = mastered ? CONFIG.spiralRadiusMastered : CONFIG.spiralRadius;
         float damage = (float) ((mastered ? CONFIG.spiralDamageMastered : CONFIG.spiralDamage) + getMeleeDamage(entity));
-        for (LivingEntity target : level.getEntitiesOfClass(LivingEntity.class, entity.getBoundingBox().inflate(radius + 1.0D, 1.0D, radius + 1.0D), target -> target != entity && target.isAlive()
+        for (LivingEntity target : level.getEntitiesOfClass(LivingEntity.class, entity.getBoundingBox().inflate(radius + 1.0D, 1.0D, radius + 1.0D), target -> target != entity && target.isAlive() && HitRules.canHit(entity, target)
                 && target.position().subtract(entity.position()).horizontalDistance() <= radius + target.getBbWidth() * 0.5D + entity.getBbWidth() * 0.5D)) {
             hit(instance, entity, target, damage, DamageTypes.PLAYER_ATTACK, SPIRAL_HIT);
             target.knockback(0.8D, entity.getX() - target.getX(), entity.getZ() - target.getZ());
@@ -295,7 +296,7 @@ public class TailQuirk extends Skill {
         boolean mastered = leap.instance().isMastered(owner);
         Vec3 motion = owner.getDeltaMovement();
         Vec3 heading = new Vec3(motion.x, 0.0D, motion.z).lengthSqr() > 1.0E-4D ? new Vec3(motion.x, 0.0D, motion.z).normalize() : owner.getLookAngle().multiply(1.0D, 0.0D, 1.0D).normalize();
-        for (LivingEntity target : level.getEntitiesOfClass(LivingEntity.class, owner.getBoundingBox().inflate(0.5D), target -> target != owner && target.isAlive() && !leap.hit().contains(target))) {
+        for (LivingEntity target : level.getEntitiesOfClass(LivingEntity.class, owner.getBoundingBox().inflate(0.5D), target -> target != owner && target.isAlive() && !leap.hit().contains(target) && HitRules.canHit(owner, target))) {
             leap.hit().add(target);
             hit(leap.instance(), owner, target, (float) (mastered ? CONFIG.leapDamageMastered : CONFIG.leapDamage), DamageTypes.PLAYER_ATTACK, TAIL_LEAP);
             target.setDeltaMovement(MultiArms.getLaunchVelocity(heading.add(0.0D, 0.4D, 0.0D), mastered ? CONFIG.leapKnockbackMastered : CONFIG.leapKnockback));

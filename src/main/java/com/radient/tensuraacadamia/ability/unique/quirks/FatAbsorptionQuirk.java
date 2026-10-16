@@ -157,7 +157,7 @@ public class FatAbsorptionQuirk extends Skill {
             return;
         }
 
-        double gained = saturation * CONFIG.fatPerSaturation;
+        double gained = saturation * CONFIG.fatPerSaturation * MultiplierQuirk.getOutput(entity);
         setFat(instance, getFat(instance) + gained);
         updateFatStock(instance, entity);
         instance.addMasteryPoint(entity);

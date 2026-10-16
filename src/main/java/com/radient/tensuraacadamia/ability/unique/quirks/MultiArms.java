@@ -2,6 +2,7 @@ package com.radient.tensuraacadamia.ability.unique.quirks;
 
 import com.mojang.datafixers.util.Pair;
 import com.radient.tensuraacadamia.TensuraAcadamia;
+import com.radient.tensuraacadamia.ability.unique.quirks.neworder.NewOrderWill;
 import com.radient.tensuraacadamia.config.skills.QuirkSkillsConfig;
 import io.github.manasmods.manascore.config.ConfigRegistry;
 import io.github.manasmods.manascore.skill.api.ManasSkillInstance;
@@ -15,11 +16,14 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.network.protocol.game.ClientboundSetPassengersPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -29,6 +33,8 @@ import net.minecraft.tags.ItemTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.Container;
 import net.minecraft.world.ContainerHelper;
+import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.Entity;
@@ -41,9 +47,13 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.Enemy;
+import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
+import net.minecraft.world.flag.FeatureFlags;
+import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.InventoryMenu;
+import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ClipContext;
@@ -58,6 +68,7 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.attachment.AttachmentType;
 import net.neoforged.neoforge.common.Tags;
 import net.neoforged.neoforge.common.util.INBTSerializable;
+import net.neoforged.neoforge.event.entity.EntityMountEvent;
 import net.neoforged.neoforge.event.entity.living.LivingDropsEvent;
 import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
@@ -71,6 +82,7 @@ import net.neoforged.neoforge.registries.RegisterEvent;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -83,10 +95,6 @@ public final class MultiArms {
 
     public static final int SLOTS = 4;
 
-    // Slot positions in the survival inventory and the creative inventory
-    private static final int[][] INVENTORY_POSITIONS = {{77, 44}, {77, 26}, {77, 8}, {152, 62}};
-    private static final int[][] CREATIVE_POSITIONS = {{15, 6}, {15, 33}, {127, 6}, {127, 33}};
-
     private static final String HELD_BY_TAG = "tracadamia_quad_held_by";
     private static final String HELD_UNTIL_TAG = "tracadamia_quad_held_until";
     private static final double HOLD_BREAK_DISTANCE = 64.0D;
@@ -94,7 +102,7 @@ public final class MultiArms {
     public static final int HOLD_BODY = 0;
     public static final int HOLD_LOOK = 1;
 
-    private record Hold(LivingEntity holder, Vec3 offset, int frame, long time, long start, boolean ownRules) {}
+    private record Hold(LivingEntity holder, Vec3 offset, int frame, long time, long start, boolean ownRules, boolean crouchOff) {}
 
     private static final QuirkSkillsConfig.Grabbing GRAB_CONFIG = ConfigRegistry.getConfig(QuirkSkillsConfig.class).Grabbing;
 
@@ -104,7 +112,9 @@ public final class MultiArms {
     private static final Map<Integer, ClientHold> CLIENT_HOLDS = new HashMap<>();
 
     private static final ResourceLocation OFFHANDS_ID = ResourceLocation.fromNamespaceAndPath("tracadamia", "extra_offhands");
+    private static final ResourceLocation ARM_SLOTS_ID = ResourceLocation.fromNamespaceAndPath(TensuraAcadamia.MODID, "arm_slots");
     private static final AttachmentType<OffhandStorage> OFFHANDS = AttachmentType.serializable(OffhandStorage::new).copyOnDeath().build();
+    public static final MenuType<ArmSlotsMenu> MENU = new MenuType<>(ArmSlotsMenu::new, FeatureFlags.DEFAULT_FLAGS);
 
     private static final List<PendingImpact> PENDING_IMPACTS = new ArrayList<>();
     private static boolean armHitting = false;
@@ -117,6 +127,7 @@ public final class MultiArms {
     @SubscribeEvent
     public static void registerOffhands(RegisterEvent event) {
         event.register(NeoForgeRegistries.Keys.ATTACHMENT_TYPES, OFFHANDS_ID, () -> OFFHANDS);
+        event.register(Registries.MENU, ARM_SLOTS_ID, () -> MENU);
     }
 
     // Extra offhands the entity's arms can have
@@ -147,6 +158,11 @@ public final class MultiArms {
 
     @SubscribeEvent
     public static void onServerTick(ServerTickEvent.Post event) {
+        if (!RESYNC.isEmpty()) {
+            RESYNC.forEach(MultiArms::syncRiders);
+            RESYNC.clear();
+        }
+
         if (!HOLDS.isEmpty()) {
             releaseStaleHolds();
         }
@@ -172,6 +188,8 @@ public final class MultiArms {
         PENDING_IMPACTS.clear();
         HOLDS.clear();
         FLUNG.clear();
+        CROUCHED_OFF.clear();
+        RESYNC.clear();
     }
 
     private static void hitWithArm(PendingImpact impact) {
@@ -337,6 +355,15 @@ public final class MultiArms {
         return !target.getType().is(Tags.EntityTypes.BOSSES) && !target.getType().is(TensuraEntityTags.HERO_BOSS);
     }
 
+    // this is for new order
+    public static boolean canGrab(LivingEntity holder, LivingEntity target) {
+        return canGrab(target) && !NewOrderWill.isImmovable(target, holder);
+    }
+
+    public static String getGrabFail(LivingEntity target) {
+        return canGrab(target) ? "tracadamia.skill.arms.immovable" : "tracadamia.skill.arms.boss";
+    }
+
     public static void fling(ManasSkillInstance instance, LivingEntity owner, LivingEntity target, float damage, int mode, boolean ground, int ticks) {
         startFling(instance, owner, target, damage, mode, ground, ticks);
     }
@@ -500,23 +527,127 @@ public final class MultiArms {
     }
 
     public static void holdAt(LivingEntity holder, LivingEntity target, Vec3 offset, int frame, boolean ownRules) {
-        Vec3 pos = getHoldPos(holder, offset, frame, 1.0F);
-        if (target.position().distanceToSqr(pos) > 0.0025D) {
-            target.teleportTo(pos.x, pos.y, pos.z);
+        holdAt(holder, target, offset, frame, ownRules, false);
+    }
+
+    public static void holdAt(LivingEntity holder, LivingEntity target, Vec3 offset, int frame, boolean ownRules, boolean clinging) {
+        holdAt(holder, target, offset, frame, ownRules, clinging, !ownRules);
+    }
+
+    // lets held players crouch to get out
+    public static void holdAt(LivingEntity holder, LivingEntity target, Vec3 offset, int frame, boolean ownRules, boolean clinging, boolean crouchOff) {
+        Hold last = HOLDS.get(target.getId());
+        long time = target.level().getGameTime();
+        if (last == null || last.holder() != holder) {
+            CROUCHED_OFF.remove(target.getId());
+        }
+        HOLDS.put(target.getId(), new Hold(holder, offset, frame, time, last != null && last.holder() == holder ? last.start() : time, ownRules, crouchOff));
+
+        if (target.getVehicle() != holder) {
+            target.stopRiding();
+            if (target.startRiding(holder, true)) {
+                syncRiders(holder);
+            }
+        }
+
+        if (target.getVehicle() != holder) {
+            Vec3 pos = getHoldPos(holder, offset, frame, 1.0F);
+            if (target.position().distanceToSqr(pos) > 0.0025D) {
+                target.teleportTo(pos.x, pos.y, pos.z);
+            }
         }
 
         target.setDeltaMovement(Vec3.ZERO);
         target.resetFallDistance();
-        target.getPersistentData().putUUID(HELD_BY_TAG, holder.getUUID());
-        target.getPersistentData().putLong(HELD_UNTIL_TAG, target.level().getGameTime() + 2L);
+        if (clinging) {
+            target.getPersistentData().remove(HELD_BY_TAG);
+            target.getPersistentData().remove(HELD_UNTIL_TAG);
+        } else {
+            target.getPersistentData().putUUID(HELD_BY_TAG, holder.getUUID());
+            target.getPersistentData().putLong(HELD_UNTIL_TAG, target.level().getGameTime() + 2L);
+        }
 
-        Hold last = HOLDS.get(target.getId());
         if (last == null || last.holder() != holder || !last.offset().equals(offset) || last.frame() != frame) {
             syncHold(holder, target, new HoldPayload(target.getId(), holder.getId(), offset, frame));
         }
+    }
 
-        long time = target.level().getGameTime();
-        HOLDS.put(target.getId(), new Hold(holder, offset, frame, time, last != null && last.holder() == holder ? last.start() : time, ownRules));
+    // helped fix visual bug
+    public static @Nullable Vec3 getRidingSpot(Entity vehicle, Entity passenger) {
+        if (!(vehicle instanceof LivingEntity holder)) {
+            return null;
+        }
+
+        if (vehicle.level().isClientSide) {
+            ClientHold hold = CLIENT_HOLDS.get(passenger.getId());
+            return hold == null || hold.holderId() != vehicle.getId() ? null : getHoldPos(holder, hold.offset(), hold.frame(), 1.0F);
+        }
+
+        Hold hold = HOLDS.get(passenger.getId());
+        return hold == null || hold.holder() != vehicle ? null : getHoldPos(holder, hold.offset(), hold.frame(), 1.0F);
+    }
+
+    public static boolean isHolding(Entity vehicle) {
+        if (vehicle.level().isClientSide) {
+            return CLIENT_HOLDS.values().stream().anyMatch(hold -> hold.holderId() == vehicle.getId());
+        }
+
+        return HOLDS.values().stream().anyMatch(hold -> hold.holder() == vehicle);
+    }
+
+    private static boolean releasing;
+    private static final Set<Integer> CROUCHED_OFF = new HashSet<>();
+    private static final Set<LivingEntity> RESYNC = new HashSet<>();
+
+    public static void letGo(Entity target) {
+        if (!(target.getVehicle() instanceof LivingEntity holder)) {
+            return;
+        }
+
+        Vec3 pos = target.position();
+        Vec3 motion = target.getDeltaMovement();
+        releasing = true;
+        try {
+            target.stopRiding();
+        } finally {
+            releasing = false;
+        }
+
+        target.teleportTo(pos.x, pos.y, pos.z);
+        target.setDeltaMovement(motion);
+        target.hurtMarked = true;
+        syncRiders(holder);
+    }
+
+    public static void syncRiders(LivingEntity holder) {
+        if (holder instanceof ServerPlayer player && !player.hasDisconnected()) {
+            player.connection.send(new ClientboundSetPassengersPacket(player));
+        }
+    }
+
+    @SubscribeEvent
+    public static void onDismount(EntityMountEvent event) {
+        Entity rider = event.getEntityMounting();
+        Entity vehicle = event.getEntityBeingMounted();
+        if (releasing || !event.isDismounting() || rider.level().isClientSide || vehicle == null || !vehicle.isAlive() || vehicle.isRemoved() || !rider.isAlive() || rider.isRemoved()) {
+            return;
+        }
+
+        Hold hold = HOLDS.get(rider.getId());
+        if (hold == null || hold.holder() != vehicle) {
+            return;
+        }
+
+        if (!hold.crouchOff() || !(rider instanceof Player player && player.isShiftKeyDown())) {
+            event.setCanceled(true);
+        } else {
+            CROUCHED_OFF.add(rider.getId());
+            RESYNC.add(hold.holder());
+        }
+    }
+
+    public static @Nullable Vec3 getDismountSpot(Entity vehicle, Entity passenger) {
+        return getRidingSpot(vehicle, passenger) == null && WeldQuirk.getTransportSpot(vehicle, passenger) == null ? null : passenger.position();
     }
 
     private static void syncHold(LivingEntity holder, LivingEntity target, HoldPayload payload) {
@@ -533,9 +664,16 @@ public final class MultiArms {
 
             if (hold.holder().level().getEntity(entry.getKey()) instanceof LivingEntity target) {
                 syncHold(hold.holder(), target, new HoldPayload(entry.getKey(), -1, Vec3.ZERO, HOLD_BODY));
+                if (target.getVehicle() == hold.holder()) {
+                    letGo(target);
+                }
             }
             return true;
         });
+    }
+
+    public static boolean isHeld(Entity target) {
+        return target.level().isClientSide ? CLIENT_HOLDS.containsKey(target.getId()) : HOLDS.containsKey(target.getId());
     }
 
     public static boolean isHoldPair(Entity first, Entity second) {
@@ -588,20 +726,21 @@ public final class MultiArms {
 
         double scale = Math.max(1.0D, entity.getScale());
 
-        if (!(level.getEntity(tag.getUUID(key)) instanceof LivingEntity target) || !target.isAlive() || target.distanceToSqr(entity) > HOLD_BREAK_DISTANCE * scale * scale) { // scale fixes distance check
+        if (!(level.getEntity(tag.getUUID(key)) instanceof LivingEntity target) || !target.isAlive() || target.distanceToSqr(entity) > HOLD_BREAK_DISTANCE * scale * scale) {
+            // scale fixes distance check
             return null;
         }
 
         Hold hold = HOLDS.get(target.getId());
-        if (hold != null && hold.holder() == entity && !hold.ownRules() && (target instanceof Player && target.isShiftKeyDown()
-                || isHostile(target, entity) && level.getGameTime() - hold.start() > GRAB_CONFIG.hostileHoldSeconds * 20L)) {
+        if (hold != null && hold.holder() == entity && (hold.crouchOff() && target instanceof Player && (target.isShiftKeyDown() || CROUCHED_OFF.contains(target.getId()))
+                || !hold.ownRules() && isHostile(target, entity) && level.getGameTime() - hold.start() > GRAB_CONFIG.hostileHoldSeconds * 20L)) {
             return null;
         }
 
         return target;
     }
 
-    private static boolean isHostile(LivingEntity target, LivingEntity holder) {
+    public static boolean isHostile(LivingEntity target, LivingEntity holder) {
         return target instanceof Enemy || target instanceof NeutralMob neutral && neutral.isAngryAt(holder) || target instanceof Mob mob && mob.getTarget() == holder;
     }
 
@@ -611,10 +750,19 @@ public final class MultiArms {
             return;
         }
 
-        LivingEntity target = getHeldTarget(instance, entity, key);
+        LivingEntity target = entity.level() instanceof ServerLevel level && level.getEntity(tag.getUUID(key)) instanceof LivingEntity held ? held : null;
         if (target != null) {
             target.getPersistentData().remove(HELD_BY_TAG);
             target.getPersistentData().remove(HELD_UNTIL_TAG);
+            Hold hold = HOLDS.get(target.getId());
+            CROUCHED_OFF.remove(target.getId());
+            if (hold != null && hold.holder() == entity) {
+                HOLDS.remove(target.getId());
+                syncHold(entity, target, new HoldPayload(target.getId(), -1, Vec3.ZERO, HOLD_BODY));
+            }
+            if (target.getVehicle() == entity) {
+                letGo(target);
+            }
         }
 
         tag.remove(key);
@@ -674,42 +822,9 @@ public final class MultiArms {
         }
     }
 
-    // used by InventoryMenuMixin
-    public static List<Slot> createSlots(Player owner) {
-        OffhandContainer container = new OffhandContainer(owner);
-        List<Slot> slots = new ArrayList<>();
-        for (int slot = 0; slot < SLOTS; slot++) {
-            slots.add(new OffhandSlot(container, owner, slot, INVENTORY_POSITIONS[slot][0], INVENTORY_POSITIONS[slot][1]));
-        }
-
-        return slots;
-    }
-
-    // used by CreativeInventoryMixin
-    public static int getCreativeX(Slot slot, int x) {
-        return slot instanceof OffhandSlot ? CREATIVE_POSITIONS[slot.getContainerSlot()][0] : x;
-    }
-
-    public static int getCreativeY(Slot slot, int y) {
-        return slot instanceof OffhandSlot ? CREATIVE_POSITIONS[slot.getContainerSlot()][1] : y;
-    }
-
-    // used by ServerGamePacketListenerMixin
-    public static boolean handleCreativeSlot(ServerPlayer player, int slotNum, ItemStack stack) {
-        if (!player.gameMode.isCreative() || slotNum < 0 || slotNum >= player.inventoryMenu.slots.size()) {
-            return false;
-        }
-
-        if (!(player.inventoryMenu.getSlot(slotNum) instanceof OffhandSlot slot)) {
-            return false;
-        }
-
-        if (slot.isActive() && (stack.isEmpty() || stack.getCount() <= stack.getMaxStackSize())) {
-            slot.setByPlayer(stack);
-            player.inventoryMenu.broadcastChanges();
-        }
-
-        return true;
+    // Arm slots menu, offhand slots just werent reliable
+    public static void openArmSlots(ServerPlayer player, Component title) {
+        player.openMenu(new SimpleMenuProvider((id, inventory, opener) -> new ArmSlotsMenu(id, inventory, new OffhandContainer(player)), title));
     }
 
     // Reads the player's storage
@@ -777,19 +892,80 @@ public final class MultiArms {
             this.owner = owner;
         }
 
-        @Override
-        public boolean isActive() {
+        public boolean hasArm() {
             return getContainerSlot() < getSlotCount(this.owner);
         }
 
         @Override
         public boolean mayPlace(ItemStack stack) {
-            return this.isActive();
+            return this.hasArm();
         }
 
         @Override
         public Pair<ResourceLocation, ResourceLocation> getNoItemIcon() {
             return Pair.of(InventoryMenu.BLOCK_ATLAS, InventoryMenu.EMPTY_ARMOR_SLOT_SHIELD);
+        }
+    }
+
+    public static class ArmSlotsMenu extends AbstractContainerMenu {
+        public static final int SLOT_X = 53;
+        public static final int SLOT_Y = 20;
+
+        private final Container offhands;
+        private final Player owner;
+
+        public ArmSlotsMenu(int containerId, Inventory inventory) {
+            this(containerId, inventory, new SimpleContainer(SLOTS));
+        }
+
+        public ArmSlotsMenu(int containerId, Inventory inventory, Container offhands) {
+            super(MENU, containerId);
+            checkContainerSize(offhands, SLOTS);
+            this.offhands = offhands;
+            this.owner = inventory.player;
+            for (int slot = 0; slot < SLOTS; slot++) {
+                addSlot(new OffhandSlot(offhands, this.owner, slot, SLOT_X + slot * 18, SLOT_Y));
+            }
+
+            for (int row = 0; row < 3; row++) {
+                for (int column = 0; column < 9; column++) {
+                    addSlot(new Slot(inventory, column + row * 9 + 9, 8 + column * 18, row * 18 + 51));
+                }
+            }
+
+            for (int column = 0; column < 9; column++) {
+                addSlot(new Slot(inventory, column, 8 + column * 18, 109));
+            }
+        }
+
+        @Override
+        public ItemStack quickMoveStack(Player player, int index) {
+            Slot slot = this.slots.get(index);
+            if (!slot.hasItem()) {
+                return ItemStack.EMPTY;
+            }
+
+            ItemStack stack = slot.getItem();
+            ItemStack moved = stack.copy();
+            if (index < SLOTS) {
+                if (!moveItemStackTo(stack, SLOTS, this.slots.size(), true)) {
+                    return ItemStack.EMPTY;
+                }
+            } else if (!moveItemStackTo(stack, 0, Math.min(SLOTS, getSlotCount(player)), false)) {
+                return ItemStack.EMPTY;
+            }
+
+            if (stack.isEmpty()) {
+                slot.setByPlayer(ItemStack.EMPTY);
+            } else {
+                slot.setChanged();
+            }
+            return moved;
+        }
+
+        @Override
+        public boolean stillValid(Player player) {
+            return player == this.owner && player.isAlive();
         }
     }
 
@@ -825,7 +1001,7 @@ public final class MultiArms {
         syncExtraOffhands(player);
     }
 
-    // Send the items to nearby players so they show in the extra hands
+    // Send the items to the user and nearby players so they show in the extra hands
     private static void syncExtraOffhands(Player player) {
         OffhandStorage storage = player.getData(OFFHANDS);
         boolean changed = false;
@@ -837,7 +1013,7 @@ public final class MultiArms {
         }
 
         if (changed) {
-            PacketDistributor.sendToPlayersTrackingEntity(player, OffhandSyncPayload.of(player));
+            PacketDistributor.sendToPlayersTrackingEntityAndSelf(player, OffhandSyncPayload.of(player));
         }
     }
 

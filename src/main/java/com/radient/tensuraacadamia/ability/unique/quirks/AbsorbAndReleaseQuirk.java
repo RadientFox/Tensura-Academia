@@ -3,6 +3,7 @@ package com.radient.tensuraacadamia.ability.unique.quirks;
 import com.radient.tensuraacadamia.TensuraAcadamia;
 import com.radient.tensuraacadamia.config.skills.QuirkSkillsConfig;
 import com.radient.tensuraacadamia.regestry.skills.QuirkSkills;
+import com.radient.tensuraacadamia.util.HitRules;
 import io.github.manasmods.manascore.config.ConfigRegistry;
 import io.github.manasmods.manascore.network.api.util.Changeable;
 import io.github.manasmods.manascore.skill.api.ManasSkillInstance;
@@ -333,7 +334,7 @@ public class AbsorbAndReleaseQuirk extends Skill {
         boolean mastered = instance.isMastered(entity);
         double radius = mastered ? CONFIG.releaseRadiusMastered : CONFIG.releaseRadius;
         List<LivingEntity> targets = level.getEntitiesOfClass(LivingEntity.class, entity.getBoundingBox().inflate(radius),
-                target -> target != entity && target.isAlive() && !entity.isAlliedTo(target) && target.distanceTo(entity) <= radius);
+                target -> target != entity && target.isAlive() && HitRules.canHit(entity, target) && target.distanceTo(entity) <= radius);
 
         // Split between all targets
         for (int i = 0; i < stored.size(); i++) {
