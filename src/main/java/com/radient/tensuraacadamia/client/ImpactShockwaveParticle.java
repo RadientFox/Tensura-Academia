@@ -3,6 +3,7 @@ package com.radient.tensuraacadamia.client;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.radient.tensuraacadamia.TensuraAcadamia;
 import com.radient.tensuraacadamia.ability.unique.quirks.ImpactRecoilQuirk;
+import com.radient.tensuraacadamia.ability.unique.quirks.TongueTankQuirk;
 import net.minecraft.client.Camera;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
@@ -20,19 +21,22 @@ import net.neoforged.neoforge.client.event.RegisterParticleProvidersEvent;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
-// Impact Recoil shockwave
+// Impact Recoil and Tongue Tank's shockwave
 @EventBusSubscriber(modid = TensuraAcadamia.MODID, value = Dist.CLIENT)
 public class ImpactShockwaveParticle extends TextureSheetParticle {
 
     private static final float SIZE = 1.5F;
     private static final float START_ALPHA = 0.75F;
+    private static final float FIERY_RED = 1.0F;
+    private static final float FIERY_GREEN = 0.45F;
+    private static final float FIERY_BLUE = 0.1F;
 
     private final SpriteSet sprites;
     private final Quaternionf front;
     private final Quaternionf back;
     private final float scale;
 
-    private ImpactShockwaveParticle(ClientLevel level, double x, double y, double z, double normalX, double normalY, double normalZ, SpriteSet sprites) {
+    private ImpactShockwaveParticle(ClientLevel level, double x, double y, double z, double normalX, double normalY, double normalZ, SpriteSet sprites, float red, float green, float blue) {
         super(level, x, y, z);
         this.sprites = sprites;
         this.lifetime = 10;
@@ -41,9 +45,9 @@ public class ImpactShockwaveParticle extends TextureSheetParticle {
         this.xd = 0.0D;
         this.yd = 0.0D;
         this.zd = 0.0D;
-        this.rCol = 1.0F;
-        this.gCol = 1.0F;
-        this.bCol = 1.0F;
+        this.rCol = red;
+        this.gCol = green;
+        this.bCol = blue;
         this.front = new Quaternionf().rotationTo(0.0F, 0.0F, 1.0F, (float) normalX, (float) normalY, (float) normalZ);
         this.back = new Quaternionf(this.front).rotateY((float) Math.PI);
         float length = (float) Math.sqrt(normalX * normalX + normalY * normalY + normalZ * normalZ);
@@ -100,16 +104,21 @@ public class ImpactShockwaveParticle extends TextureSheetParticle {
         return ParticleRenderType.PARTICLE_SHEET_TRANSLUCENT;
     }
 
-    public record Provider(SpriteSet sprites) implements ParticleProvider<SimpleParticleType> {
+    public record Provider(SpriteSet sprites, float red, float green, float blue) implements ParticleProvider<SimpleParticleType> {
+        public Provider(SpriteSet sprites) {
+            this(sprites, 1.0F, 1.0F, 1.0F);
+        }
+
         @Override
         public Particle createParticle(SimpleParticleType type, ClientLevel level, double x, double y, double z, double normalX, double normalY, double normalZ) {
-            return new ImpactShockwaveParticle(level, x, y, z, normalX, normalY, normalZ, this.sprites);
+            return new ImpactShockwaveParticle(level, x, y, z, normalX, normalY, normalZ, this.sprites, this.red, this.green, this.blue);
         }
     }
 
     @SubscribeEvent
     public static void registerProvider(RegisterParticleProvidersEvent event) {
         event.registerSpriteSet(ImpactRecoilQuirk.IMPACT_SHOCKWAVE, Provider::new);
+        event.registerSpriteSet(TongueTankQuirk.FIERY_SHOCKWAVE, sprites -> new Provider(sprites, FIERY_RED, FIERY_GREEN, FIERY_BLUE));
     }
 
 }

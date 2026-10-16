@@ -1,6 +1,7 @@
 package com.radient.tensuraacadamia.entity;
 
 import com.radient.tensuraacadamia.TensuraAcadamia;
+import com.radient.tensuraacadamia.util.HitRules;
 import io.github.manasmods.manascore.network.api.util.Changeable;
 import io.github.manasmods.manascore.skill.api.ManasSkillInstance;
 import io.github.manasmods.tensura.ability.magic.Element;
@@ -228,11 +229,11 @@ public class TornadoEntity extends Entity implements GeoEntity {
             return false;
         }
 
-        if (entity instanceof Player player && (player.isCreative() || this.owner != null && player.isAlliedTo(this.owner))) {
+        if (entity instanceof Player player && player.isCreative()) {
             return false;
         }
 
-        return this.owner == null || !this.owner.isAlliedTo(entity);
+        return HitRules.canHit(this.owner, entity);
     }
 
     @Override

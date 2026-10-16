@@ -6,6 +6,7 @@ import com.radient.tensuraacadamia.mixin.ServerGamePacketListenerAccessor;
 import com.radient.tensuraacadamia.regestry.skills.QuirkSkills;
 import com.radient.tensuraacadamia.util.AdditiveBoost;
 import com.radient.tensuraacadamia.util.GroundBlocks;
+import com.radient.tensuraacadamia.util.HitRules;
 import io.github.manasmods.manascore.config.ConfigRegistry;
 import io.github.manasmods.manascore.skill.api.ManasSkillInstance;
 import io.github.manasmods.manascore.skill.api.SkillAPI;
@@ -375,7 +376,7 @@ public class JetQuirk extends Skill {
         Vec3 aim = entity.getLookAngle().add(0.0D, CONFIG.boostLift, 0.0D).normalize();
         double speed = MultiArms.getLaunchVelocity(new Vec3(aim.x, Math.max(aim.y, CONFIG.boostLift), aim.z), distance).length();
         speed = Math.min(CONFIG.maxBoostSpeed / 20.0D, speed + tag.getInt(CHAIN_TAG) * (mastered ? CONFIG.chainSpeedMastered : CONFIG.chainSpeed) / 20.0D);
-        Vec3 velocity = aim.scale(speed);
+        Vec3 velocity = aim.scale(speed * getSpeedMultiplier(entity));
 
         List.copyOf(FLIGHTS).stream().filter(flight -> flight.owner == entity).forEach(flight -> land(flight, false));
         FLIGHTS.removeIf(flight -> flight.owner == entity);
@@ -398,6 +399,11 @@ public class JetQuirk extends Skill {
         level.sendParticles(ParticleTypes.CLOUD, entity.getX(), entity.getY() + 0.1D, entity.getZ(), 10, 0.3D, 0.05D, 0.3D, 0.05D);
         playSound(level, entity, SoundEvents.BREEZE_JUMP, 1.0F, 1.2F);
         instance.addMasteryPoint(entity);
+    }
+
+    // Multiplier makes every jet faster
+    private static double getSpeedMultiplier(LivingEntity entity) {
+        return MultiplierQuirk.getOutput(entity);
     }
 
     // Players move themselves, so they're sent the push
@@ -475,7 +481,7 @@ public class JetQuirk extends Skill {
         LivingEntity owner = boost.owner;
         Vec3 heading = boost.motion.lengthSqr() > 1.0E-4D ? boost.motion.normalize() : boost.direction;
         Vec3 bounce = new Vec3(normal.x != 0.0D ? -heading.x : heading.x, normal.y != 0.0D ? -heading.y : heading.y, normal.z != 0.0D ? -heading.z : heading.z);
-        launch(owner, bounce.add(normal.scale(0.5D)).normalize().scale(CONFIG.pushOffSpeed / 20.0D));
+        launch(owner, bounce.add(normal.scale(0.5D)).normalize().scale(CONFIG.pushOffSpeed / 20.0D * getSpeedMultiplier(owner)));
 
         ManasSkillInstance instance = boost.instance;
         CompoundTag tag = instance.getOrCreateTag();
@@ -504,7 +510,7 @@ public class JetQuirk extends Skill {
             return;
         }
 
-        Flight flight = new Flight(instance, entity, Kind.KICK, level.getGameTime(), RUSH_TICKS, toward(entity, target), CONFIG.rushSpeed / 20.0D);
+        Flight flight = new Flight(instance, entity, Kind.KICK, level.getGameTime(), RUSH_TICKS, toward(entity, target), CONFIG.rushSpeed / 20.0D * getSpeedMultiplier(entity));
         flight.target = target;
         fly(flight);
         playSound(level, entity, SoundEvents.BREEZE_SHOOT, 1.0F, 1.1F);
@@ -544,8 +550,8 @@ public class JetQuirk extends Skill {
             return;
         }
 
-        if (!MultiArms.canGrab(target)) {
-            fail(entity, Component.translatable("tracadamia.skill.arms.boss"));
+        if (!MultiArms.canGrab(entity, target)) {
+            fail(entity, Component.translatable(MultiArms.getGrabFail(target)));
             return;
         }
 
@@ -561,7 +567,7 @@ public class JetQuirk extends Skill {
         target.stopRiding();
         instance.getOrCreateTag().putUUID(PUSH_TAG, target.getUUID());
         instance.markDirty();
-        Flight flight = new Flight(instance, entity, Kind.PUSH, level.getGameTime(), CONFIG.pushSeconds * 20, getPushDirection(entity), CONFIG.pushSpeed / 20.0D);
+        Flight flight = new Flight(instance, entity, Kind.PUSH, level.getGameTime(), CONFIG.pushSeconds * 20, getPushDirection(entity), CONFIG.pushSpeed / 20.0D * getSpeedMultiplier(entity));
         flight.target = target;
         fly(flight);
         MultiArms.holdAt(entity, target, getPushOffset(entity, target), MultiArms.HOLD_BODY, true);
@@ -666,7 +672,8 @@ public class JetQuirk extends Skill {
 
         COUNTERS.remove(entity);
         ManasSkillInstance instance = jet.get();
-        Flight flight = new Flight(instance, entity, Kind.RISE, level.getGameTime(), Mth.ceil(CONFIG.counterHeight / RISE_SPEED), new Vec3(0.0D, 1.0D, 0.0D), RISE_SPEED);
+        double rise = RISE_SPEED * getSpeedMultiplier(entity);
+        Flight flight = new Flight(instance, entity, Kind.RISE, level.getGameTime(), Mth.ceil(CONFIG.counterHeight / rise), new Vec3(0.0D, 1.0D, 0.0D), rise);
         flight.target = attacker;
         fly(flight);
         level.sendParticles(ParticleTypes.CLOUD, entity.getX(), entity.getY(), entity.getZ(), 16, 0.4D, 0.1D, 0.4D, 0.1D);
@@ -704,7 +711,7 @@ public class JetQuirk extends Skill {
 
         Vec3 forward = Vec3.directionFromRotation(0.0F, entity.getYRot());
         Vec3 right = new Vec3(-forward.z, 0.0D, forward.x);
-        double speed = CONFIG.dodgeSpeed / 20.0D;
+        double speed = CONFIG.dodgeSpeed / 20.0D * getSpeedMultiplier(entity);
         double distance = instance.isMastered(entity) ? CONFIG.dodgeDistanceMastered : CONFIG.dodgeDistance;
         fly(new Flight(instance, entity, Kind.DODGE, level.getGameTime(), Mth.ceil(distance / speed), entity.isShiftKeyDown() ? right : right.reverse(), speed));
         level.sendParticles(ParticleTypes.CLOUD, entity.getX(), entity.getY() + 0.1D, entity.getZ(), 8, 0.2D, 0.05D, 0.2D, 0.05D);
@@ -749,7 +756,7 @@ public class JetQuirk extends Skill {
 
     private static @Nullable LivingEntity findCrash(ServerLevel level, LivingEntity owner, Vec3 motion, @Nullable LivingEntity held) {
         AABB sweep = owner.getBoundingBox().inflate(0.2D).expandTowards(motion);
-        return level.getEntitiesOfClass(LivingEntity.class, sweep, target -> target != owner && target != held && target.isAlive() && !target.isSpectator() && !MultiArms.isHoldPair(owner, target))
+        return level.getEntitiesOfClass(LivingEntity.class, sweep, target -> target != owner && target != held && target.isAlive() && !target.isSpectator() && !MultiArms.isHoldPair(owner, target) && HitRules.canHit(owner, target))
                 .stream().min(Comparator.comparingDouble(target -> target.distanceToSqr(owner))).orElse(null);
     }
 
@@ -824,7 +831,7 @@ public class JetQuirk extends Skill {
                 if (age >= flight.ticks || ceiling) {
                     flight.kind = Kind.DIVE;
                     flight.start = level.getGameTime();
-                    flight.speed = CONFIG.rushSpeed * 1.5D / 20.0D;
+                    flight.speed = CONFIG.rushSpeed * 1.5D / 20.0D * getSpeedMultiplier(owner);
                     if (target != null) {
                         flight.direction = toward(owner, target);
                     }
@@ -844,7 +851,7 @@ public class JetQuirk extends Skill {
     private static void dodgeBounce(ServerLevel level, Flight flight, Vec3 normal) {
         LivingEntity owner = flight.owner;
         Vec3 away = new Vec3(normal.x, 0.0D, normal.z).normalize();
-        launch(owner, away.scale(CONFIG.dodgeBounceSpeed / 20.0D).add(0.0D, CONFIG.dodgeBounceUp / 20.0D, 0.0D));
+        launch(owner, away.scale(CONFIG.dodgeBounceSpeed / 20.0D * getSpeedMultiplier(owner)).add(0.0D, CONFIG.dodgeBounceUp / 20.0D, 0.0D));
         Vec3 spot = owner.position().add(0.0D, owner.getBbHeight() * 0.5D, 0.0D).subtract(away.scale(owner.getBbWidth() * 0.5D));
         level.sendParticles(ParticleTypes.CLOUD, spot.x, spot.y, spot.z, 10, 0.2D, 0.3D, 0.2D, 0.05D);
         playSound(level, owner, SoundEvents.WIND_CHARGE_BURST.value(), 0.5F, 1.6F);
@@ -892,7 +899,7 @@ public class JetQuirk extends Skill {
     private static void shockwave(ServerLevel level, LivingEntity owner, LivingEntity target, double radius) {
         Vec3 point = target.getBoundingBox().getCenter();
         for (LivingEntity other : level.getEntitiesOfClass(LivingEntity.class, new AABB(point, point).inflate(radius),
-                other -> other != owner && other != target && other.isAlive() && !other.isSpectator() && other.distanceToSqr(point) <= radius * radius)) {
+                other -> other != owner && other != target && other.isAlive() && !other.isSpectator() && HitRules.canHit(owner, other) && other.distanceToSqr(point) <= radius * radius)) {
             Vec3 away = other.position().subtract(point);
             other.knockback(0.8D, -away.x, -away.z);
             other.hurtMarked = true;

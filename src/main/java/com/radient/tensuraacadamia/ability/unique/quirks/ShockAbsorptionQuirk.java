@@ -1,7 +1,9 @@
 package com.radient.tensuraacadamia.ability.unique.quirks;
 
+import com.radient.tensuraacadamia.TensuraAcadamia;
 import com.radient.tensuraacadamia.config.skills.QuirkSkillsConfig;
 import com.radient.tensuraacadamia.util.DamageReduction;
+import com.radient.tensuraacadamia.util.Modifiers;
 import io.github.manasmods.manascore.config.ConfigRegistry;
 import io.github.manasmods.manascore.network.api.util.Changeable;
 import io.github.manasmods.manascore.skill.api.ManasSkillInstance;
@@ -9,11 +11,15 @@ import io.github.manasmods.tensura.ability.skill.Skill;
 import io.github.manasmods.tensura.damage.TensuraDamageHelper;
 import io.github.manasmods.tensura.util.EnergyHelper;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.phys.Vec3;
 
 public class ShockAbsorptionQuirk extends Skill {
@@ -21,6 +27,8 @@ public class ShockAbsorptionQuirk extends Skill {
     private static final QuirkSkillsConfig.ShockAbsorption CONFIG = ConfigRegistry.getConfig(QuirkSkillsConfig.class).ShockAbsorption;
 
     private static final double SHOCKWAVE_SCALE = 1.0D / 3.0D;
+    private static final String REBOUND_TAG = "rebound";
+    private static final ResourceLocation REBOUND = ResourceLocation.fromNamespaceAndPath(TensuraAcadamia.MODID, "rebound_attack");
 
     public ShockAbsorptionQuirk() {
         super(Skill.SkillType.UNIQUE);
@@ -50,12 +58,29 @@ public class ShockAbsorptionQuirk extends Skill {
     }
 
     @Override
+    public void onToggleOff(ManasSkillInstance instance, LivingEntity entity) {
+        setRebound(instance, entity, 0.0D);
+    }
+
+    @Override
+    public void onForgetSkill(ManasSkillInstance instance, LivingEntity entity) {
+        super.onForgetSkill(instance, entity);
+        setRebound(instance, entity, 0.0D);
+    }
+
+    @Override
+    public void onRespawn(ManasSkillInstance instance, ServerPlayer owner, boolean conqueredEnd) {
+        setRebound(instance, owner, 0.0D);
+    }
+
+    @Override
     public boolean canTick(ManasSkillInstance instance, LivingEntity entity) {
         return instance.isToggled();
     }
 
     @Override
     public void onTick(ManasSkillInstance instance, LivingEntity entity) {
+        Modifiers.set(entity, Attributes.ATTACK_DAMAGE, REBOUND, getRebound(instance), AttributeModifier.Operation.ADD_VALUE);
         CompoundTag tag = instance.getOrCreateTag();
         int time = tag.getInt("activatedTimes");
         if (time % BASE_CONFIG.Mastery.masteryActivateTime == 0) {
@@ -71,8 +96,12 @@ public class ShockAbsorptionQuirk extends Skill {
             return true;
         }
 
-        double reduction = instance.isMastered(owner) ? CONFIG.damageReductionMastered : CONFIG.damageReduction;
+        boolean mastered = instance.isMastered(owner);
+        double reduction = mastered ? CONFIG.damageReductionMastered : CONFIG.damageReduction;
         amount.set(DamageReduction.reduce(owner, source, amount.get(), reduction));
+
+        // Rebound Attack
+        setRebound(instance, owner, amount.get() * (mastered ? CONFIG.reboundShareMastered : CONFIG.reboundShare));
         if (owner.level() instanceof ServerLevel level) {
             spawnShockwave(level, owner, source.getEntity());
         }
@@ -82,6 +111,17 @@ public class ShockAbsorptionQuirk extends Skill {
         }
 
         return true;
+    }
+
+    public static double getRebound(ManasSkillInstance instance) {
+        CompoundTag tag = instance.getTag();
+        return tag == null ? 0.0D : tag.getDouble(REBOUND_TAG);
+    }
+
+    private static void setRebound(ManasSkillInstance instance, LivingEntity entity, double rebound) {
+        instance.getOrCreateTag().putDouble(REBOUND_TAG, rebound);
+        instance.markDirty();
+        Modifiers.set(entity, Attributes.ATTACK_DAMAGE, REBOUND, rebound, AttributeModifier.Operation.ADD_VALUE);
     }
 
     private static void spawnShockwave(ServerLevel level, LivingEntity owner, Entity attacker) {

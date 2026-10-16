@@ -8,7 +8,6 @@ import com.radient.tensuraacadamia.ability.unique.quirks.MultiArms;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
-import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.PlayerModel;
 import net.minecraft.client.model.geom.ModelPart;
@@ -20,8 +19,11 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.resources.PlayerSkin;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
@@ -31,7 +33,7 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
-import net.neoforged.neoforge.client.event.ContainerScreenEvent;
+import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
@@ -72,16 +74,67 @@ public class MultiArmsClient {
             target.yOld = before.y;
             target.zOld = before.z;
             target.setDeltaMovement(Vec3.ZERO);
-            if (hold.frame() == MultiArms.HOLD_BODY) {
-                target.yBodyRotO = holder.yBodyRotO;
-                target.setYBodyRot(holder.yBodyRot);
-            }
+
+            // The body turns with the head
+            target.yBodyRotO = target.yHeadRotO;
+            target.setYBodyRot(target.getYHeadRot());
         });
     }
 
     @SubscribeEvent
     public static void onLoggingOut(ClientPlayerNetworkEvent.LoggingOut event) {
         MultiArms.getClientHolds().clear();
+    }
+
+    @SubscribeEvent
+    public static void onRegisterScreens(RegisterMenuScreensEvent event) {
+        event.register(MultiArms.MENU, ArmSlotsScreen::new);
+    }
+
+    // Slots for arms that aren't there are shaded
+    public static class ArmSlotsScreen extends AbstractContainerScreen<MultiArms.ArmSlotsMenu> {
+
+        private static final ResourceLocation HOPPER = ResourceLocation.withDefaultNamespace("textures/gui/container/hopper.png");
+        private static final int BACKGROUND = 0xFFC6C6C6;
+        private static final int NO_ARM = 0x60000000;
+
+        public ArmSlotsScreen(MultiArms.ArmSlotsMenu menu, Inventory inventory, Component title) {
+            super(menu, inventory, title);
+            this.imageHeight = 133;
+            this.inventoryLabelY = this.imageHeight - 94;
+        }
+
+        @Override
+        public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+            super.render(graphics, mouseX, mouseY, partialTick);
+            if (this.hoveredSlot instanceof MultiArms.OffhandSlot offhand && !offhand.hasArm() && !offhand.hasItem()) {
+                graphics.renderTooltip(this.font, Component.translatable("tracadamia.skill.arm_slots.no_arm"), mouseX, mouseY);
+            } else {
+                this.renderTooltip(graphics, mouseX, mouseY);
+            }
+        }
+
+        @Override
+        protected void renderBg(GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
+            int x = this.leftPos;
+            int y = this.topPos;
+            graphics.blit(HOPPER, x, y, 0, 0, this.imageWidth, this.imageHeight);
+            graphics.fill(x + 43, y + 19, x + 133, y + 37, BACKGROUND);
+
+            for (Slot slot : this.menu.slots) {
+                if (!(slot instanceof MultiArms.OffhandSlot offhand)) {
+                    continue;
+                }
+
+                int slotX = x + slot.x - 1;
+                int slotY = y + slot.y - 1;
+                graphics.blit(HOPPER, slotX, slotY, 43, 19, 18, 18);
+                if (!offhand.hasArm()) {
+                    graphics.fill(slotX + 1, slotY + 1, slotX + 17, slotY + 17, NO_ARM);
+                }
+            }
+        }
+
     }
 
     public static void poseModel(PlayerModel<?> model, LivingEntity entity, float ageInTicks, float netHeadYaw, float headPitch) {
@@ -92,29 +145,6 @@ public class MultiArmsClient {
         if (DupliArmsClient.poseMainArm(model, player, ageInTicks, netHeadYaw, headPitch)) {
             model.rightSleeve.copyFrom(model.rightArm);
         }
-    }
-
-    // Extra offhand slot in the survival and creative inventory
-    @SubscribeEvent
-    public static void onInventoryBackground(ContainerScreenEvent.Render.Background event) {
-        AbstractContainerScreen<?> screen = event.getContainerScreen();
-        if (screen instanceof CreativeModeInventoryScreen creative && !creative.isInventoryOpen()) {
-            return;
-        }
-
-        for (Slot slot : screen.getMenu().slots) {
-            if (slot.container instanceof MultiArms.OffhandContainer && slot.isActive()) {
-                drawSlotFrame(event.getGuiGraphics(), screen.getGuiLeft() + slot.x - 1, screen.getGuiTop() + slot.y - 1);
-            }
-        }
-    }
-
-    private static void drawSlotFrame(GuiGraphics graphics, int x, int y) {
-        graphics.fill(x, y, x + 18, y + 18, 0xFF8B8B8B);
-        graphics.fill(x, y, x + 17, y + 1, 0xFF373737);
-        graphics.fill(x, y, x + 1, y + 17, 0xFF373737);
-        graphics.fill(x + 1, y + 17, x + 18, y + 18, 0xFFFFFFFF);
-        graphics.fill(x + 17, y + 1, x + 18, y + 18, 0xFFFFFFFF);
     }
 
     // Vanilla arm poses

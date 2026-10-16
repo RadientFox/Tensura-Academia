@@ -5,6 +5,7 @@ import com.radient.tensuraacadamia.config.skills.QuirkSkillsConfig;
 import com.radient.tensuraacadamia.entity.TelekinesisBlockEntity;
 import com.radient.tensuraacadamia.regestry.skills.QuirkSkills;
 import com.radient.tensuraacadamia.util.GroundBlocks;
+import com.radient.tensuraacadamia.util.HitRules;
 import com.radient.tensuraacadamia.util.Modifiers;
 import com.radient.tensuraacadamia.util.SizeReach;
 import io.github.manasmods.manascore.config.ConfigRegistry;
@@ -90,6 +91,7 @@ public class GigantificationQuirk extends Skill {
     private static final double KICK_AIM_RANGE = 32.0D;
     private static final double KICK_ARC = 0.5D;
     private static final double KICK_REACH = 2.0D;
+    private static final double KICK_LIFT = 0.6D;
     private static final double SWAT_ARC = 0.0D;
     private static final double DEBRIS_GRAVITY = 0.08D;
     private static final int DEBRIS_TICKS = 200;
@@ -431,7 +433,10 @@ public class GigantificationQuirk extends Skill {
             for (LivingEntity target : targets) {
                 hit(instance, owner, target, damage, owner instanceof Player ? DamageTypes.PLAYER_ATTACK : DamageTypes.MOB_ATTACK);
                 Vec3 away = getAway(owner, target);
-                target.setDeltaMovement(MultiArms.getLaunchVelocity(away.add(0.0D, 0.35D, 0.0D), CONFIG.kickKnockback + CONFIG.kickKnockbackPerSize * gained));
+                // Off the ground first, ground friction would eat most of the launch
+                target.setOnGround(false);
+                target.setDeltaMovement(MultiArms.getLaunchVelocity(away.add(0.0D, KICK_LIFT, 0.0D), CONFIG.kickKnockback + CONFIG.kickKnockbackPerSize * gained));
+                target.hasImpulse = true;
                 target.hurtMarked = true;
                 Vec3 point = target.getBoundingBox().getCenter();
                 level.sendParticles(ImpactRecoilQuirk.IMPACT_SHOCKWAVE, point.x, point.y, point.z, 0, away.x, 0.0D, away.z, 1.0D + gained * 0.3D);
@@ -535,7 +540,7 @@ public class GigantificationQuirk extends Skill {
         double half = (CONFIG.stompSize + CONFIG.stompSizePerSize * gained) * 0.5D;
         double shock = half * CONFIG.stompShockwaveScale;
         for (LivingEntity target : level.getEntitiesOfClass(LivingEntity.class, owner.getBoundingBox().inflate(shock, 3.0D, shock),
-                target -> target != owner && target.isAlive() && !target.isSpectator() && !MultiArms.isHoldPair(owner, target))) {
+                target -> target != owner && target.isAlive() && !target.isSpectator() && !MultiArms.isHoldPair(owner, target) && HitRules.canHit(owner, target))) {
             double dx = Math.abs(target.getX() - owner.getX());
             double dz = Math.abs(target.getZ() - owner.getZ());
             if (dx <= half && dz <= half) {
@@ -598,7 +603,7 @@ public class GigantificationQuirk extends Skill {
         Vec3 from = block.position().add(0.0D, block.getBbHeight() * 0.5D, 0.0D);
         Vec3 to = from.add(debris.velocity);
         AABB sweep = block.getBoundingBox().expandTowards(debris.velocity).inflate(0.1D);
-        for (LivingEntity target : level.getEntitiesOfClass(LivingEntity.class, sweep, target -> target != debris.owner && target.isAlive() && !target.isSpectator() && !debris.hit.contains(target))) {
+        for (LivingEntity target : level.getEntitiesOfClass(LivingEntity.class, sweep, target -> target != debris.owner && target.isAlive() && !target.isSpectator() && !debris.hit.contains(target) && HitRules.canHit(debris.owner, target))) {
             debris.hit.add(target);
             boolean mastered = debris.instance.isMastered(debris.owner);
             double damage = debris.kicked
@@ -667,8 +672,8 @@ public class GigantificationQuirk extends Skill {
 
         LivingEntity target = MultiArms.getNearbyTarget(entity, getReach(instance, entity));
         if (target != null) {
-            if (!MultiArms.canGrab(target)) {
-                fail(entity, Component.translatable("tracadamia.skill.arms.boss"));
+            if (!MultiArms.canGrab(entity, target)) {
+                fail(entity, Component.translatable(MultiArms.getGrabFail(target)));
                 return;
             }
 
@@ -806,7 +811,7 @@ public class GigantificationQuirk extends Skill {
     private static List<LivingEntity> getInFront(ServerLevel level, LivingEntity owner, double reach, double arc, double minY, double maxY) {
         Vec3 forward = Vec3.directionFromRotation(0.0F, owner.getYRot());
         AABB area = owner.getBoundingBox().inflate(reach, 0.0D, reach).setMinY(minY).setMaxY(maxY);
-        return level.getEntitiesOfClass(LivingEntity.class, area, target -> target != owner && target.isAlive() && !target.isSpectator() && !MultiArms.isHoldPair(owner, target)).stream()
+        return level.getEntitiesOfClass(LivingEntity.class, area, target -> target != owner && target.isAlive() && !target.isSpectator() && !MultiArms.isHoldPair(owner, target) && HitRules.canHit(owner, target)).stream()
                 .filter(target -> {
                     Vec3 flat = target.position().subtract(owner.position()).multiply(1.0D, 0.0D, 1.0D);
                     return flat.length() - target.getBbWidth() * 0.5D <= reach && (flat.lengthSqr() < 1.0E-4D || flat.normalize().dot(forward) >= arc);
@@ -836,8 +841,8 @@ public class GigantificationQuirk extends Skill {
                 return false;
             }
 
-            if (!MultiArms.canGrab(target)) {
-                fail(entity, Component.translatable("tracadamia.skill.arms.boss"));
+            if (!MultiArms.canGrab(entity, target)) {
+                fail(entity, Component.translatable(MultiArms.getGrabFail(target)));
                 return false;
             }
 

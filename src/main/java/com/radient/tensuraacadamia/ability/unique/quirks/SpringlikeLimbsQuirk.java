@@ -34,6 +34,7 @@ import net.neoforged.neoforge.event.entity.living.LivingEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -52,6 +53,8 @@ public class SpringlikeLimbsQuirk extends Skill {
     private static final String SPRING_PUNCH_TAG = "springPunch";
     private static final String SUPER_JUMP_TAG = "superJump";
     private static final String SUPER_JUMP_USED_TAG = "superJumpUsed";
+    private static final List<String> ENERGY_TAGS = List.of(ARM_ENERGY_TAG, LEG_ENERGY_TAG);
+    private static final int ENERGY_TICKS = 20;
 
     private static final ResourceLocation SUPER_JUMP_ID = ResourceLocation.fromNamespaceAndPath("tracadamia", "springlike_limbs_super_jump");
     private static final ResourceLocation SPRING_PUNCH_ID = ResourceLocation.fromNamespaceAndPath("tracadamia", "springlike_limbs_spring_punch");
@@ -233,6 +236,27 @@ public class SpringlikeLimbsQuirk extends Skill {
         return true;
     }
 
+    // Changed so body parts build up energy on mastery
+    private static void generateEnergy(LivingEntity entity, ManasSkillInstance instance) {
+        if (entity.tickCount % ENERGY_TICKS != 0) {
+            return;
+        }
+
+        boolean changed = false;
+        for (String key : ENERGY_TAGS) {
+            double max = getMaxEnergy(instance, entity, key);
+            double energy = getEnergy(instance, key);
+            if (energy < max) {
+                instance.getOrCreateTag().putDouble(key, Math.min(max, energy + CONFIG.energyPerSecondMastered));
+                changed = true;
+            }
+        }
+
+        if (changed) {
+            instance.markDirty();
+        }
+    }
+
     // Store Legs crouching
     @SubscribeEvent
     public static void onPlayerTick(PlayerTickEvent.Post event) {
@@ -240,6 +264,8 @@ public class SpringlikeLimbsQuirk extends Skill {
         if (player.level().isClientSide) {
             return;
         }
+
+        getSpringlikeLimbs(player).filter(instance -> instance.isToggled() && instance.isMastered(player)).ifPresent(instance -> generateEnergy(player, instance));
 
         if (!player.isShiftKeyDown()) {
             CROUCHING.remove(player.getUUID());

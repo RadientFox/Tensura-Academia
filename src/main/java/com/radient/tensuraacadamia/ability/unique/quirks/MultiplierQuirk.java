@@ -1,8 +1,10 @@
 package com.radient.tensuraacadamia.ability.unique.quirks;
 
 import com.radient.tensuraacadamia.config.skills.QuirkSkillsConfig;
+import com.radient.tensuraacadamia.regestry.skills.QuirkSkills;
 import io.github.manasmods.manascore.config.ConfigRegistry;
 import io.github.manasmods.manascore.skill.api.ManasSkillInstance;
+import io.github.manasmods.manascore.skill.api.SkillAPI;
 import io.github.manasmods.tensura.ability.skill.Skill;
 import io.github.manasmods.tensura.util.EnergyHelper;
 import net.minecraft.ChatFormatting;
@@ -100,6 +102,17 @@ public class MultiplierQuirk extends Skill {
         CompoundTag tag = instance.getTag();
         return tag == null ? 0 : Mth.clamp(tag.getInt(LEVEL_TAG), 0, CONFIG.maxLevel);
     }
+    // boost for other quirks
+    private static double getBonus(ManasSkillInstance instance, LivingEntity entity) {
+        double perLevel = instance.isMastered(entity) ? CONFIG.multiplierPerLevelMastered : CONFIG.multiplierPerLevel;
+        return getLevel(instance) * perLevel;
+    }
+
+
+    public static double getOutput(LivingEntity entity) {
+        return SkillAPI.getSkillsFrom(entity).getSkill(QuirkSkills.MULTIPLIER.get()).filter(instance -> instance.getMastery() >= 0.0D)
+                .map(instance -> 1.0D + getBonus(instance, entity)).orElse(1.0D);
+    }
 
     // Multiplies attack damage
     private static void updateOutput(ManasSkillInstance instance, LivingEntity entity) {
@@ -108,8 +121,7 @@ public class MultiplierQuirk extends Skill {
             return;
         }
 
-        double perLevel = instance.isMastered(entity) ? CONFIG.multiplierPerLevelMastered : CONFIG.multiplierPerLevel;
-        double bonus = getLevel(instance) * perLevel;
+        double bonus = getBonus(instance, entity);
         if (bonus <= 0.0D) {
             attack.removeModifier(OUTPUT);
             return;

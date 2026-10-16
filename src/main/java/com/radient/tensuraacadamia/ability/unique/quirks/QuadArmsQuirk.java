@@ -45,6 +45,7 @@ public class QuadArmsQuirk extends Skill {
     private static final QuirkSkillsConfig.QuadArms CONFIG = ConfigRegistry.getConfig(QuirkSkillsConfig.class).QuadArms;
 
     private static final int HOLD = 0;
+    private static final int ARM_SLOTS = 1;
     private static final double TARGET_RAY_OFFSET = 1.0D;
 
     private static final int SLOTS = 2;
@@ -70,17 +71,31 @@ public class QuadArmsQuirk extends Skill {
 
     @Override
     public int getModes(ManasSkillInstance instance) {
-        return 1;
+        return 2;
+    }
+
+    @Override
+    public int nextMode(LivingEntity entity, ManasSkillInstance instance, int mode, boolean reverse) {
+        return mode == HOLD ? ARM_SLOTS : HOLD;
     }
 
     @Override
     public String getModeId(ManasSkillInstance instance, int mode) {
-        return mode == HOLD ? "quad_arms.hold" : super.getModeId(instance, mode);
+        return switch (mode) {
+            case HOLD -> "quad_arms.hold";
+            case ARM_SLOTS -> "quad_arms.arm_slots";
+            default -> super.getModeId(instance, mode);
+        };
     }
 
     @Override
     public double getAuraCost(LivingEntity entity, ManasSkillInstance instance, int mode) {
-        return CONFIG.auraCost;
+        return mode == HOLD ? CONFIG.auraCost : 0.0D;
+    }
+
+    @Override
+    public boolean canIgnoreCoolDown(ManasSkillInstance instance, LivingEntity entity, int mode) {
+        return mode == ARM_SLOTS || super.canIgnoreCoolDown(instance, entity, mode);
     }
 
     // Quad Arms
@@ -294,6 +309,14 @@ public class QuadArmsQuirk extends Skill {
 
     @Override
     public void onPressed(ManasSkillInstance instance, LivingEntity entity, int keyNumber, int mode) {
+        // Arm Slots, offhand slots just weren't reliable
+        if (mode == ARM_SLOTS) {
+            if (entity instanceof ServerPlayer player) {
+                MultiArms.openArmSlots(player, Component.translatable("tracadamia.skill.quad_arms"));
+            }
+            return;
+        }
+
         if (mode != HOLD) {
             return;
         }
@@ -308,9 +331,9 @@ public class QuadArmsQuirk extends Skill {
             return;
         }
 
-        if (!MultiArms.canGrab(target)) {
+        if (!MultiArms.canGrab(entity, target)) {
             if (entity instanceof Player player) {
-                player.displayClientMessage(Component.translatable("tracadamia.skill.arms.boss").withStyle(ChatFormatting.RED), true);
+                player.displayClientMessage(Component.translatable(MultiArms.getGrabFail(target)).withStyle(ChatFormatting.RED), true);
             }
             return;
         }
