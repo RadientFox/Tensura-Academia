@@ -578,7 +578,239 @@
   "tracadamia.skill.mode.accelerator_rings.accel": "Accel",
   "tracadamia.skill.accelerator_rings.push_on": "Push enabled",
   "tracadamia.skill.accelerator_rings.push_off": "Push disabled",
+
   "effect.tracadamia.bounce": "Bounce",
+
+  "tracadamia.skill.tripod": "Tripod",
+  "tracadamia.skill.mode.tripod.defensive_stance": "Defensive Stance",
+  "tracadamia.skill.mode.tripod.pin_and_stomp": "Pin and Stomp",
+  "tracadamia.skill.tripod.stance": "Countering physical hits for %s seconds",
+
+  "tracadamia.skill.warping": "Warping",
+  "tracadamia.skill.mode.warping.warping": "Warping",
+  "tracadamia.skill.mode.warping.goop_defense": "Goop Defense",
+  "tracadamia.skill.mode.warping.emergency_exit": "Emergency Exit",
+  "tracadamia.skill.warping.you": "You",
+  "tracadamia.skill.warping.pick_subject": "Pick who to warp",
+  "tracadamia.skill.warping.pick_destination": "Pick where to send %s",
+  "tracadamia.skill.warping.back": "Right click to pick someone else",
+  "tracadamia.skill.warping.pick_goop": "Pick who absorbed projectiles go to",
+  "tracadamia.skill.warping.pick_goop_random": "Pick yourself to send them to a random ally",
+  "tracadamia.skill.warping.pick_emergency": "Pick your emergency ally",
+  "tracadamia.skill.warping.no_allies": "You have no allies to warp",
+  "tracadamia.skill.warping.ally_gone": "That ally can't be reached",
+  "tracadamia.skill.warping.warped": "Warped %s to %s",
+  "tracadamia.skill.warping.interrupted": "The warp was interrupted",
+  "tracadamia.skill.warping.goop_on": "Goop Defense on",
+  "tracadamia.skill.warping.goop_off": "Goop Defense off",
+  "tracadamia.skill.warping.goop_target": "Absorbed projectiles go to %s",
+  "tracadamia.skill.warping.goop_random": "Absorbed projectiles go to a random ally",
+  "tracadamia.skill.warping.emergency_on": "Emergency Exit on",
+  "tracadamia.skill.warping.emergency_off": "Emergency Exit off",
+  "tracadamia.skill.warping.emergency_target": "Emergency ally: %s",
+  "tracadamia.skill.warping.emergency_target_off": "Crouch and activate to turn Emergency Exit on",
+  "tracadamia.skill.warping.no_emergency_ally": "Pick an emergency ally first",
+
+  "tracadamia.skill.new_order": "New Order",
+  "tracadamia.skill.new_order.description": "Touch something and call out its name, then give it a rule. Only two rules can be in effect at once. With Harden Into My Shape in effect the air copy can use Thunder Strike, Solar Beam and Body of Air, and inside Body of Air it can use Fist Bump To The Earth (crouch for Wind Clap) and Air Spear. Air Control and The Ground Is Spiky give New Order skills of their own while they're in effect.",
+
+  "tracadamia.skill.mode.new_order.say_my_name": "Say My Name",
+
+  "tracadamia.skill.mode.new_order.rules": "Rules",
+
+  "tracadamia.skill.mode.new_order.thunder_strike": "Thunder Strike",
+
+  "tracadamia.skill.mode.new_order.solar_beam": "Solar Beam",
+
+  "tracadamia.skill.mode.new_order.body_of_air": "Body of Air",
+
+  "tracadamia.skill.mode.new_order.fist_bump": "Fist Bump To The Earth",
+
+  "tracadamia.skill.mode.new_order.air_spear": "Air Spear",
+
+  "tracadamia.skill.mode.new_order.wind_clap": "Wind Clap",
+
+  "tracadamia.skill.mode.new_order.no_longer_exist": "No Longer Exist",
+
+  "tracadamia.skill.mode.new_order.restrain": "The Air Will Restrain You",
+
+  "tracadamia.skill.mode.new_order.explode": "The Air Will Explode",
+
+  "tracadamia.skill.mode.new_order.protect": "The Air Will Protect Me",
+
+  "tracadamia.skill.mode.new_order.weapon": "The Air Is My Weapon",
+
+  "tracadamia.skill.mode.new_order.spiky": "The Ground Is Spiky",
+
+  "tracadamia.skill.new_order.kind.air": "The Air",
+  "tracadamia.skill.new_order.kind.user": "The User",
+  "tracadamia.skill.new_order.kind.entity": "Entity",
+  "tracadamia.skill.new_order.kind.ground": "The Ground",
+
+  "tracadamia.skill.new_order.rule.harden": "Harden Into My Shape",
+  "tracadamia.skill.new_order.rule.harden.desc": "A mass of condensed air made in the shape of yourself. This creation will follow up on any attack you do but will deal wind damage",
+
+  "tracadamia.skill.new_order.rule.air_control": "Air Control",
+  "tracadamia.skill.new_order.rule.air_control.desc": "Grants access to the following skills: No Longer Exist, The Air Will Restrain You,, The Air Will Explode, The Air Will Protect Me, and The Air Is My Weapon",
+
+  "tracadamia.skill.new_order.rule.enhance": "Enhance My Form",
+  "tracadamia.skill.new_order.rule.enhance.desc": "+%1$s Melee damage and +%2$s armor. Rules deal %3$s%% more damage and Body of Air takes %4$s%% less damage",
+
+  "tracadamia.skill.new_order.rule.soul": "Soul Will Not Degrade",
+  "tracadamia.skill.new_order.rule.soul.desc": "Soul damage you take is reduced by %s%%",
+
+  "tracadamia.skill.new_order.rule.degrade": "Resistance Degrading",
+  "tracadamia.skill.new_order.rule.degrade.desc": "Your attacks degrade resistances. Treat nullifications as resistances and resistances are bypassed",
+
+  "tracadamia.skill.new_order.rule.rebel": "New Order, Rebel",
+  "tracadamia.skill.new_order.rule.rebel.desc": "If New Order is stolen it destroys one of the new owner's quirks every second for the next %s seconds. All For One and One For All cannot be destroyed by New Order",
+
+  "tracadamia.skill.new_order.rule.reflect": "Reflect Projectiles",
+  "tracadamia.skill.new_order.rule.reflect.desc": "Projectiles that hit you are sent back at whoever fired them",
+
+  "tracadamia.skill.new_order.rule.fly": "I Can Fly",
+  "tracadamia.skill.new_order.rule.fly.desc": "Grants flight",
+
+  "tracadamia.skill.new_order.rule.water_walk": "I Can Water Walk",
+  "tracadamia.skill.new_order.rule.water_walk.desc": "You can walk on water",
+
+  "tracadamia.skill.new_order.rule.unseen": "To Become Unseen",
+  "tracadamia.skill.new_order.rule.unseen.desc": "+%s presence concealment",
+
+  "tracadamia.skill.new_order.rule.see_all": "To See All",
+  "tracadamia.skill.new_order.rule.see_all.desc": "+%s presence sense",
+
+  "tracadamia.skill.new_order.rule.repel": "To Repel Effects",
+  "tracadamia.skill.new_order.rule.repel.desc": "Harmful effects are cleansed and can't be put on you",
+
+  "tracadamia.skill.new_order.rule.flames": "I'll Ignore the Flames",
+  "tracadamia.skill.new_order.rule.flames.desc": "You no longer take fire or lava damage",
+
+  "tracadamia.skill.new_order.rule.gravity": "Gravity Be My Ally",
+  "tracadamia.skill.new_order.rule.gravity.desc": "Grant yourself the effect of zero gravity",
+
+  "tracadamia.skill.new_order.rule.immovable": "My Body Will Not Move",
+  "tracadamia.skill.new_order.rule.immovable.desc": "You can't be knocked back, pulled, grabbed or teleported by anyone",
+
+  "tracadamia.skill.new_order.rule.heal": "My Body Will Heal",
+  "tracadamia.skill.new_order.rule.heal.desc": "Your regeneration goes up a stage: nothing to Self, Self to Ultraspeed, Ultraspeed to Infinite. Infinite costs %s%% less",
+
+  "tracadamia.skill.new_order.rule.clear_mind": "My Mind Will Remain Clear",
+  "tracadamia.skill.new_order.rule.clear_mind.desc": "You can't be confused, frightened, charmed, hypnotized or mind controlled",
+
+  "tracadamia.skill.new_order.rule.no_aggro": "I Will Not Raise Aggro",
+  "tracadamia.skill.new_order.rule.no_aggro.desc": "Mobs won't target you",
+
+  "tracadamia.skill.new_order.rule.no_quirks": "Can Not Use Quirks",
+  "tracadamia.skill.new_order.rule.no_quirks.desc": "The target can't use any of their quirks",
+
+  "tracadamia.skill.new_order.rule.no_unique": "Can Not Use Unique Skills",
+  "tracadamia.skill.new_order.rule.no_unique.desc": "The target can't use any of their unique skills",
+
+  "tracadamia.skill.new_order.rule.no_ultimate": "Can Not Use Ultimate Skills",
+  "tracadamia.skill.new_order.rule.no_ultimate.desc": "The target can't use any of their ultimate skills",
+
+  "tracadamia.skill.new_order.rule.no_recover": "Can Not Recover",
+  "tracadamia.skill.new_order.rule.no_recover.desc": "The target's regeneration drops a stage: Infinite to Ultraspeed, Ultraspeed to Self, Self to nothing",
+
+  "tracadamia.skill.new_order.rule.weakness": "Weakness",
+  "tracadamia.skill.new_order.rule.weakness.desc": "The target deals %s%% less damage",
+
+  "tracadamia.skill.new_order.rule.crumble": "Crumble",
+  "tracadamia.skill.new_order.rule.crumble.desc": "The target loses %s%% of their armor",
+
+  "tracadamia.skill.new_order.rule.blindness": "Blindness",
+  "tracadamia.skill.new_order.rule.blindness.desc": "The target is blinded",
+
+  "tracadamia.skill.new_order.rule.weightless": "Weightless",
+  "tracadamia.skill.new_order.rule.weightless.desc": "The target is affected by zero gravity",
+
+  "tracadamia.skill.new_order.rule.grounded": "Grounded",
+  "tracadamia.skill.new_order.rule.grounded.desc": "The target can't fly and is given Magic Interference",
+
+  "tracadamia.skill.new_order.rule.anti_teleport": "Anti Teleport",
+  "tracadamia.skill.new_order.rule.anti_teleport.desc": "The target is given Spatial Blockade",
+
+  "tracadamia.skill.new_order.rule.no_move": "Can Not Move",
+  "tracadamia.skill.new_order.rule.no_move.desc": "The target can't walk or jump for %s seconds",
+
+  "tracadamia.skill.new_order.rule.no_speak": "Can Not Speak",
+  "tracadamia.skill.new_order.rule.no_speak.desc": "The target can't cast spells unless they have Chant Annulment",
+
+  "tracadamia.skill.new_order.rule.no_items": "Can Not Interact With Items",
+  "tracadamia.skill.new_order.rule.no_items.desc": "The target can't use items or interact with items like chest and doors",
+
+  "tracadamia.skill.new_order.rule.will_die": "Will Die",
+  "tracadamia.skill.new_order.rule.will_die.desc": "This rule requires New Order to be mastered and have %sx the target's EP, it is ineffective against bosses. The target will die",
+
+
+  "tracadamia.skill.new_order.rule.shield": "Become My Shield",
+  "tracadamia.skill.new_order.rule.shield.desc": "Projectiles that come within %s blocks of you get a wall of ground thrown in their way",
+
+  "tracadamia.skill.new_order.rule.fist": "Become My Fist",
+  "tracadamia.skill.new_order.rule.fist.desc": "The ground will follow up with 2 hits after your initial hit",
+
+  "tracadamia.skill.new_order.rule.slippery": "The Ground Is Slippery",
+  "tracadamia.skill.new_order.rule.slippery.desc": "The ground in a %s block area around you is like ice",
+
+  "tracadamia.skill.new_order.rule.elastic": "The Ground Is Elastic",
+  "tracadamia.skill.new_order.rule.elastic.desc": "The ground in a %s block area around you is bouncy",
+
+  "tracadamia.skill.new_order.rule.no_fall": "The Ground Isn't Affected By Gravity",
+  "tracadamia.skill.new_order.rule.no_fall.desc": "The ground in a %s block area around you are unaffected by gravity",
+
+  "tracadamia.skill.new_order.rule.spiky": "The Ground Is Spiky",
+  "tracadamia.skill.new_order.rule.spiky.desc": "Raise a spike out of the ground dealing %1$s earth damage. Once New Order is mastered it raises %2$s spikes dealing %3$s",
+
+  "tracadamia.skill.new_order.callout": "%s!",
+  "tracadamia.skill.new_order.no_name": "Touch something to call out its name first",
+  "tracadamia.skill.new_order.wrong_kind": "That rule needs %s called out",
+
+  "tracadamia.skill.new_order.needs_mastery": "Needs New Order mastered",
+  "tracadamia.skill.new_order.target_gone": "Target no longer there",
+
+  "tracadamia.skill.new_order.already": "%s is already in effect",
+
+  "tracadamia.skill.new_order.made": "Rule: %s",
+  "tracadamia.skill.new_order.made_on": "Rule: %s on %s",
+
+  "tracadamia.skill.new_order.replaced": "%s, replacing %s",
+  "tracadamia.skill.new_order.ruled_you": "%s's rule: %s",
+  "tracadamia.skill.new_order.revoked": "Revoked %s",
+  "tracadamia.skill.new_order.lapsed": "%s on %s has ended",
+  "tracadamia.skill.new_order.sealed": "%s is sealed by New Order",
+  "tracadamia.skill.new_order.destroyed": "New Order destroyed %s",
+
+  "tracadamia.skill.new_order.rebel_over": "New Order has run its course and destroyed itself",
+  "tracadamia.skill.new_order.rebel_resumes": "New Order turns on the other quirks",
+  "tracadamia.skill.new_order.rebel_locked": "New Order can't be stopped",
+
+  "tracadamia.skill.new_order.pick": "Pick a rule for %s",
+
+  "tracadamia.skill.new_order.in_effect": "In effect: %s",
+  "tracadamia.skill.new_order.in_effect_none": "No rules in effect",
+
+  "tracadamia.skill.new_order.rule_on": "%s on %s",
+
+  "tracadamia.skill.new_order.seconds": "%s (%ss)",
+  "tracadamia.skill.new_order.revoke_hint": "Right click to revoke",
+
+  "tracadamia.skill.new_order.needs_harden": "Harden Into My Shape must be in effect",
+  "tracadamia.skill.new_order.needs_body": "Needs Body of Air",
+  "tracadamia.skill.new_order.needs_storm": "Needs a thunderstorm, Weather Manipulation or Weather Domination",
+  "tracadamia.skill.new_order.needs_sun": "Needs the sun to be up",
+  "tracadamia.skill.new_order.copy_busy": "Another skill is active",
+  "tracadamia.skill.new_order.inside_body": "Can't be used inside Body of Air",
+
+  "tracadamia.skill.new_order.will_die_boss": "Bosses can't be told to die",
+  "tracadamia.skill.new_order.will_die_ep": "Needs %sx the target's EP",
+  "tracadamia.skill.new_order.barrier_title": "Air Bubble %s/%s",
+
+
+  "tracadamia.skill.new_order.body_broken": "The body of air was broken",
+  "tracadamia.skill.new_order.body_reforming": "The body of air isn't ready",
+  "tracadamia.skill.new_order.body_title": "Body of Air %s/%s",
+
   "effect.tracadamia.splinter": "Splinter",
   "tracadamia.skill.wooden_swords_from_his_hands": "Wooden Swords From His Hands",
   "tracadamia.skill.wooden_swords_from_his_hands.description": "Wooden Swords From His Hands allows the user to generate wooden swords from their wrist.",
