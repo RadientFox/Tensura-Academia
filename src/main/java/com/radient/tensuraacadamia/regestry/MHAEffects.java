@@ -50,6 +50,7 @@ public class MHAEffects {
     public static final DeferredHolder<MobEffect, MobEffect> WATTAGE;
     public static final DeferredHolder<MobEffect, MobEffect> ASPERSION;
     public static final DeferredHolder<MobEffect, MobEffect> SMOKESCREEN_OBSCURED;
+    public static final DeferredHolder<MobEffect, MobEffect> DELAY_SPOT_FIELD;
     public static final DeferredHolder<MobEffect, MobEffect> BOUNCE;
     public static final DeferredHolder<MobEffect, MobEffect> SPLINTER;
     public static final DeferredHolder<MobEffect, MobEffect> POP;
@@ -67,6 +68,7 @@ public class MHAEffects {
     public static final DeferredHolder<MobEffect, MobEffect> ACIDMAN;
     public static final DeferredHolder<MobEffect, MobEffect> BATLIKE;
     public static final DeferredHolder<MobEffect, MobEffect> BAT_REST;
+    public static final DeferredHolder<MobEffect, MobEffect> DECAYEFFECT;
 
 
     public MHAEffects() {
@@ -107,6 +109,8 @@ public class MHAEffects {
         ACIDMAN = MOB_EFFECTS.register("acidman", () -> new AcidCoatingEffect(false));
         BATLIKE = MOB_EFFECTS.register("batlike", () -> new BatlikeEffect(false));
         BAT_REST = MOB_EFFECTS.register("bat_rest", () -> new BatlikeEffect(true));
+        DELAY_SPOT_FIELD = MOB_EFFECTS.register("delay_spot_field", DelaySpotFieldEffect::new);
+        DECAYEFFECT = MOB_EFFECTS.register("decay", DecayEffect::new);
     }
 
 }

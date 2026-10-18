@@ -81,7 +81,8 @@ import com.radient.tensuraacadamia.quirks.whirlwind.WhirlwindQuirk;
 import com.radient.tensuraacadamia.quirks.wooden_swords.WoodenSwordsQuirk;
 
 import com.radient.tensuraacadamia.ability.ultimate.ofaembers.OFA1st_Embers;
-import com.radient.tensuraacadamia.ability.ultimate.ofausers.OFA2nd;
+import com.radient.tensuraacadamia.ability.ultimate.ofaembers.OFA2nd_Embers;
+import com.radient.tensuraacadamia.ability.ultimate.ofausers.*;
 import com.radient.tensuraacadamia.ability.unique.quirks.DangerSenseQuirk;
 import com.radient.tensuraacadamia.ability.ultimate.ofausers.OFA1st;
 import com.radient.tensuraacadamia.quirks.all_for_one.AllForOne;
@@ -99,6 +100,20 @@ public class QuirkSkills {
     public static final RegistrySupplier<OFA1st> OFA_1ST = register("one_for_all_1", OFA1st::new);
     public static final RegistrySupplier<OFA1st_Embers> OFA1st_Embers = register("one_for_all_1_embers", OFA1st_Embers::new);
     public static final RegistrySupplier<OFA2nd> OFA_2ND = register("one_for_all_2", OFA2nd::new);
+    public static final RegistrySupplier<OFA2nd_Embers> OFA2nd_Embers = register("one_for_all_2_embers", OFA2nd_Embers::new);
+    public static final RegistrySupplier<OFA3rd> OFA_3RD = register("one_for_all_3", OFA3rd::new);
+
+    public static final RegistrySupplier<OFA4th> OFA_4TH = register("one_for_all_4", OFA4th::new);
+
+    public static final RegistrySupplier<OFA5th> OFA_5TH = register("one_for_all_5", OFA5th::new);
+
+    public static final RegistrySupplier<OFA6th> OFA_6TH = register("one_for_all_6", OFA6th::new);
+
+    public static final RegistrySupplier<OFA7th> OFA_7TH = register("one_for_all_7", OFA7th::new);
+
+    public static final RegistrySupplier<OFA8th> OFA_8TH = register("one_for_all_8", OFA8th::new);
+
+    public static final RegistrySupplier<OFA9th> OFA_9TH = register("one_for_all_9", OFA9th::new);
 
 
     public static final RegistrySupplier<Power_Stock> POWER_STOCK = register("power_stock", Power_Stock::new);
@@ -182,9 +197,7 @@ public class QuirkSkills {
     public static final RegistrySupplier<BarrierQuirk> BARRIER = register("barrier", BarrierQuirk::new);
     public static final RegistrySupplier<BatQuirk> BAT = register("bat", BatQuirk::new);
     public static final RegistrySupplier<SuperRegenerationQuirk> SUPER_REGENERATION = register("super_regeneration", SuperRegenerationQuirk::new);
-
-
-
+    public static final RegistrySupplier<DecayQuirk> DECAY = register("decay", DecayQuirk::new);
 
 
     private static <E extends ManasSkill> RegistrySupplier<E> register(String name, Supplier<E> supplier) {

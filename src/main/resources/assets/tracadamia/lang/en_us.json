@@ -475,8 +475,8 @@
 
   "tracadamia.skill.quirk_bestowal.passed": "The hope for a miracle has been bestowed upon you, go and take this beyond",
   "tracadamia.skill.quirk_bestowal.pass": "A flicker of your will has been bestowed to another...",
-  "tracadamia.skill.quirk_bestowal.pass": "A flicker of your will has been bestowed to another...",
-  "tracadamia.skill.quirk_bestowal.pass": "A flicker of your will has been bestowed to another...",
+  "tracadamia.skill.ofa.pass": "One For All leaves behind only a small ember of its power within you...",
+  "tracadamia.skill.ofa.passed": "The vestiges of One For All light within your core the power now resides within you",
 
 
 
@@ -491,9 +491,43 @@
 
   "tracadamia.skill.one_for_all_1": "§fOne For All",
   "tracadamia.skill.one_for_all_2": "§9One For All",
+  "tracadamia.skill.one_for_all_3": "§cOne For All",
+  "tracadamia.skill.one_for_all_4": "§aOne For All",
+  "tracadamia.skill.one_for_all_5": "§6One For All",
+  "tracadamia.skill.one_for_all_6": "§5One For All",
+  "tracadamia.skill.one_for_all_7": "§dOne For All",
+  "tracadamia.skill.one_for_all_8": "§eOne For All",
+  "tracadamia.skill.one_for_all_9": "§bOne For All",
 
-  "tracadamia.skill.one_for_all_1.description": "Quirk: One For All, The first person cultivates the power, and then passes it on to another. The next refines it and passes it on again. In this way, those crying out to be saved and those with brave and true hearts link to form a crystalline network of power!",
-  "tracadamia.skill.one_for_all_2.description": "Quirk: One For All, The first person cultivates the power, and then passes it on to another. The next refines it and passes it on again. In this way, those crying out to be saved and those with brave and true hearts link to form a crystalline network of power!",
+  "tracadamia.skill.one_for_all_1.description": "Quirk: §fOne For All§r, The first person cultivates the power, and then passes it on to another. The next refines it and passes it on again. In this way, those crying out to be saved and those with brave and true hearts link to form a crystalline network of power!",
+  "tracadamia.skill.one_for_all_2.description": "Quirk: §9One For All§r, The first person cultivates the power, and then passes it on to another. The next refines it and passes it on again. In this way, those crying out to be saved and those with brave and true hearts link to form a crystalline network of power!",
+  "tracadamia.skill.one_for_all_3.description": "Quirk: §cOne For All§r, The first person cultivates the power, and then passes it on to another. The next refines it and passes it on again. In this way, those crying out to be saved and those with brave and true hearts link to form a crystalline network of power!",
+  "tracadamia.skill.one_for_all_4.description": "Quirk: §aOne For All§r, The first person cultivates the power, and then passes it on to another. The next refines it and passes it on again. In this way, those crying out to be saved and those with brave and true hearts link to form a crystalline network of power!",
+  "tracadamia.skill.one_for_all_5.description": "Quirk: §6One For All§r, The first person cultivates the power, and then passes it on to another. The next refines it and passes it on again. In this way, those crying out to be saved and those with brave and true hearts link to form a crystalline network of power!",
+  "tracadamia.skill.one_for_all_6.description": "Quirk: §5One For All§r, The first person cultivates the power, and then passes it on to another. The next refines it and passes it on again. In this way, those crying out to be saved and those with brave and true hearts link to form a crystalline network of power!",
+  "tracadamia.skill.one_for_all_7.description": "Quirk: §dOne For All§r, The first person cultivates the power, and then passes it on to another. The next refines it and passes it on again. In this way, those crying out to be saved and those with brave and true hearts link to form a crystalline network of power!",
+  "tracadamia.skill.one_for_all_8.description": "Quirk: §eOne For All§r, The first person cultivates the power, and then passes it on to another. The next refines it and passes it on again. In this way, those crying out to be saved and those with brave and true hearts link to form a crystalline network of power!",
+  "tracadamia.skill.one_for_all_9.description": "Quirk: §bOne For All§r, The first person cultivates the power, and then passes it on to another. The next refines it and passes it on again. In this way, those crying out to be saved and those with brave and true hearts link to form a crystalline network of power!",
+
+  "tracadamia.skill.one_for_all_1_embers": "§fEmbers of One For All",
+  "tracadamia.skill.one_for_all_2_embers": "§9Embers of One For All",
+  "tracadamia.skill.one_for_all_3_embers": "§cEmbers of One For All",
+  "tracadamia.skill.one_for_all_4_embers": "§aEmbers of One For All",
+  "tracadamia.skill.one_for_all_5_embers": "§6Embers of One For All",
+  "tracadamia.skill.one_for_all_6_embers": "§5Embers of One For All",
+  "tracadamia.skill.one_for_all_7_embers": "§dEmbers of One For All",
+  "tracadamia.skill.one_for_all_8_embers": "§eEmbers of One For All",
+  "tracadamia.skill.one_for_all_9_embers": "§bEmbers of One For All",
+
+  "tracadamia.skill.one_for_all_1_embers.description": "Quirk: One For All, The first person cultivates the power, and then passes it on to another. The next refines it and passes it on again. In this way, those crying out to be saved and those with brave and true hearts link to form a crystalline network of power!",
+  "tracadamia.skill.one_for_all_2_embers.description": "Quirk: One For All, The first person cultivates the power, and then passes it on to another. The next refines it and passes it on again. In this way, those crying out to be saved and those with brave and true hearts link to form a crystalline network of power!",
+  "tracadamia.skill.one_for_all_3_embers.description": "Quirk: One For All, The first person cultivates the power, and then passes it on to another. The next refines it and passes it on again. In this way, those crying out to be saved and those with brave and true hearts link to form a crystalline network of power!",
+  "tracadamia.skill.one_for_all_4_embers.description": "Quirk: One For All, The first person cultivates the power, and then passes it on to another. The next refines it and passes it on again. In this way, those crying out to be saved and those with brave and true hearts link to form a crystalline network of power!",
+  "tracadamia.skill.one_for_all_5_embers.description": "Quirk: One For All, The first person cultivates the power, and then passes it on to another. The next refines it and passes it on again. In this way, those crying out to be saved and those with brave and true hearts link to form a crystalline network of power!",
+  "tracadamia.skill.one_for_all_6_embers.description": "Quirk: One For All, The first person cultivates the power, and then passes it on to another. The next refines it and passes it on again. In this way, those crying out to be saved and those with brave and true hearts link to form a crystalline network of power!",
+  "tracadamia.skill.one_for_all_7_embers.description": "Quirk: One For All, The first person cultivates the power, and then passes it on to another. The next refines it and passes it on again. In this way, those crying out to be saved and those with brave and true hearts link to form a crystalline network of power!",
+  "tracadamia.skill.one_for_all_8_embers.description": "Quirk: One For All, The first person cultivates the power, and then passes it on to another. The next refines it and passes it on again. In this way, those crying out to be saved and those with brave and true hearts link to form a crystalline network of power!",
+  "tracadamia.skill.one_for_all_9_embers.description": "Quirk: One For All, The first person cultivates the power, and then passes it on to another. The next refines it and passes it on again. In this way, those crying out to be saved and those with brave and true hearts link to form a crystalline network of power!",
 
   "tracadamia.skill.mode.one_for_all_1.output": "One For All Output",
   "tracadamia.skill.mode.one_for_all_1.smash": "Smash!!!",

@@ -70,7 +70,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
-@EventBusSubscriber(modid = TensuraAcadamia.MODID)
 public class OFA2nd extends Skill {
         private static final OFAConfig.OFA2nd CONFIG = ConfigRegistry.getConfig(OFAConfig.class).OFA2nd;
         public static final ResourceLocation OFA2nd = ResourceLocation.fromNamespaceAndPath("tracadamia", "one_for_all_2");
@@ -211,7 +210,7 @@ public class OFA2nd extends Skill {
                 int time = tag.getInt("activatedTimes");
                 tag.putInt("activatedTimes", time + 1);
                 if (time % BASE_CONFIG.Mastery.masteryActivateTime == 0) {
-                    TensuraParticleHelper.spawnServerParticles(entity.level(), MHAParticles.OFA_COWLING_1.get(), x, y, z, 15, 0.1D, 0.1D, 0.1D, 0.1D, true);
+                    TensuraParticleHelper.spawnServerParticles(entity.level(), MHAParticles.OFA_COWLING_2.get(), x, y, z, 15, 0.1D, 0.1D, 0.1D, 0.1D, true);
                 }
 
                 tickRecoil(tag, entity, percentUsed);
@@ -619,23 +618,25 @@ public class OFA2nd extends Skill {
                 if (entity instanceof Player){
                     if (target instanceof Player){
 
-                        if ((!SkillUtils.hasSkill(target, (ManasSkill) QuirkSkills.OFA_1ST.get())) && (!SkillUtils.hasSkill(target, (ManasSkill) QuirkSkills.OFA_2ND.get()))) {
+                        if ((!SkillUtils.hasSkill(target, (ManasSkill) QuirkSkills.OFA_1ST.get()))
+                                && (!SkillUtils.hasSkill(target, (ManasSkill) QuirkSkills.OFA_2ND.get()))
+                                && (!SkillUtils.hasSkill(target, (ManasSkill) QuirkSkills.OFA_3RD.get()))) {
                             if (!(instance.getMastery() < (double) 0.0F) && !instance.isTemporarySkill()) {
-                                TensuraSkillInstance eye = new TensuraSkillInstance(QuirkSkills.OFA_2ND.get());
-                                TensuraSkillInstance eye2 = new TensuraSkillInstance(QuirkSkills.GEARSHIFT.get());
-                                TensuraSkillInstance eye3 = new TensuraSkillInstance(QuirkSkills.OFA1st_Embers.get());
+                                TensuraSkillInstance eye = new TensuraSkillInstance(QuirkSkills.OFA_3RD.get());
+                               // TensuraSkillInstance eye2 = new TensuraSkillInstance(QuirkSkills.GEARSHIFT.get());
+                                TensuraSkillInstance eye3 = new TensuraSkillInstance(QuirkSkills.OFA2nd_Embers.get());
                                 eye.getOrCreateTag().putBoolean("NoMagiculeCost", true);
-                                eye2.getOrCreateTag().putBoolean("NoMagiculeCost", true);
+                               // eye2.getOrCreateTag().putBoolean("NoMagiculeCost", true);
                                 eye3.getOrCreateTag().putBoolean("NoMagiculeCost", true);
                                 SkillHelper.learnSkill(target, eye);
-                                SkillHelper.learnSkill(target, eye2);
+                               // SkillHelper.learnSkill(target, eye2);
                                 SkillHelper.learnSkill(entity, eye3);
-                                SkillAPI.getSkillsFrom(entity).forgetSkill(QuirkSkills.OFA_1ST.get());
+                                SkillAPI.getSkillsFrom(entity).forgetSkill(QuirkSkills.OFA_2ND.get());
                                 if (entity instanceof ServerPlayer player) {
-                                    player.displayClientMessage(Component.translatable("tracadamia.skill.quirk_bestowal.pass").setStyle(Style.EMPTY.withColor(ChatFormatting.RED)), false);
+                                    player.displayClientMessage(Component.translatable("tracadamia.skill.ofa.pass").setStyle(Style.EMPTY.withColor(ChatFormatting.BLUE)), false);
                                 }
                                 if (target instanceof ServerPlayer player) {
-                                    player.displayClientMessage(Component.translatable("tracadamia.skill.quirk_bestowal.passed").setStyle(Style.EMPTY.withColor(ChatFormatting.RED)), false);
+                                    player.displayClientMessage(Component.translatable("tracadamia.skill.ofa.passed").setStyle(Style.EMPTY.withColor(ChatFormatting.RED)), false);
                                 }
                             }
                         }

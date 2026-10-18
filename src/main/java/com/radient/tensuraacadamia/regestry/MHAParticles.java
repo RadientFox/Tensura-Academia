@@ -28,6 +28,22 @@ public final class MHAParticles {
             PARTICLES.register("ofa_cowling_1", () -> new SimpleParticleType(false));
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> OFA_COWLING_2 =
             PARTICLES.register("ofa_cowling_2", () -> new SimpleParticleType(false));
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> OFA_COWLING_3 =
+            PARTICLES.register("ofa_cowling_3", () -> new SimpleParticleType(false));
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> OFA_COWLING_4 =
+            PARTICLES.register("ofa_cowling_4", () -> new SimpleParticleType(false));
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> OFA_COWLING_5 =
+            PARTICLES.register("ofa_cowling_5", () -> new SimpleParticleType(false));
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> OFA_COWLING_6 =
+            PARTICLES.register("ofa_cowling_6", () -> new SimpleParticleType(false));
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> OFA_COWLING_7 =
+            PARTICLES.register("ofa_cowling_7", () -> new SimpleParticleType(false));
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> OFA_COWLING_8 =
+            PARTICLES.register("ofa_cowling_8", () -> new SimpleParticleType(false));
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> OFA_COWLING_9 =
+            PARTICLES.register("ofa_cowling_9", () -> new SimpleParticleType(false));
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> OFA_COWLING_RAINBOW =
+            PARTICLES.register("ofa_cowling_rainbow", () -> new SimpleParticleType(false));
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> QUEEN_HEART =
             PARTICLES.register("queen_heart", () -> new SimpleParticleType(false));
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> ELECTRIC_ARC =
@@ -144,6 +160,22 @@ public final class MHAParticles {
             event.registerSpriteSet(OFA_COWLING_1.get(),
                     io.github.manasmods.tensura.particle.type.LightningSparkParticle.Provider::new);
             event.registerSpriteSet(OFA_COWLING_2.get(),
+                    io.github.manasmods.tensura.particle.type.LightningSparkParticle.Provider::new);
+            event.registerSpriteSet(OFA_COWLING_3.get(),
+                    io.github.manasmods.tensura.particle.type.LightningSparkParticle.Provider::new);
+            event.registerSpriteSet(OFA_COWLING_4.get(),
+                    io.github.manasmods.tensura.particle.type.LightningSparkParticle.Provider::new);
+            event.registerSpriteSet(OFA_COWLING_5.get(),
+                    io.github.manasmods.tensura.particle.type.LightningSparkParticle.Provider::new);
+            event.registerSpriteSet(OFA_COWLING_6.get(),
+                    io.github.manasmods.tensura.particle.type.LightningSparkParticle.Provider::new);
+            event.registerSpriteSet(OFA_COWLING_7.get(),
+                    io.github.manasmods.tensura.particle.type.LightningSparkParticle.Provider::new);
+            event.registerSpriteSet(OFA_COWLING_8.get(),
+                    io.github.manasmods.tensura.particle.type.LightningSparkParticle.Provider::new);
+            event.registerSpriteSet(OFA_COWLING_9.get(),
+                    io.github.manasmods.tensura.particle.type.LightningSparkParticle.Provider::new);
+            event.registerSpriteSet(OFA_COWLING_RAINBOW.get(),
                     io.github.manasmods.tensura.particle.type.LightningSparkParticle.Provider::new);
             event.registerSpecial(ELECTRIC_ARC.get(), new com.radient.tensuraacadamia.quirks.shared.QuirkVfxParticle.Provider(2, .28));
             event.registerSpecial(ELECTRIC_FIELD.get(), new com.radient.tensuraacadamia.quirks.shared.QuirkVfxParticle.Provider(3, .55));
