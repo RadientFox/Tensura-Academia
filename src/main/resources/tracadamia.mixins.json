@@ -36,17 +36,6 @@
     "VinesSkillGateMixin",
     "DarkShadowMovementMixin",
     "LivingEntityFloatMixin",
-
-    "HeldPassengerMixin",
-    "EnergyCostMixin",
-    "BarrierEffectMixin",
-    "SkillSealMixin",
-    "FoodDataMixin",
-    "WaterWalkMixin",
-    "GroundFrictionMixin",
-    "GroundBounceMixin",
-    "FallingBlockMixin",
-    "RegenerationCostMixin",
     "EntityPushMixin"
 
   ],
@@ -60,10 +49,6 @@
     "client.LevelRendererAccessor",
     "client.PlayerModelMixin",
     "client.BatHeldItemMixin",
-    "client.MinecraftMarkGlowMixin",
-    "client.WingFlightRendererMixin",
-    "client.GeoArmorRendererMixin",
-    "client.BossHealthOverlayAccessor",
     "client.OverhaulHumanoidMixin",
     "client.OverhaulLegRenderMixin",
     "client.OverhaulArmorKneesMixin",
