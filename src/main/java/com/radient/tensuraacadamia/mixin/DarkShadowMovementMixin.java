@@ -1,6 +1,6 @@
 package com.radient.tensuraacadamia.mixin;
 
-import com.radient.tensuraacadamia.entity.DarkShadow;
+import com.radient.tensuraacadamia.quirks.dark_shadow.DarkShadow;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.phys.Vec3;

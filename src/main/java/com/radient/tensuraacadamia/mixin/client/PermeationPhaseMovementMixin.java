@@ -1,6 +1,6 @@
 package com.radient.tensuraacadamia.mixin.client;
 
-import com.radient.tensuraacadamia.client.PermeationPhaseClient;
+import com.radient.tensuraacadamia.quirks.permeation.PermeationPhaseClient;
 import net.minecraft.client.player.LocalPlayer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;

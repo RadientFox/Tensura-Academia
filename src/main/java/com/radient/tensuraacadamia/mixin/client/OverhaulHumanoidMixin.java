@@ -1,6 +1,6 @@
 package com.radient.tensuraacadamia.mixin.client;
 
-import com.radient.tensuraacadamia.client.OverhaulClient;
+import com.radient.tensuraacadamia.quirks.overhaul.OverhaulClient;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.world.entity.LivingEntity;

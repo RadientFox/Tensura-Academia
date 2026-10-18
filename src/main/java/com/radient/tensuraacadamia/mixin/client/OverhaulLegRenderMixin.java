@@ -2,7 +2,7 @@ package com.radient.tensuraacadamia.mixin.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.radient.tensuraacadamia.client.OverhaulLegs;
+import com.radient.tensuraacadamia.quirks.overhaul.OverhaulLegs;
 import net.minecraft.client.model.geom.ModelPart;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;

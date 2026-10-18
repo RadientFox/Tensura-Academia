@@ -1,6 +1,6 @@
 package com.radient.tensuraacadamia.mixin.client;
 
-import com.radient.tensuraacadamia.client.OverhaulLegs;
+import com.radient.tensuraacadamia.quirks.overhaul.OverhaulLegs;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.Model;
 import net.minecraft.client.renderer.entity.layers.HumanoidArmorLayer;
@@ -19,5 +19,9 @@ public abstract class OverhaulArmorKneesMixin {
                                      HumanoidModel<?> model, CallbackInfoReturnable<Model> ci) {
         if (ci.getReturnValue() == model) OverhaulLegs.armor(
                 ((HumanoidArmorLayer<?, ?, ?>) (Object) this).getParentModel(), model, slot == EquipmentSlot.LEGS ? 0.5F : 1);
+        if (com.radient.tensuraacadamia.quirks.bat.BatEvents.active(entity)
+                && ci.getReturnValue() instanceof HumanoidModel<?> armor) {
+            armor.leftArm.visible = armor.rightArm.visible = false;
+        }
     }
 }

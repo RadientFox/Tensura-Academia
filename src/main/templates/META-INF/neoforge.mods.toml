@@ -91,6 +91,13 @@ type = "required"
 ordering = "AFTER"
 side = "BOTH"
 
+[[dependencies.tracadamia]]
+modId = "trnightmare"
+type = "required"
+versionRange = "[1.0.5.2.2.5-neoforge-1.21.1,)"
+ordering = "AFTER"
+side = "CLIENT"
+
 
 # Features are specific properties of the game environment, that you may want to declare you require. This example declares
 # that your mod requires GL version 3.2 or higher. Other features will be added. They are side aware so declaring this won't

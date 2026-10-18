@@ -31,4 +31,15 @@ public abstract class SmokescreenPresenceSenseMixin {
         }
         return concealment;
     }
+
+    @Redirect(method = "getGlowColor", at = @At(value = "INVOKE",
+            target = "Lnet/minecraft/world/entity/player/Player;getAttributeValue(Lnet/minecraft/core/Holder;)D"),
+            remap = false)
+    private static double tracadamia$dustyPresence(Player viewer, Holder<Attribute> attribute,
+                                                   Player user, Entity seen) {
+        double value = viewer.getAttributeValue(attribute);
+        return attribute == TensuraAttributes.PRESENCE_SENSE && value > 0
+                && seen instanceof LivingEntity living && living.hasEffect(MHAEffects.DUSTY)
+                ? value + 1 : value;
+    }
 }

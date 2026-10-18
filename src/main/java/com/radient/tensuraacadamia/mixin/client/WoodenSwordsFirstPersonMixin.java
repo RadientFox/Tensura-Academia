@@ -1,6 +1,6 @@
 package com.radient.tensuraacadamia.mixin.client;
 
-import com.radient.tensuraacadamia.ability.unique.quirks.WoodenSwordsQuirk;
+import com.radient.tensuraacadamia.quirks.wooden_swords.WoodenSwordsQuirk;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ItemInHandRenderer;
 import net.minecraft.world.item.ItemStack;

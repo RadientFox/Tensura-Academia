@@ -1,5 +1,7 @@
 package com.radient.tensuraacadamia.ability.unique.quirks;
 
+import com.radient.tensuraacadamia.quirks.bat.BatEvents;
+
 import com.radient.tensuraacadamia.TensuraAcadamia;
 import com.radient.tensuraacadamia.config.skills.QuirkSkillsConfig;
 import com.radient.tensuraacadamia.regestry.skills.QuirkSkills;
@@ -302,7 +304,8 @@ public class VibrationDetectionQuirk extends Skill {
     }
 
     public static boolean isActive(Player player) {
-        return SkillAPI.getSkillsFrom(player).getSkill(QuirkSkills.VIBRATION_DETECTION.get()).map(VibrationDetectionQuirk::isActive).orElse(false);
+        return SkillAPI.getSkillsFrom(player).getSkill(QuirkSkills.VIBRATION_DETECTION.get()).map(VibrationDetectionQuirk::isActive).orElse(false)
+                || BatEvents.echolocating(player);
     }
 
     // Earth Affinity and Vibration Targeting share the toggle
@@ -439,6 +442,11 @@ public class VibrationDetectionQuirk extends Skill {
         ManasSkillInstance detection = SkillAPI.getSkillsFrom(player).getSkill(QuirkSkills.VIBRATION_DETECTION.get()).orElse(null);
         listener.range = detection != null && detection.isMastered(player) ? CONFIG.rangeMastered : CONFIG.range;
         listener.filter = detection != null && detection.getTag() != null ? detection.getTag().getInt(FILTER_TAG) : FILTER_ALL;
+        if (BatEvents.echolocating(player)) {
+            var bat = SkillAPI.getSkillsFrom(player).getSkill(QuirkSkills.BAT.get()).orElseThrow();
+            listener.range = Math.max(listener.range, bat.isMastered(player) ? CONFIG.rangeMastered : CONFIG.range);
+            listener.filter = FILTER_ALL;
+        }
         if (player.tickCount % SCAN_INTERVAL == 0) {
             scanMoving(listener);
         }

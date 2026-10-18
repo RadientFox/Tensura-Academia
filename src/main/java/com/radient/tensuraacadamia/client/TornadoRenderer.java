@@ -1,5 +1,7 @@
 package com.radient.tensuraacadamia.client;
 
+import com.radient.tensuraacadamia.quirks.shared.WhiteTextures;
+
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.radient.tensuraacadamia.TensuraAcadamia;
 import com.radient.tensuraacadamia.entity.TornadoEntity;

@@ -1,7 +1,7 @@
 package com.radient.tensuraacadamia.mixin;
 
-import com.radient.tensuraacadamia.ability.unique.quirks.PerilDiffusionQuirk;
-import com.radient.tensuraacadamia.ability.unique.quirks.PermeationQuirk;
+import com.radient.tensuraacadamia.quirks.peril_diffusion.PerilDiffusionQuirk;
+import com.radient.tensuraacadamia.quirks.permeation.PermeationQuirk;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;

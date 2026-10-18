@@ -7,7 +7,6 @@ import net.minecraft.client.particle.ParticleProvider;
 import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.client.particle.SpriteSet;
 import net.minecraft.client.particle.TextureSheetParticle;
-import net.minecraft.client.particle.HugeExplosionParticle;
 import net.minecraft.client.particle.CherryParticle;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.particles.SimpleParticleType;
@@ -65,6 +64,54 @@ public final class MHAParticles {
             PARTICLES.register("impure_beam_overpower", () -> new SimpleParticleType(false));
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> GREEN_LEAF =
             PARTICLES.register("green_leaf", () -> new SimpleParticleType(false));
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> PORTAL_FOG =
+            PARTICLES.register("portal_fog", () -> new SimpleParticleType(false));
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> BEAM_CLASH =
+            PARTICLES.register("beam_clash", () -> new SimpleParticleType(false));
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> BLAST_FLASH =
+            PARTICLES.register("blast_flash", () -> new SimpleParticleType(false));
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> BLAST_CHARGE =
+            PARTICLES.register("blast_charge", () -> new SimpleParticleType(false));
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> EXPLOSION_IMPACT =
+            PARTICLES.register("explosion_impact", () -> new SimpleParticleType(false));
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> ELECTRIC_LINK =
+            PARTICLES.register("electric_link", () -> new SimpleParticleType(false));
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> ELECTRIC_SHELL =
+            PARTICLES.register("electric_shell", () -> new SimpleParticleType(false));
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> WIND_VORTEX =
+            PARTICLES.register("wind_vortex", () -> new SimpleParticleType(false));
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> WIND_RELEASE =
+            PARTICLES.register("wind_release", () -> new SimpleParticleType(false));
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> BARRIER_SHARDS =
+            PARTICLES.register("barrier_shards", () -> new SimpleParticleType(false));
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> ACID_SPLASH =
+            PARTICLES.register("acid_splash", () -> new SimpleParticleType(false));
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> ACID_CHARGE =
+            PARTICLES.register("acid_charge", () -> new SimpleParticleType(false));
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> ACID_SWEAT_BLAST =
+            PARTICLES.register("acid_sweat_blast", () -> new SimpleParticleType(false));
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> STOCKPILE_RELEASE =
+            PARTICLES.register("stockpile_release", () -> new SimpleParticleType(false));
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> TELEPORT_FLASH =
+            PARTICLES.register("teleport_flash", () -> new SimpleParticleType(false));
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> PHASE_RIPPLE =
+            PARTICLES.register("phase_ripple", () -> new SimpleParticleType(false));
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> BLOOD_PARALYSIS =
+            PARTICLES.register("blood_paralysis", () -> new SimpleParticleType(false));
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> WOOD_SLASH =
+            PARTICLES.register("wood_slash", () -> new SimpleParticleType(false));
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> FIRE_STREAM =
+            PARTICLES.register("fire_stream", () -> new SimpleParticleType(false));
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> FIRE_SHELL =
+            PARTICLES.register("fire_shell", () -> new SimpleParticleType(false));
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> FROST_BURST =
+            PARTICLES.register("frost_burst", () -> new SimpleParticleType(false));
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> PALE_BLADE =
+            PARTICLES.register("pale_blade", () -> new SimpleParticleType(false));
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> FROST_FRONT =
+            PARTICLES.register("frost_front", () -> new SimpleParticleType(false));
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> DUST_WAVE =
+            PARTICLES.register("dust_wave", () -> new SimpleParticleType(false));
 
 
     private MHAParticles() {
@@ -78,40 +125,62 @@ public final class MHAParticles {
     public static final class Client {
         @SubscribeEvent
         public static void registerProviders(RegisterParticleProvidersEvent event) {
-            event.registerSpecial(QUEEN_HEART.get(), new com.radient.tensuraacadamia.client.QueenHeartParticle.Provider());
+            event.registerSpecial(FIRE_STREAM.get(), new com.radient.tensuraacadamia.quirks.half_cold_half_hot.ThermalVfxParticle.Provider(com.radient.tensuraacadamia.quirks.half_cold_half_hot.ThermalVfxParticle.Kind.FIRE_STREAM));
+            event.registerSpecial(FIRE_SHELL.get(), new com.radient.tensuraacadamia.quirks.half_cold_half_hot.ThermalVfxParticle.Provider(com.radient.tensuraacadamia.quirks.half_cold_half_hot.ThermalVfxParticle.Kind.FIRE_SHELL));
+            event.registerSpecial(FROST_BURST.get(), new com.radient.tensuraacadamia.quirks.half_cold_half_hot.ThermalVfxParticle.Provider(com.radient.tensuraacadamia.quirks.half_cold_half_hot.ThermalVfxParticle.Kind.FROST_BURST));
+            event.registerSpecial(PALE_BLADE.get(), new com.radient.tensuraacadamia.quirks.half_cold_half_hot.ThermalVfxParticle.Provider(com.radient.tensuraacadamia.quirks.half_cold_half_hot.ThermalVfxParticle.Kind.PALE_BLADE));
+            event.registerSpecial(FROST_FRONT.get(), new com.radient.tensuraacadamia.quirks.half_cold_half_hot.ThermalVfxParticle.Provider(com.radient.tensuraacadamia.quirks.half_cold_half_hot.ThermalVfxParticle.Kind.FROST_FRONT));
+            event.registerSpecial(DUST_WAVE.get(), new com.radient.tensuraacadamia.quirks.assault_dust.DustWaveParticle.Provider());
+            event.registerSpecial(STOCKPILE_RELEASE.get(), new com.radient.tensuraacadamia.quirks.shared.QuirkFeedbackParticle.Provider(com.radient.tensuraacadamia.quirks.shared.QuirkFeedbackParticle.Kind.STOCKPILE));
+            event.registerSpecial(TELEPORT_FLASH.get(), new com.radient.tensuraacadamia.quirks.shared.QuirkFeedbackParticle.Provider(com.radient.tensuraacadamia.quirks.shared.QuirkFeedbackParticle.Kind.TELEPORT));
+            event.registerSpecial(PHASE_RIPPLE.get(), new com.radient.tensuraacadamia.quirks.shared.QuirkFeedbackParticle.Provider(com.radient.tensuraacadamia.quirks.shared.QuirkFeedbackParticle.Kind.PHASE));
+            event.registerSpecial(BLOOD_PARALYSIS.get(), new com.radient.tensuraacadamia.quirks.shared.QuirkFeedbackParticle.Provider(com.radient.tensuraacadamia.quirks.shared.QuirkFeedbackParticle.Kind.BLOOD));
+            event.registerSpecial(WOOD_SLASH.get(), new com.radient.tensuraacadamia.quirks.shared.QuirkFeedbackParticle.Provider(com.radient.tensuraacadamia.quirks.shared.QuirkFeedbackParticle.Kind.WOOD_SLASH));
+            event.registerSpecial(ACID_SWEAT_BLAST.get(), new com.radient.tensuraacadamia.quirks.acid_sweat.AcidSweatClient.BlastProvider());
+            event.registerSpecial(ACID_SPLASH.get(), new com.radient.tensuraacadamia.quirks.acid.AcidVfxParticle.Provider(false));
+            event.registerSpecial(ACID_CHARGE.get(), new com.radient.tensuraacadamia.quirks.acid.AcidVfxParticle.Provider(true));
+            event.registerSpecial(QUEEN_HEART.get(), new com.radient.tensuraacadamia.quirks.queen_beam.QueenHeartParticle.Provider());
             event.registerSpriteSet(SMASH_PARTICLE.get(), SmashParticle.Provider::new);
             event.registerSpriteSet(OFA_COWLING_1.get(),
                     io.github.manasmods.tensura.particle.type.LightningSparkParticle.Provider::new);
             event.registerSpriteSet(OFA_COWLING_2.get(),
                     io.github.manasmods.tensura.particle.type.LightningSparkParticle.Provider::new);
-            event.registerSpriteSet(ELECTRIC_ARC.get(), sprites -> new ElectricParticle.Provider(sprites, false));
-            event.registerSpriteSet(ELECTRIC_FIELD.get(), sprites -> new ElectricParticle.Provider(sprites, true));
-            event.registerSpriteSet(ELECTRIC_TRAIL.get(), sprites -> new ElectricParticle.Provider(sprites, 2));
+            event.registerSpecial(ELECTRIC_ARC.get(), new com.radient.tensuraacadamia.quirks.shared.QuirkVfxParticle.Provider(2, .28));
+            event.registerSpecial(ELECTRIC_FIELD.get(), new com.radient.tensuraacadamia.quirks.shared.QuirkVfxParticle.Provider(3, .55));
+            event.registerSpecial(ELECTRIC_TRAIL.get(), new com.radient.tensuraacadamia.quirks.shared.QuirkVfxParticle.Provider(4, .24));
+            event.registerSpecial(ELECTRIC_LINK.get(), new com.radient.tensuraacadamia.quirks.shared.QuirkVfxParticle.Provider(10, 1));
+            event.registerSpecial(ELECTRIC_SHELL.get(), new com.radient.tensuraacadamia.quirks.shared.QuirkVfxParticle.Provider(11, 1));
             event.registerSpriteSet(SMOKESCREEN.get(), sprites -> new SmokeParticle.Provider(sprites, 1.0F));
             event.registerSpriteSet(SMOKESCREEN_SELF.get(), sprites -> new SmokeParticle.Provider(sprites, 0.2F));
-            event.registerSpriteSet(ORANGE_EXPLOSION.get(),
-                    sprites -> new OrangeExplosionParticle.Provider(sprites, 0.62F, 0.18F));
-            event.registerSpriteSet(SMALL_ORANGE_EXPLOSION.get(),
-                    sprites -> new OrangeExplosionParticle.Provider(sprites, 0.38F, 0.12F));
+            event.registerSpecial(PORTAL_FOG.get(), new com.radient.tensuraacadamia.quirks.shared.SkillEffectParticle.Provider(1, 1));
+            event.registerSpecial(BEAM_CLASH.get(), new com.radient.tensuraacadamia.quirks.shared.SkillEffectParticle.Provider(2, 1));
+            event.registerSpecial(BLAST_FLASH.get(), new com.radient.tensuraacadamia.quirks.shared.SkillEffectParticle.Provider(3, 1));
+            event.registerSpecial(BLAST_CHARGE.get(), new com.radient.tensuraacadamia.quirks.shared.SkillEffectParticle.Provider(4, 1));
+            event.registerSpecial(ORANGE_EXPLOSION.get(), new com.radient.tensuraacadamia.quirks.shared.QuirkVfxParticle.Provider(0, .8));
+            event.registerSpecial(SMALL_ORANGE_EXPLOSION.get(), new com.radient.tensuraacadamia.quirks.shared.QuirkVfxParticle.Provider(0, .35));
+            event.registerSpecial(EXPLOSION_IMPACT.get(), new com.radient.tensuraacadamia.quirks.shared.QuirkVfxParticle.Provider(1, 1));
+            event.registerSpecial(WIND_VORTEX.get(), new com.radient.tensuraacadamia.quirks.shared.QuirkVfxParticle.Provider(7, 1));
+            event.registerSpecial(WIND_RELEASE.get(), new com.radient.tensuraacadamia.quirks.shared.QuirkVfxParticle.Provider(8, 1));
+            event.registerSpecial(BARRIER_SHARDS.get(), new com.radient.tensuraacadamia.quirks.shared.QuirkVfxParticle.Provider(9, 1));
             event.registerSpriteSet(ENGINE_SPARK.get(), EngineSparkParticle.Provider::new);
-            event.registerSpriteSet(VOICE_CANNON.get(), sprites -> new VoiceCannonParticle.Provider(sprites, 5.0F));
-            event.registerSpriteSet(VOICE_CANNON_WIDE.get(), sprites -> new VoiceCannonParticle.Provider(sprites, 15.0F));
+            event.registerSpecial(VOICE_CANNON.get(), new com.radient.tensuraacadamia.quirks.shared.QuirkVfxParticle.Provider(5, 2.5));
+            event.registerSpecial(VOICE_CANNON_WIDE.get(), new com.radient.tensuraacadamia.quirks.shared.QuirkVfxParticle.Provider(5, 7.5));
 
             event.registerSpriteSet(OFA_1_COWL.get(), SmashParticle.Provider::new);
             event.registerSpriteSet(BLAZE_ROD_BEAM.get(),
-                    sprites -> new com.radient.tensuraacadamia.client.EyeBeamParticle.Provider(
+                    sprites -> new com.radient.tensuraacadamia.quirks.shared.EyeBeamParticle.Provider(
                             sprites, 100.0D, 0.3D, 0xFFFF0000));
             event.registerSpriteSet(BLAZE_ROD_BEAM_WIDE.get(),
-                    sprites -> new com.radient.tensuraacadamia.client.EyeBeamParticle.Provider(
+                    sprites -> new com.radient.tensuraacadamia.quirks.shared.EyeBeamParticle.Provider(
                             sprites, 240.0D, 15.0D, 0xFFFF0000));
             event.registerSpriteSet(IMPURE_BEAM.get(),
-                    sprites -> new com.radient.tensuraacadamia.client.EyeBeamParticle.Provider(
+                    sprites -> new com.radient.tensuraacadamia.quirks.shared.EyeBeamParticle.Provider(
                             sprites, 240.0D, 0.36D, 0xFFFFD52A));
             event.registerSpriteSet(BLAZE_ROD_BEAM_OVERPOWER.get(),
-                    sprites -> new com.radient.tensuraacadamia.client.EyeBeamParticle.Provider(
+                    sprites -> new com.radient.tensuraacadamia.quirks.shared.EyeBeamParticle.Provider(
                             sprites, 240.0D, 30.0D, 0xFFFF0000));
             event.registerSpriteSet(IMPURE_BEAM_OVERPOWER.get(),
-                    sprites -> new com.radient.tensuraacadamia.client.EyeBeamParticle.Provider(
+                    sprites -> new com.radient.tensuraacadamia.quirks.shared.EyeBeamParticle.Provider(
                             sprites, 240.0D, 1.08D, 0xFFFFD52A));
             event.registerSpriteSet(GREEN_LEAF.get(), GreenLeafParticle.Provider::new);
         }
@@ -187,155 +256,7 @@ public final class MHAParticles {
         }
     }
 
-    private static final class OrangeExplosionParticle extends TextureSheetParticle {
-        private final SpriteSet sprites;
 
-        private OrangeExplosionParticle(ClientLevel level, double x, double y, double z,
-                                        double xSpeed, double ySpeed, double zSpeed, SpriteSet sprites,
-                                        float baseSize, float sizeVariation) {
-            super(level, x, y, z, xSpeed, ySpeed, zSpeed);
-            this.sprites = sprites;
-            this.lifetime = 16;
-            this.quadSize = baseSize + level.random.nextFloat() * sizeVariation;
-            this.gravity = 0.0F;
-            this.hasPhysics = false;
-            this.setColor(1.0F, 0.44F, 0.12F);
-            this.setAlpha(1.0F);
-            this.setParticleSpeed(0.0D, 0.0D, 0.0D);
-            this.setSpriteFromAge(sprites);
-        }
-
-        @Override
-        public void tick() {
-            super.tick();
-            this.setSpriteFromAge(sprites);
-        }
-
-        @Override
-        public int getLightColor(float partialTick) {
-            return 0xF000F0;
-        }
-
-        @Override
-        public ParticleRenderType getRenderType() {
-            return ParticleRenderType.PARTICLE_SHEET_TRANSLUCENT;
-        }
-
-        private static final class Provider implements ParticleProvider<SimpleParticleType> {
-            private final SpriteSet sprites;
-            private final float baseSize;
-            private final float sizeVariation;
-
-            private Provider(SpriteSet sprites, float baseSize, float sizeVariation) {
-                this.sprites = sprites;
-                this.baseSize = baseSize;
-                this.sizeVariation = sizeVariation;
-            }
-
-            @Override
-            public Particle createParticle(SimpleParticleType type, ClientLevel level,
-                                           double x, double y, double z,
-                                           double xSpeed, double ySpeed, double zSpeed) {
-                return new OrangeExplosionParticle(level, x, y, z, xSpeed, ySpeed, zSpeed,
-                        sprites, baseSize, sizeVariation);
-            }
-        }
-    }
-
-    /**
-     * The Warden's actual sonic-boom particle, using its animated wave geometry and
-     * sprite timing, recolored for Voice rather than approximated with a flat sprite.
-     */
-    private static final class VoiceCannonParticle extends HugeExplosionParticle {
-        private final SpriteSet sprites;
-
-        private VoiceCannonParticle(ClientLevel level, double x, double y, double z,
-                                    double xSpeed, double ySpeed, double zSpeed, SpriteSet sprites, float diameter) {
-            super(level, x, y, z, xSpeed, sprites);
-            this.sprites = sprites;
-            this.lifetime = 16;
-            this.quadSize = diameter;
-            // The copied Warden frames are already yellow. Keep their native color
-            // rather than multiplying a cyan texture with a runtime tint.
-            this.setColor(1.0F, 1.0F, 1.0F);
-            this.setAlpha(1.0F);
-            this.setSpriteFromAge(sprites);
-        }
-
-        @Override
-        public void tick() {
-            // This is the exact age-to-frame progression used by SonicBoomParticle.
-            super.tick();
-        }
-
-        private static final class Provider implements ParticleProvider<SimpleParticleType> {
-            private final SpriteSet sprites;
-            private final float diameter;
-
-            private Provider(SpriteSet sprites, float diameter) {
-                this.sprites = sprites;
-                this.diameter = diameter;
-            }
-
-            @Override
-            public Particle createParticle(SimpleParticleType type, ClientLevel level,
-                                           double x, double y, double z,
-                                           double xSpeed, double ySpeed, double zSpeed) {
-                return new VoiceCannonParticle(level, x, y, z, xSpeed, ySpeed, zSpeed, sprites, diameter);
-            }
-        }
-    }
-
-    private static final class ElectricParticle extends TextureSheetParticle {
-        private ElectricParticle(ClientLevel level, double x, double y, double z,
-                                 double xSpeed, double ySpeed, double zSpeed, SpriteSet sprites, int variant) {
-            super(level, x, y, z, xSpeed, ySpeed, zSpeed);
-            this.pickSprite(sprites);
-            this.lifetime = variant == 2 ? 24 : variant == 1 ? 9 : 7;
-            this.quadSize = variant == 2 ? 0.27F : variant == 1 ? 0.55F : 0.18F;
-            this.gravity = 0.0F;
-            this.hasPhysics = false;
-            this.roll = level.random.nextFloat() * 6.2831855F;
-            this.oRoll = this.roll;
-        }
-
-        @Override
-        public void tick() {
-            super.tick();
-            this.alpha = Math.max(0.0F, 1.0F - (float) this.age / this.lifetime);
-        }
-
-        @Override
-        public int getLightColor(float partialTick) {
-            return 0xF000F0;
-        }
-
-        @Override
-        public ParticleRenderType getRenderType() {
-            return ParticleRenderType.PARTICLE_SHEET_TRANSLUCENT;
-        }
-
-        private static final class Provider implements ParticleProvider<SimpleParticleType> {
-            private final SpriteSet sprites;
-            private final int variant;
-
-            private Provider(SpriteSet sprites, boolean field) {
-                this(sprites, field ? 1 : 0);
-            }
-
-            private Provider(SpriteSet sprites, int variant) {
-                this.sprites = sprites;
-                this.variant = variant;
-            }
-
-            @Override
-            public Particle createParticle(SimpleParticleType type, ClientLevel level,
-                                           double x, double y, double z,
-                                           double xSpeed, double ySpeed, double zSpeed) {
-                return new ElectricParticle(level, x, y, z, xSpeed, ySpeed, zSpeed, sprites, variant);
-            }
-        }
-    }
 
     private static final class SmokeParticle extends TextureSheetParticle {
         private final SpriteSet sprites;

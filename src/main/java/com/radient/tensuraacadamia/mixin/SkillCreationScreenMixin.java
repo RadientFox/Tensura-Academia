@@ -1,8 +1,8 @@
 package com.radient.tensuraacadamia.mixin;
 
 import com.radient.tensuraacadamia.TensuraAcadamia;
-import com.radient.tensuraacadamia.ability.ultimate.afo.AllForOneScreen;
-import com.radient.tensuraacadamia.ability.ultimate.afo.SkillCreationScreenAccess;
+import com.radient.tensuraacadamia.quirks.all_for_one.AllForOneScreen;
+import com.radient.tensuraacadamia.quirks.all_for_one.SkillCreationScreenAccess;
 import io.github.manasmods.manascore.skill.api.ManasSkill;
 import io.github.manasmods.tensura.client.screen.SkillCreationScreen;
 import net.minecraft.client.gui.GuiGraphics;

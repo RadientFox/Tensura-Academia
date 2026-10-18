@@ -1,6 +1,6 @@
 package com.radient.tensuraacadamia.mixin;
 
-import com.radient.tensuraacadamia.ability.unique.quirks.DoubleCloneManager;
+import com.radient.tensuraacadamia.quirks.double_quirk.DoubleCloneManager;
 import io.github.manasmods.tensura.util.EnergyHelper;
 import net.minecraft.world.entity.LivingEntity;
 import org.spongepowered.asm.mixin.Mixin;

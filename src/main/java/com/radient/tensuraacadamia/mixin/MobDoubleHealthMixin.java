@@ -1,6 +1,6 @@
 package com.radient.tensuraacadamia.mixin;
 
-import com.radient.tensuraacadamia.ability.unique.quirks.DoubleMobHealthData;
+import com.radient.tensuraacadamia.quirks.double_quirk.DoubleMobHealthData;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.world.entity.Mob;

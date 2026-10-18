@@ -1,6 +1,6 @@
 package com.radient.tensuraacadamia.mixin;
 
-import com.radient.tensuraacadamia.ability.unique.quirks.DoubleMobHealthData;
+import com.radient.tensuraacadamia.quirks.double_quirk.DoubleMobHealthData;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import org.spongepowered.asm.mixin.Mixin;
@@ -16,7 +16,7 @@ public abstract class LivingEntityDoubleHealthMixin {
         if (entity instanceof Mob mob) {
             float health = DoubleMobHealthData.get(mob);
             if (Float.isFinite(health) && health > 0.0F) callback.setReturnValue(
-                    com.radient.tensuraacadamia.ability.unique.quirks.OverhaulQuirk.duplicateHealth(entity, health));
+                    com.radient.tensuraacadamia.quirks.overhaul.OverhaulQuirk.duplicateHealth(entity, health));
         }
     }
 }

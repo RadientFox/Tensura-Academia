@@ -1,6 +1,6 @@
 package com.radient.tensuraacadamia.mixin;
 
-import com.radient.tensuraacadamia.ability.unique.quirks.WoodenSwordsQuirk;
+import com.radient.tensuraacadamia.quirks.wooden_swords.WoodenSwordsQuirk;
 import io.github.manasmods.tensura.damage.TensuraDamageHelper;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.tags.TagKey;

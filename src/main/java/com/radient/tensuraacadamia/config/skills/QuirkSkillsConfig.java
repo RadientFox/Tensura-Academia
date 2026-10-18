@@ -45,6 +45,20 @@ public class QuirkSkillsConfig extends ManasConfig {
     public Landmine Landmine = new Landmine();
     public Grabbing Grabbing = new Grabbing();
     public Blast Blast = new Blast();
+    public AssaultDust AssaultDust = new AssaultDust();
+
+    public static class AssaultDust extends ManasSubConfig {
+        public double dustblowerAura = 100;
+        public int dustblowerCooldown = 3;
+        public int dustySeconds = 30;
+        public double dustblowerRange = 12;
+        public double duststormAura = 2000;
+        public int duststormCooldown = 20;
+        public int duststormTravelSeconds = 5;
+        public int duststormDebuffSeconds = 5;
+        public double compressionAura = 10000;
+        public int compressionCooldown = 60;
+    }
 
     public static class Blast extends ManasSubConfig {
         @Comment("Maximum block hardness Big Ass Blast can destroy. Negative-hardness blocks are always protected.")

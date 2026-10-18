@@ -1,6 +1,6 @@
 package com.radient.tensuraacadamia.mixin.client;
 
-import com.radient.tensuraacadamia.client.AcceleratorRingsFlightClient;
+import com.radient.tensuraacadamia.quirks.accelerator_rings.AcceleratorRingsFlightClient;
 import net.minecraft.world.entity.LivingEntity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;

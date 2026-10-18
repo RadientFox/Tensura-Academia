@@ -1,6 +1,6 @@
 package com.radient.tensuraacadamia.mixin.client;
 
-import com.radient.tensuraacadamia.network.ElasticityBouncePayload;
+import com.radient.tensuraacadamia.quirks.elasticity.ElasticityBouncePayload;
 import net.minecraft.client.KeyboardHandler;
 import net.minecraft.client.Minecraft;
 import net.neoforged.neoforge.network.PacketDistributor;
