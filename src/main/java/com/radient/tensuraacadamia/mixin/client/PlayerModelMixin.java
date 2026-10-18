@@ -4,6 +4,8 @@ import com.radient.tensuraacadamia.client.BruiserClient;
 import com.radient.tensuraacadamia.client.GigantificationClient;
 import com.radient.tensuraacadamia.client.JetClient;
 import com.radient.tensuraacadamia.client.MultiArmsClient;
+import com.radient.tensuraacadamia.client.QuirkAnimClient;
+import com.radient.tensuraacadamia.client.SlideAndGlideMotionClient;
 import net.minecraft.client.model.PlayerModel;
 import net.minecraft.world.entity.LivingEntity;
 import org.spongepowered.asm.mixin.Mixin;
@@ -27,6 +29,8 @@ public abstract class PlayerModelMixin {
         BruiserClient.poseModel((PlayerModel<?>) (Object) this, entity);
         GigantificationClient.poseModel((PlayerModel<?>) (Object) this, entity, ageInTicks);
         JetClient.poseModel((PlayerModel<?>) (Object) this, entity, ageInTicks);
+        SlideAndGlideMotionClient.poseModel((PlayerModel<?>) (Object) this, entity, limbSwing, limbSwingAmount, ageInTicks);
+        QuirkAnimClient.poseModel((PlayerModel<?>) (Object) this, entity, limbSwing, limbSwingAmount, ageInTicks);
 
     }
 

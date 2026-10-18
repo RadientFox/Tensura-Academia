@@ -19,6 +19,10 @@ import com.radient.tensuraacadamia.ability.unique.quirks.EngineQuirk;
 import com.radient.tensuraacadamia.network.ElasticityBouncePayload;
 import com.radient.tensuraacadamia.network.AcceleratorRingsFlightPayload;
 import com.radient.tensuraacadamia.network.PermeationPhasePayload;
+import com.radient.tensuraacadamia.network.RewindFxPayload;
+import com.radient.tensuraacadamia.network.SlideAndGlideBurstPayload;
+import com.radient.tensuraacadamia.network.SlideAndGlideMotionPayload;
+import com.radient.tensuraacadamia.network.SlideAndGlideStatePayload;
 import com.radient.tensuraacadamia.ability.ultimate.ofa.GearshiftTrailPayload;
 import org.slf4j.Logger;
 
@@ -96,9 +100,14 @@ public class TensuraAcadamia {
         com.radient.tensuraacadamia.regestry.AlchemyEntities.register(modEventBus);
         com.radient.tensuraacadamia.regestry.CloudEntities.register(modEventBus);
         com.radient.tensuraacadamia.regestry.GreyTornadoEntities.register(modEventBus);
+        SlideAndGlideEntities.register(modEventBus);
+        FierceWingsEntities.register(modEventBus);
+        FierceWingsItems.register(modEventBus);
+        SpiderRegistry.register(modEventBus);
         com.radient.tensuraacadamia.ability.unique.quirks.WoodenSwordsQuirk.registerSkillEvents();
         OFAEntitys.ENTITY_TYPES.register(modEventBus);
         AcadamiaConfigs.init();
+        com.radient.tensuraacadamia.ability.unique.quirks.SpideySmartsSkill.registerSkillEvents();
     }
 
     private void commonSetup(FMLCommonSetupEvent event) {
@@ -123,6 +132,22 @@ public class TensuraAcadamia {
         event.registrar("1").playToClient(com.radient.tensuraacadamia.network.WarpGateOpenPayload.TYPE,
                 com.radient.tensuraacadamia.network.WarpGateOpenPayload.STREAM_CODEC,
                 com.radient.tensuraacadamia.network.WarpGateOpenPayload::handle);
+        event.registrar("1").playToClient(SlideAndGlideStatePayload.TYPE,
+                SlideAndGlideStatePayload.STREAM_CODEC, SlideAndGlideStatePayload::handle);
+        event.registrar("1").playToClient(SlideAndGlideBurstPayload.TYPE,
+                SlideAndGlideBurstPayload.STREAM_CODEC, SlideAndGlideBurstPayload::handle);
+        event.registrar("1").playBidirectional(SlideAndGlideMotionPayload.TYPE,
+                SlideAndGlideMotionPayload.STREAM_CODEC, SlideAndGlideMotionPayload::handle);
+        event.registrar("1").playToClient(RewindFxPayload.TYPE,
+                RewindFxPayload.STREAM_CODEC, RewindFxPayload::handle);
+        event.registrar("1").playToClient(com.radient.tensuraacadamia.network.WaldoStrikePayload.TYPE,
+                com.radient.tensuraacadamia.network.WaldoStrikePayload.STREAM_CODEC, com.radient.tensuraacadamia.network.WaldoStrikePayload::handle);
+        event.registrar("1").playToClient(com.radient.tensuraacadamia.network.QuirkAnimPayload.TYPE,
+                com.radient.tensuraacadamia.network.QuirkAnimPayload.STREAM_CODEC, com.radient.tensuraacadamia.network.QuirkAnimPayload::handle);
+        event.registrar("1").playBidirectional(com.radient.tensuraacadamia.network.SpiderSwingPayload.TYPE,
+                com.radient.tensuraacadamia.network.SpiderSwingPayload.STREAM_CODEC, com.radient.tensuraacadamia.network.SpiderSwingPayload::handle);
+        event.registrar("1").playBidirectional(com.radient.tensuraacadamia.network.SpiderCeilingPayload.TYPE,
+                com.radient.tensuraacadamia.network.SpiderCeilingPayload.STREAM_CODEC, com.radient.tensuraacadamia.network.SpiderCeilingPayload::handle);
     }
 
     @SubscribeEvent

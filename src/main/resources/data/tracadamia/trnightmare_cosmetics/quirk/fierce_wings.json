@@ -1,0 +1,18 @@
+{
+  "name": "Fierce Wings",
+  "family": "quirk_fierce_wings",
+  "section": "Quirk Cosmetics",
+  "theme": "#E8C46A",
+  "particles": "sparkle",
+  "order": 1,
+  "facing": "back",
+  "options": [
+    {"id": "style", "label": "Style", "choices": ["Feathered", "Crescent", "Archangel", "Seraph"], "values": [0, 1, 2, 3]},
+    {"id": "color", "label": "Plumage", "choices": ["Crimson", "Scarlet", "Ember", "Rose"], "colors": ["#B3242C", "#D8343A", "#8E1C22", "#C8506A"]},
+    {"id": "show", "label": "Show", "choices": ["Always", "Flying"]}
+  ],
+  "parts": [
+    {"bone": "body", "preset": "trnightmare:feather_wings", "params": {"style": "@style", "color": "@color"}, "only": {"show": "Always"}},
+    {"bone": "body", "preset": "trnightmare:feather_wings", "params": {"style": "@style", "color": "@color"}, "only": {"show": "Flying"}, "when": "flying"}
+  ]
+}

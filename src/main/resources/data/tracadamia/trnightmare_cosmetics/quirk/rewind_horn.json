@@ -1,0 +1,54 @@
+{
+  "name": "Rewind's Horn",
+  "family": "quirk_rewind",
+  "section": "Quirk Cosmetics",
+  "theme": "#E8C46A",
+  "particles": "sparkle",
+  "order": 0,
+  "options": [
+    {"id": "size", "label": "Size", "choices": ["Grown", "Child"], "default": "Grown"},
+    {"id": "color", "label": "Color", "choices": ["Bone", "Ivory", "Pearl", "Gold"], "colors": ["#E4D4B2", "#F2ECDC", "#E6E2EE", "#E2B85A"]}
+  ],
+  "parts": [
+    {
+      "bone": "head", "only": {"size": "Grown"}, "color": "@color", "offset": [-0.6, 1.0, -1.4],
+      "from": [-3.1, -9.0, -3.5], "to": [-1.3, -7.6, -1.7], "pivot": [-2.2, -8.0, -2.6], "rotation": [18, 0, -14],
+      "children": [
+        {"from": [-3.2, -8.55, -3.6], "to": [-1.2, -8.15, -1.6], "rotation": [0, 0, 8], "color": "@color:dark"},
+        {
+          "from": [-2.95, -10.3, -3.35], "to": [-1.45, -9.0, -1.85], "pivot": [-2.2, -9.0, -2.6], "rotation": [-6, 22, -4], "color": "@color",
+          "children": [
+            {"from": [-3.05, -9.85, -3.45], "to": [-1.35, -9.5, -1.75], "rotation": [0, 0, 8], "color": "@color:dark"},
+            {
+              "from": [-2.8, -11.5, -3.2], "to": [-1.6, -10.3, -2.0], "pivot": [-2.2, -10.3, -2.6], "rotation": [-6, 22, -4], "color": "@color",
+              "children": [
+                {"from": [-2.9, -11.05, -3.3], "to": [-1.5, -10.75, -1.9], "rotation": [0, 0, 8], "color": "@color:dark"},
+                {
+                  "from": [-2.65, -12.6, -3.05], "to": [-1.75, -11.5, -2.15], "pivot": [-2.2, -11.5, -2.6], "rotation": [-6, 22, -4], "color": "@color",
+                  "children": [
+                    {"from": [-2.75, -12.2, -3.15], "to": [-1.65, -11.95, -2.05], "rotation": [0, 0, 8], "color": "@color:dark"},
+                    {"from": [-2.45, -13.9, -2.85], "to": [-1.95, -12.6, -2.35], "pivot": [-2.2, -12.6, -2.6], "rotation": [-8, 22, 0], "color": "@color:light"}
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "bone": "head", "only": {"size": "Child"}, "color": "@color", "offset": [-0.6, 1.0, -1.4],
+      "from": [-2.9, -8.8, -3.3], "to": [-1.5, -7.6, -1.9], "pivot": [-2.2, -8.0, -2.6], "rotation": [18, 0, -14],
+      "children": [
+        {"from": [-3.0, -8.4, -3.4], "to": [-1.4, -8.1, -1.8], "rotation": [0, 0, 8], "color": "@color:dark"},
+        {
+          "from": [-2.7, -9.9, -3.1], "to": [-1.7, -8.8, -2.1], "pivot": [-2.2, -8.8, -2.6], "rotation": [-6, 22, -4], "color": "@color",
+          "children": [
+            {"from": [-2.8, -9.5, -3.2], "to": [-1.6, -9.25, -2.0], "rotation": [0, 0, 8], "color": "@color:dark"},
+            {"from": [-2.45, -11.0, -2.85], "to": [-1.95, -9.9, -2.35], "pivot": [-2.2, -9.9, -2.6], "rotation": [-8, 22, 0], "color": "@color:light"}
+          ]
+        }
+      ]
+    }
+  ]
+}

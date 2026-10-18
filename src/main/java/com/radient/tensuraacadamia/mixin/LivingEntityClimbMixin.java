@@ -1,6 +1,8 @@
 package com.radient.tensuraacadamia.mixin;
 
 import com.radient.tensuraacadamia.ability.unique.quirks.ExtraArmsQuirk;
+import com.radient.tensuraacadamia.ability.unique.quirks.SlideAndGlideQuirk;
+import com.radient.tensuraacadamia.ability.unique.quirks.SpiderQuirk;
 import net.minecraft.world.entity.LivingEntity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -13,7 +15,8 @@ public abstract class LivingEntityClimbMixin {
 
     @Inject(method = "onClimbable", at = @At("RETURN"), cancellable = true)
     private void tracadamia$wallClimb(CallbackInfoReturnable<Boolean> cir) {
-        if (!cir.getReturnValueZ() && ExtraArmsQuirk.canWallClimb((LivingEntity) (Object) this)) {
+        LivingEntity entity = (LivingEntity) (Object) this;
+        if (!cir.getReturnValueZ() && (ExtraArmsQuirk.canWallClimb(entity) || SlideAndGlideQuirk.canWallSlide(entity) || SpiderQuirk.canWallCrawl(entity))) {
             cir.setReturnValue(true);
         }
     }

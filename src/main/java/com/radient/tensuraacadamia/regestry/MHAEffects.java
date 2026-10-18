@@ -39,6 +39,7 @@ public class MHAEffects {
     public static final DeferredHolder<MobEffect, MobEffect> WARP_OVERUSE;
     public static final DeferredHolder<MobEffect, MobEffect> LEAF_ANTI_HEALING;
     public static final DeferredHolder<MobEffect, MobEffect> DECAYEFFECT;
+    public static final DeferredHolder<MobEffect, MobEffect> WEBBED;
 
 
     public MHAEffects() {
@@ -74,6 +75,7 @@ public class MHAEffects {
         LEAF_ANTI_HEALING = MOB_EFFECTS.register("leaf_anti_healing", LeafAntiHealingEffect::new);
         DELAY_SPOT_FIELD = MOB_EFFECTS.register("delay_spot_field", DelaySpotFieldEffect::new);
         DECAYEFFECT = MOB_EFFECTS.register("decay", DecayEffect::new);
+        WEBBED = MOB_EFFECTS.register("webbed", WebbedEffect::new);
     }
 
 }

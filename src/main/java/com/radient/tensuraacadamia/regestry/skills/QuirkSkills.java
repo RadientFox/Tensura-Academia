@@ -111,6 +111,11 @@ public class QuirkSkills {
     public static final RegistrySupplier<TransformingArmsQuirk> TRANSFORMING_ARMS = register("transforming_arms", TransformingArmsQuirk::new);
     public static final RegistrySupplier<LandmineQuirk> LANDMINE = register("landmine", LandmineQuirk::new);
     public static final RegistrySupplier<DecayQuirk> DECAY = register("decay", DecayQuirk::new);
+    public static final RegistrySupplier<SlideAndGlideQuirk> SLIDE_AND_GLIDE = register("slide_and_glide", SlideAndGlideQuirk::new);
+    public static final RegistrySupplier<RewindQuirk> REWIND = register("rewind", RewindQuirk::new);
+    public static final RegistrySupplier<FierceWingsQuirk> FIERCE_WINGS = register("fierce_wings", FierceWingsQuirk::new);
+    public static final RegistrySupplier<SpiderQuirk> SPIDER = register("spider", SpiderQuirk::new);
+    public static final RegistrySupplier<SpideySmartsSkill> SPIDEY_SMARTS = register("spidey_smarts", SpideySmartsSkill::new);
 
 
     private static <E extends ManasSkill> RegistrySupplier<E> register(String name, Supplier<E> supplier) {

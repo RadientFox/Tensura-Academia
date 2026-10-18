@@ -102,6 +102,10 @@ public final class AllForOneMenu extends SkillCreationMenu {
         Map<ResourceLocation, Integer> sourceCounts = AllForOneStock.counts(source);
         if (!sourceCounts.containsKey(id)) return false;
         if (getMode() == 0 && !canStealFrom(target, id, sourceCounts)) return false;
+        if (getMode() == 0 && com.radient.tensuraacadamia.ability.unique.quirks.RewindQuirk.isDeletionImmune(target)) {
+            owner.displayClientMessage(Component.translatable("tracadamia.skill.rewind.deletion_immune"), true);
+            return false;
+        }
         double auraCost = getMode() == 0 ? acquisitionAuraCost(source, id) : 0.0D;
         var existence = TensuraStorages.getExistenceFrom(owner);
         if (existence.getAura() < auraCost) {

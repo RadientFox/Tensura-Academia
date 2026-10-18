@@ -43,6 +43,10 @@ public class QuirkSkillsConfig extends ManasConfig {
     public Gigantification Gigantification = new Gigantification();
     public TransformingArms TransformingArms = new TransformingArms();
     public Landmine Landmine = new Landmine();
+    public SlideAndGlide SlideAndGlide = new SlideAndGlide();
+    public Rewind Rewind = new Rewind();
+    public FierceWings FierceWings = new FierceWings();
+    public Spider Spider = new Spider();
     public Grabbing Grabbing = new Grabbing();
     public Blast Blast = new Blast();
 
@@ -1766,6 +1770,258 @@ public class QuirkSkillsConfig extends ManasConfig {
         public double remoteDamageMastered = 500.0;
 
         public Landmine() {
+        }
+    }
+
+    public static class SlideAndGlide extends ManasSubConfig {
+        @Comment("Skill Mastery Points")
+        public double masteryPoints = 3_000.0;
+        @Comment("Magicule cost to acquire")
+        public double acquiringCost = 75_000.0;
+
+        @Comment("Mastery % (0-1) where Slide and Glide becomes a toggle and can glide on walls and ceilings")
+        public double toggleUnlockMastery = 0.2;
+        @Comment("Mastery % (0-1) where Scrappy Thrust Style no longer needs the user on a wall or ceiling")
+        public double freeThrustMastery = 0.35;
+        @Comment("Mastery % (0-1) where Slap Style unlocks")
+        public double slapUnlockMastery = 0.5;
+        @Comment("Mastery % (0-1) where Extra Oomph unlocks")
+        public double oomphUnlockMastery = 0.6;
+
+        @Comment("Slide and Glide: Movement speed bonus at 0% mastery (0.25 = +25%)")
+        public double minSlideSpeed = 0.25;
+        @Comment("Slide and Glide: Movement speed bonus at 100% mastery (Gearshift Overdrive is +50%)")
+        public double maxSlideSpeed = 0.5;
+        @Comment("Slide and Glide: Extra step height while sliding")
+        public double slideStepBonus = 0.5;
+        @Comment("Slide and Glide: Extra movement speed while gliding on all fours (makes up for not sprinting)")
+        public double crawlSpeedBonus = 0.3;
+
+        @Comment("Scrappy Thrust Style: Light damage")
+        public double thrustDamage = 35.0;
+        @Comment("Scrappy Thrust Style: Aura cost")
+        public double thrustAuraCost = 100.0;
+        @Comment("Scrappy Thrust Style: Cooldown in seconds")
+        public int thrustCooldown = 1;
+        @Comment("Scrappy Thrust Style: Blocks per tick the ball of light travels")
+        public double thrustSpeed = 2.5;
+        @Comment("Scrappy Thrust Style: Ticks before the ball of light fades")
+        public int thrustLifetime = 30;
+
+        @Comment("Slap Style: Cooldown in seconds after a successful repel")
+        public int slapCooldown = 30;
+
+        @Comment("Knuckle Style: Physical damage multiplier")
+        public double knuckleDamageMultiplier = 3.0;
+        @Comment("Knuckle Style: Extra light damage as a share of the original hit")
+        public double knuckleLightShare = 0.5;
+        @Comment("Knuckle Style: Explosion damage to the target as a share of the boosted hit")
+        public double knuckleBlastShare = 0.25;
+        @Comment("Knuckle Style: Explosion damage to the user as a share of the boosted hit")
+        public double knuckleSelfBlastShare = 0.1;
+
+        @Comment("Reflexes: Chance (0-1) to ignore damage while in Knuckle Style")
+        public double reflexesChance = 0.25;
+
+        @Comment("Extra Oomph: Health % (0-1) the user must fall below")
+        public double oomphHealthThreshold = 0.4;
+        @Comment("Extra Oomph: Ticks the user must stay below the threshold")
+        public int oomphDelayTicks = 20;
+        @Comment("Extra Oomph: Slide and Glide speed multiplier")
+        public double oomphSpeedMultiplier = 2.0;
+        @Comment("Extra Oomph: Dodge chance (0-1)")
+        public double oomphDodgeChance = 0.5;
+        @Comment("Extra Oomph: Quirk damage multiplier")
+        public double oomphDamageMultiplier = 2.0;
+
+        public SlideAndGlide() {
+        }
+    }
+
+    public static class Rewind extends ManasSubConfig {
+        @Comment("Skill Mastery Points")
+        public double masteryPoints = 2_500.0;
+
+        @Comment("Horn of Time: Ticks between each stocked second of rewind (1200 = 1 minute)")
+        public int stockIntervalTicks = 1200;
+
+        @Comment("Rewound: Ticks of history rewound per tick held (2 = rewinds at double speed). Stock is spent at the same rate")
+        public int rewindSpeed = 2;
+        @Comment("Rewound: Seconds of history kept for the user")
+        public int ownerHistorySeconds = 180;
+        @Comment("Rewound: Seconds of history kept for others near the user")
+        public int otherHistorySeconds = 60;
+        @Comment("Rewound: Range around the user where others have their history kept")
+        public double trackRange = 16.0;
+        @Comment("Rewound: Range to start rewinding someone else, and how far they can get before it stops")
+        public double targetRange = 12.0;
+
+        public Rewind() {
+        }
+    }
+
+    public static class FierceWings extends ManasSubConfig {
+        @Comment("Skill Mastery Points")
+        public double masteryPoints = 2_500.0;
+
+        @Comment("Wings: Feathers from 0% to 49% mastery")
+        public int feathers = 100;
+        @Comment("Wings: Feathers from 50% to 99% mastery")
+        public int feathersHalfMastered = 150;
+        @Comment("Wings: Feathers at 100% mastery")
+        public int feathersMastered = 200;
+        @Comment("Wings: Ticks for one feather to grow back (1200 = 1 minute)")
+        public int regrowTicks = 1200;
+
+        @Comment("Weakness to Flames: Feathers lost when hit by a flame attack")
+        public int flameFeatherLoss = 5;
+        @Comment("Weakness to Flames: Chance (0-1) to lose feathers")
+        public double flameChance = 1.0;
+        @Comment("Weakness to Flames: Chance (0-1) with Flame Attack Resistance")
+        public double flameResistanceChance = 0.5;
+        @Comment("Weakness to Flames: Chance (0-1) with Flame Attack Nullification")
+        public double flameNullificationChance = 0.05;
+
+        @Comment("Take Flight!: Flying needs more feathers than this")
+        public int minFlightFeathers = 10;
+        @Comment("Take Flight!: Boosting needs more feathers than this")
+        public int minBoostFeathers = 25;
+        @Comment("Take Flight!: Feathers spent per boost")
+        public int boostFeatherCost = 3;
+        @Comment("Take Flight!: Cruising speed in blocks per tick with no feathers, rising to the full-feather speed")
+        public double minCruiseSpeed = 0.6;
+        @Comment("Take Flight!: Cruising speed in blocks per tick at full feathers")
+        public double maxCruiseSpeed = 1.6;
+        @Comment("Take Flight!: Boost strength with no feathers, rising to the full-feather strength")
+        public double minBoost = 0.6;
+        @Comment("Take Flight!: Boost strength at full feathers")
+        public double maxBoost = 1.6;
+
+        @Comment("Feather Cannon: Feathers spent and fired")
+        public int cannonFeathers = 20;
+        @Comment("Feather Cannon: Physical damage per feather")
+        public double cannonDamage = 25.0;
+        @Comment("Feather Cannon: Damage per feather from 50% mastery")
+        public double cannonDamageHalfMastered = 35.0;
+        @Comment("Feather Cannon: Damage per feather at 100% mastery")
+        public double cannonDamageMastered = 45.0;
+        @Comment("Feather Cannon: Range to lock onto a target")
+        public double cannonRange = 32.0;
+
+        @Comment("Feather Blades: Feathers spent per blade")
+        public int bladeFeatherCost = 1;
+        @Comment("Feather Blades: Extra damage per point of attack speed above the blade's own")
+        public double bladeAttackSpeedScaling = 0.5;
+
+        @Comment("Feather Boost: Feathers spent")
+        public int boostFeathers = 5;
+        @Comment("Feather Boost: Ticks the boost lasts")
+        public int boostTicks = 100;
+        @Comment("Feather Boost: Attack speed bonus (0.5 = +50%)")
+        public double boostAttackSpeed = 0.5;
+        @Comment("Feather Boost: Movement speed bonus (0.3 = +30%)")
+        public double boostMovementSpeed = 0.3;
+        @Comment("Feather Boost: Range to boost an ally")
+        public double boostRange = 12.0;
+
+        public FierceWings() {
+        }
+    }
+
+    public static class Spider extends ManasSubConfig {
+        @Comment("Skill Mastery Points")
+        public double masteryPoints = 2_500.0;
+        @Comment("Magicule cost to acquire")
+        public double acquiringCost = 80_000.0;
+
+        @Comment("Spider Sense: Presence Sense added while toggled on")
+        public double presenceSense = 3.0;
+        @Comment("Spider Sense: Dodge chance gained per extra multiple of the attacker's EP (0.25 = 25% at double their EP)")
+        public double dodgePerEpRatio = 0.25;
+        @Comment("Spider Sense: Guaranteed dodge chance at 100% mastery")
+        public double masteredDodge = 0.25;
+        @Comment("Spider Sense: Highest dodge chance")
+        public double maxDodge = 0.5;
+
+        @Comment("Spider Power: Bonus to melee damage, movement speed, knockback resistance and armor")
+        public double power = 0.2;
+        @Comment("Spider Power: Bonus with Super Strength Enhancement 1, 2 and 3")
+        public double powerLevel1 = 0.25;
+        public double powerLevel2 = 0.35;
+        public double powerLevel3 = 0.45;
+
+        @Comment("Web Swing: How far a web can reach")
+        public double swingRange = 48.0;
+
+        @Comment("Web Shooters: Damage per shot")
+        public double shooterDamage = 25.0;
+        @Comment("Web Shooters: Shots before reloading, before Web Enhancement")
+        public int shooterAmmo = 12;
+        @Comment("Web Shooters: Extra shots per Web Enhancement level")
+        public int ammoPerWebLevel = 2;
+        @Comment("Web Shooters: Damage bonus per Web Enhancement level (0.2 = +20%)")
+        public double damagePerWebLevel = 0.2;
+        @Comment("Web Shooters and Electric Web: Reload time in seconds")
+        public int reloadSeconds = 30;
+        @Comment("Web Shooters: Range to lock onto a target")
+        public double shotRange = 32.0;
+
+        @Comment("Impact Web: Damage")
+        public double impactDamage = 75.0;
+        @Comment("Impact Web: Cooldown in seconds")
+        public int impactCooldown = 3;
+
+        @Comment("Trip Web: How far the device can be shot")
+        public double tripRange = 24.0;
+        @Comment("Trip Web: Longest trip line")
+        public double tripLength = 16.0;
+        @Comment("Trip Web: Most devices one user can have out")
+        public int maxTripDevices = 3;
+        @Comment("Trip Web: Seconds before a device falls apart")
+        public int tripLifetime = 300;
+
+        @Comment("Electric Web: Shots before reloading")
+        public int electricAmmo = 6;
+        @Comment("Electric Web: Physical damage per shot")
+        public double electricDamage = 25.0;
+        @Comment("Electric Web: Extra electric damage per shot")
+        public double electricExtraDamage = 25.0;
+        @Comment("Electric Web: Paralysis length in ticks")
+        public int electricParalysisTicks = 60;
+
+        @Comment("Web Blossom: Damage per web")
+        public double blossomDamage = 70.0;
+        @Comment("Web Blossom: Radius of the webs")
+        public double blossomRadius = 15.0;
+        @Comment("Web Blossom: Cooldown in seconds")
+        public int blossomCooldown = 20;
+
+        @Comment("Iron Spider Arms: Damage per waldo strike, before Spider Power")
+        public double waldoDamage = 30.0;
+        @Comment("Iron Spider Arms: Reach of the waldos")
+        public double waldoRange = 4.5;
+        @Comment("Iron Spider Arms: Ticks between waldo strikes")
+        public int waldoStrikeTicks = 10;
+        @Comment("Iron Spider Arms: Jump strength bonus (0.3 = +30%)")
+        public double waldoJumpBonus = 0.3;
+        @Comment("Iron Spider Arms: Share (0-1) of fall damage the waldos absorb")
+        public double waldoFallAbsorb = 0.5;
+
+        @Comment("Webbed: Web hits needed before a target is Webbed")
+        public int hitsToWeb = 3;
+        @Comment("Webbed: Seconds web hits are remembered")
+        public int webMemorySeconds = 10;
+        @Comment("Webbed: Ticks the effect lasts")
+        public int webbedTicks = 100;
+
+        @Comment("Spidey Smarts: Chance (0-1) for a Combat Token per hostile mob killed")
+        public double combatTokenChance = 0.1;
+        @Comment("Spidey Smarts: Chance (0-1) for a Raid Token per raid won")
+        public double raidTokenChance = 0.4;
+        @Comment("Spidey Smarts: Chance (0-1) for a Research Token per skill, quirk, battlewill or magic learned or mastered")
+        public double researchTokenChance = 0.2;
+
+        public Spider() {
         }
     }
 

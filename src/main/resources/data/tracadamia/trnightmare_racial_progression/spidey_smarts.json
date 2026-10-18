@@ -1,0 +1,96 @@
+{
+  "races": ["tracadamia:spider_quirk"],
+  "name": {"translate": "tracadamia.spidey_smarts.tree"},
+  "description": {"translate": "tracadamia.spidey_smarts.tree.desc"},
+  "icon": "minecraft:cobweb",
+  "color": "#C8202A",
+  "order": -1000,
+  "branches": [
+    {"id": "strength", "name": {"translate": "tracadamia.spidey_smarts.branch.strength"}, "color": "#D8343A"},
+    {"id": "web", "name": {"translate": "tracadamia.spidey_smarts.branch.web"}, "color": "#E8E8F0"},
+    {"id": "gadget", "name": {"translate": "tracadamia.spidey_smarts.branch.gadget"}, "color": "#3A7FE0"},
+    {"id": "iron", "name": {"translate": "tracadamia.spidey_smarts.branch.iron"}, "color": "#E2B85A"}
+  ],
+  "nodes": [
+    {
+      "id": "super_strength_1", "branch": "strength", "icon": "minecraft:iron_sword", "x": 0, "y": 0,
+      "name": {"translate": "tracadamia.spidey_smarts.super_strength_1"},
+      "description": {"translate": "tracadamia.spidey_smarts.super_strength_1.desc"},
+      "cost": {"items": [{"item": "tracadamia:combat_token", "count": 1}]}
+    },
+    {
+      "id": "super_strength_2", "branch": "strength", "icon": "minecraft:diamond_sword", "x": 1, "y": 0, "requires": ["super_strength_1"],
+      "name": {"translate": "tracadamia.spidey_smarts.super_strength_2"},
+      "description": {"translate": "tracadamia.spidey_smarts.super_strength_2.desc"},
+      "cost": {"items": [{"item": "tracadamia:combat_token", "count": 1}]}
+    },
+    {
+      "id": "super_strength_3", "branch": "strength", "icon": "minecraft:netherite_sword", "x": 2, "y": 0, "requires": ["super_strength_2"],
+      "name": {"translate": "tracadamia.spidey_smarts.super_strength_3"},
+      "description": {"translate": "tracadamia.spidey_smarts.super_strength_3.desc"},
+      "cost": {"items": [{"item": "tracadamia:combat_token", "count": 1}]}
+    },
+    {
+      "id": "web_enhancement_1", "branch": "web", "icon": "minecraft:string", "x": 0, "y": 0,
+      "name": {"translate": "tracadamia.spidey_smarts.web_enhancement_1"},
+      "description": {"translate": "tracadamia.spidey_smarts.web_enhancement_1.desc"},
+      "cost": {"items": [{"item": "tracadamia:raid_token", "count": 1}]}
+    },
+    {
+      "id": "web_enhancement_2", "branch": "web", "icon": "minecraft:cobweb", "x": 1, "y": 0, "requires": ["web_enhancement_1"],
+      "name": {"translate": "tracadamia.spidey_smarts.web_enhancement_2"},
+      "description": {"translate": "tracadamia.spidey_smarts.web_enhancement_2.desc"},
+      "cost": {"items": [{"item": "tracadamia:raid_token", "count": 1}]}
+    },
+    {
+      "id": "web_enhancement_3", "branch": "web", "icon": "minecraft:lead", "x": 2, "y": 0, "requires": ["web_enhancement_2"],
+      "name": {"translate": "tracadamia.spidey_smarts.web_enhancement_3"},
+      "description": {"translate": "tracadamia.spidey_smarts.web_enhancement_3.desc"},
+      "cost": {"items": [{"item": "tracadamia:raid_token", "count": 1}]}
+    },
+    {
+      "id": "impact_web", "branch": "gadget", "icon": "minecraft:slime_ball", "x": 0, "y": 0,
+      "name": {"translate": "tracadamia.spidey_smarts.impact_web"},
+      "description": {"translate": "tracadamia.spidey_smarts.impact_web.desc"},
+      "cost": {"items": [{"item": "tracadamia:research_token", "count": 1}]}
+    },
+    {
+      "id": "trip_web", "branch": "gadget", "icon": "minecraft:tripwire_hook", "x": 1, "y": 0, "requires": ["impact_web"],
+      "name": {"translate": "tracadamia.spidey_smarts.trip_web"},
+      "description": {"translate": "tracadamia.spidey_smarts.trip_web.desc"},
+      "cost": {"items": [{"item": "tracadamia:research_token", "count": 1}]}
+    },
+    {
+      "id": "electric_web", "branch": "gadget", "icon": "minecraft:lightning_rod", "x": 2, "y": 0, "requires": ["trip_web"],
+      "name": {"translate": "tracadamia.spidey_smarts.electric_web"},
+      "description": {"translate": "tracadamia.spidey_smarts.electric_web.desc"},
+      "cost": {"items": [{"item": "tracadamia:research_token", "count": 1}]}
+    },
+    {
+      "id": "web_blossom", "branch": "gadget", "icon": "minecraft:spore_blossom", "x": 3, "y": 0, "requires": ["electric_web"],
+      "name": {"translate": "tracadamia.spidey_smarts.web_blossom"},
+      "description": {"translate": "tracadamia.spidey_smarts.web_blossom.desc"},
+      "cost": {"items": [{"item": "tracadamia:research_token", "count": 1}]}
+    },
+    {
+      "id": "iron_spider", "branch": "iron", "icon": "minecraft:netherite_chestplate", "x": 0, "y": 0,
+      "requires": ["super_strength_3", "web_enhancement_3", "web_blossom"],
+      "name": {"translate": "tracadamia.spidey_smarts.iron_spider"},
+      "description": {"translate": "tracadamia.spidey_smarts.iron_spider.desc"},
+      "cost": {"items": [
+        {"item": "tracadamia:combat_token", "count": 1},
+        {"item": "tracadamia:raid_token", "count": 1},
+        {"item": "tracadamia:research_token", "count": 1}
+      ]},
+      "requirements": [
+        {"type": "attribute", "attribute": "tracadamia:spider_mastery", "min": 100, "label": {"translate": "tracadamia.spidey_smarts.requirement.mastery"}}
+      ],
+      "rewards": {
+        "attributes": [
+          {"attribute": "minecraft:generic.armor", "amount": 8, "operation": "add_value"},
+          {"attribute": "minecraft:generic.armor_toughness", "amount": 4, "operation": "add_value"}
+        ]
+      }
+    }
+  ]
+}

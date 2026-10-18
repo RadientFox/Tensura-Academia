@@ -29,7 +29,10 @@
     "VinesSkillGateMixin",
     "DarkShadowMovementMixin",
     "LivingEntityFloatMixin",
-    "EntityPushMixin"
+    "EntityPushMixin",
+    "RaceFamiliesMixin",
+    "LivingEntityWingFlightMixin",
+    "RacialProgressionMixin"
 
   ],
   "client": [

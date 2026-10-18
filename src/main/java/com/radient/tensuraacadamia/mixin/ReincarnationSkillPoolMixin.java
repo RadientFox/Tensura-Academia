@@ -30,6 +30,10 @@ public abstract class ReincarnationSkillPoolMixin {
         addIfMissing(expanded, QuirkSkills.TELEPORTATION.get());
         addIfMissing(expanded, QuirkSkills.LEAFIPULATION.get());
         addIfMissing(expanded, QuirkSkills.OVERHAUL.get());
+        addIfMissing(expanded, QuirkSkills.SLIDE_AND_GLIDE.get());
+        addIfMissing(expanded, QuirkSkills.REWIND.get());
+        addIfMissing(expanded, QuirkSkills.FIERCE_WINGS.get());
+        addIfMissing(expanded, QuirkSkills.SPIDER.get());
         return expanded;
     }
 
