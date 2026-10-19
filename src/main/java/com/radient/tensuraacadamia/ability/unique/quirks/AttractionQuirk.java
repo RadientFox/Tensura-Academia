@@ -22,6 +22,7 @@ import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -67,6 +68,10 @@ public class AttractionQuirk extends Skill {
 
     private static final Map<UUID, LivingEntity> PULLING = new HashMap<>();
     private static final Map<UUID, LivingEntity> ATTRACTING = new HashMap<>();
+
+    public @Nullable ResourceLocation getSkillIcon() {
+        return ResourceLocation.fromNamespaceAndPath("tracadamia", "textures/skill/unique/attraction.png");
+    }
 
     public AttractionQuirk() {
         super(Skill.SkillType.UNIQUE);

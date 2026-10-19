@@ -39,6 +39,7 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -59,6 +60,10 @@ public class InfraredQuirk extends Skill {
     // Heat signatures seen on the client
     private static Set<Integer> clientSignatures = Set.of();
     private static double clientRange;
+
+    public @Nullable ResourceLocation getSkillIcon() {
+        return ResourceLocation.fromNamespaceAndPath("tracadamia", "textures/skill/unique/infrared.png");
+    }
 
     public InfraredQuirk() {
         super(Skill.SkillType.UNIQUE);

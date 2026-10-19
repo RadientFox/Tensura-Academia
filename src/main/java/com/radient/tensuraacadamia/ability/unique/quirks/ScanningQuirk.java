@@ -109,6 +109,10 @@ public class ScanningQuirk extends Skill {
     // Latest scan on the client
     private static @Nullable ScanPayload clientScan;
 
+    public @Nullable ResourceLocation getSkillIcon() {
+        return ResourceLocation.fromNamespaceAndPath("tracadamia", "textures/skill/unique/scanning.png");
+    }
+
     public ScanningQuirk() {
         super(Skill.SkillType.UNIQUE);
     }

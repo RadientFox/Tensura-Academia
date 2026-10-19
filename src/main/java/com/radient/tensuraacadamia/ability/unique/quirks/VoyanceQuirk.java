@@ -21,6 +21,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.player.Player;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
 
@@ -34,6 +35,10 @@ public class VoyanceQuirk extends Skill {
     public static final String RANGE_TAG = "sightRange";
 
     private static final ResourceLocation DODGE = ResourceLocation.fromNamespaceAndPath(TensuraAcadamia.MODID, "voyance_dodge");
+
+    public @Nullable ResourceLocation getSkillIcon() {
+        return ResourceLocation.fromNamespaceAndPath("tracadamia", "textures/skill/unique/voyance.png");
+    }
 
     public VoyanceQuirk() {
         super(Skill.SkillType.UNIQUE);

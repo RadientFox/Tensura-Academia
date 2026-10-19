@@ -55,6 +55,7 @@ import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -81,6 +82,8 @@ public class WeatherManipulationQuirk extends Skill {
     private static final ResourceLocation WEATHER_DEGRADATION = ResourceLocation.fromNamespaceAndPath("tracadamia", "weather_manipulation_degradation");
     private static final ResourceLocation WEATHER_RESISTANCE = ResourceLocation.fromNamespaceAndPath("tracadamia", "weather_manipulation_resistance");
 
+
+
     private static final List<Holder<Attribute>> BOOSTS = List.of(TensuraAttributes.WATER_BOOST, TensuraAttributes.WIND_BOOST, TensuraAttributes.LIGHTNING_BOOST);
     private static final List<Holder<Attribute>> DEGRADATIONS = List.of(TensuraAttributes.LIGHTNING_RESIST_DEGRADATION, TensuraAttributes.WIND_RESIST_DEGRADATION);
     private static final List<Holder<Attribute>> RESISTANCES = List.of(TensuraAttributes.WATER_RESISTANCE, TensuraAttributes.WIND_RESISTANCE);
@@ -91,6 +94,10 @@ public class WeatherManipulationQuirk extends Skill {
     private record PendingBolt(ManasSkillInstance instance, LivingEntity owner, LivingEntity target, float damage, long strikeTime) {}
 
     private record Barrage(ManasSkillInstance instance, LivingEntity owner, LivingEntity target, float damage, long startTime, long endTime) {}
+
+    public @Nullable ResourceLocation getSkillIcon() {
+        return ResourceLocation.fromNamespaceAndPath("tracadamia", "textures/skill/unique/weathermanipulation.png");
+    }
 
     public WeatherManipulationQuirk() {
         super(Skill.SkillType.UNIQUE);

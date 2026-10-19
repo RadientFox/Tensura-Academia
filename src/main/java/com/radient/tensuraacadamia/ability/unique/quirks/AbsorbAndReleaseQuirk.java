@@ -64,6 +64,10 @@ public class AbsorbAndReleaseQuirk extends Skill {
     private static final int AMBIENT_INTERVAL = 4;
     private static final int BURST_DIRECTIONS = 16;
 
+    public @Nullable ResourceLocation getSkillIcon() {
+        return ResourceLocation.fromNamespaceAndPath("tracadamia", "textures/skill/unique/absorbandrelease.png");
+    }
+
     public AbsorbAndReleaseQuirk() {
         super(Skill.SkillType.UNIQUE);
     }

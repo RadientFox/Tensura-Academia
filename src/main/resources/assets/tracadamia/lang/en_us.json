@@ -929,7 +929,6 @@
   "tracadamia.skill.new_order.rule.will_die": "Will Die",
   "tracadamia.skill.new_order.rule.will_die.desc": "This rule requires New Order to be mastered and have %sx the target's EP, it is ineffective against bosses. The target will die",
 
-
   "tracadamia.skill.new_order.rule.shield": "Become My Shield",
   "tracadamia.skill.new_order.rule.shield.desc": "Projectiles that come within %s blocks of you get a wall of ground thrown in their way",
 

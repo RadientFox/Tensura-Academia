@@ -100,6 +100,11 @@ public class ZeroGravityQuirk extends Skill {
     private static final ResourceLocation FLOAT = ResourceLocation.fromNamespaceAndPath(TensuraAcadamia.MODID, "zero_gravity");
     private static final ResourceLocation LENT_FLOAT = ResourceLocation.fromNamespaceAndPath(TensuraAcadamia.MODID, "zero_gravity_lent");
     private static final ResourceLocation GRAVITY_BOOST = ResourceLocation.fromNamespaceAndPath(TensuraAcadamia.MODID, "zero_gravity_boost");
+
+    public @Nullable ResourceLocation getSkillIcon() {
+        return ResourceLocation.fromNamespaceAndPath("tracadamia", "textures/skill/unique/zerogravity.png");
+    }
+
     public static final double LIFT = 0.1D;
     public static final int LIFT_TICKS = 6;
     private static final double BLOCK_LIFT = 0.1D;

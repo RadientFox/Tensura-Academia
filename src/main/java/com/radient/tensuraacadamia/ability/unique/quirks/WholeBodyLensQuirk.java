@@ -51,6 +51,7 @@ import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
 import net.neoforged.neoforge.event.server.ServerStoppingEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -84,6 +85,10 @@ public class WholeBodyLensQuirk extends Skill {
     private static final List<Reveal> REVEALS = new ArrayList<>();
     private static final int TICKS_PER_SECOND = 20;
     private static final int TICK_SECONDS = 5;
+
+    public @Nullable ResourceLocation getSkillIcon() {
+        return ResourceLocation.fromNamespaceAndPath("tracadamia", "textures/skill/unique/wholebodylens.png");
+    }
 
     public WholeBodyLensQuirk() {
         super(Skill.SkillType.UNIQUE);

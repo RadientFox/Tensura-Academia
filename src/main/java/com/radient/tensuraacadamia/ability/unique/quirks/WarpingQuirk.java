@@ -103,6 +103,10 @@ public class WarpingQuirk extends Skill {
 
     private static @Nullable WheelPayload clientWheel;
 
+    public @Nullable ResourceLocation getSkillIcon() {
+        return ResourceLocation.fromNamespaceAndPath("tracadamia", "textures/skill/unique/warping.png");
+    }
+
     public WarpingQuirk() {
         super(Skill.SkillType.UNIQUE);
     }

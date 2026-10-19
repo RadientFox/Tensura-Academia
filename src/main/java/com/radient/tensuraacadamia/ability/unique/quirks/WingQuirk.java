@@ -164,6 +164,10 @@ public class WingQuirk extends Skill {
     private static final Set<Player> FLAT = Collections.synchronizedSet(Collections.newSetFromMap(new WeakHashMap<>()));
     private static final Set<Player> CLIENT_FLAT = Collections.synchronizedSet(Collections.newSetFromMap(new WeakHashMap<>()));
 
+    public @Nullable ResourceLocation getSkillIcon() {
+        return ResourceLocation.fromNamespaceAndPath("tracadamia", "textures/skill/unique/wing.png");
+    }
+
     public WingQuirk() {
         super(Skill.SkillType.UNIQUE);
     }

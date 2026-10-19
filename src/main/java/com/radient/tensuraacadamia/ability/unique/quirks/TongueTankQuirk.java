@@ -153,6 +153,10 @@ public class TongueTankQuirk extends Skill {
     private static final List<Smoke> SMOKES = new ArrayList<>();
     private static final Map<LivingEntity, Long> CHARGING = new WeakHashMap<>();
 
+    public @Nullable ResourceLocation getSkillIcon() {
+        return ResourceLocation.fromNamespaceAndPath("tracadamia", "textures/skill/unique/tonguetank.png");
+    }
+
     public TongueTankQuirk() {
         super(Skill.SkillType.UNIQUE);
     }

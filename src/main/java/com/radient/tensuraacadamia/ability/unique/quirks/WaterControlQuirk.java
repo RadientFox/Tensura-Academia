@@ -51,6 +51,7 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.living.LivingBreatheEvent;
 import net.neoforged.neoforge.event.server.ServerStoppingEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
+import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 
 import java.util.ArrayList;
@@ -73,6 +74,7 @@ public class WaterControlQuirk extends Skill {
 
     private static final ResourceLocation WATER = ResourceLocation.fromNamespaceAndPath(TensuraAcadamia.MODID, "water_control_water_boost");
     private static final ResourceLocation DEGRADATION = ResourceLocation.fromNamespaceAndPath(TensuraAcadamia.MODID, "water_control_degradation");
+
     private static final DustParticleOptions WATER_DUST = new DustParticleOptions(new Vector3f(0.2F, 0.5F, 1.0F), 1.3F);
     private static final int AIR_DRAIN = 15;
     private static final double WAVE_SPEED = 0.8D;
@@ -100,6 +102,10 @@ public class WaterControlQuirk extends Skill {
 
     private static final List<Trap> TRAPS = new ArrayList<>();
     private static final List<Wave> WAVES = new ArrayList<>();
+
+    public @Nullable ResourceLocation getSkillIcon() {
+        return ResourceLocation.fromNamespaceAndPath("tracadamia", "textures/skill/unique/watercontrol.png");
+    }
 
     public WaterControlQuirk() {
         super(Skill.SkillType.UNIQUE);

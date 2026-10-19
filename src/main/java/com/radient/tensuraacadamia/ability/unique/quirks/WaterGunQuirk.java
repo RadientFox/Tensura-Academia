@@ -24,6 +24,7 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.server.ServerStoppingEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,6 +34,7 @@ import java.util.Optional;
 public class WaterGunQuirk extends Skill {
 
     private static final QuirkSkillsConfig.WaterGun CONFIG = ConfigRegistry.getConfig(QuirkSkillsConfig.class).WaterGun;
+
 
     private static final int SPRAY = 0;
     private static final int WATER_BULLET = 1;
@@ -50,6 +52,10 @@ public class WaterGunQuirk extends Skill {
     private record Charge(ManasSkillInstance instance, LivingEntity owner, long fireAt) {}
 
     private static final List<Charge> CHARGES = new ArrayList<>();
+
+    public @Nullable ResourceLocation getSkillIcon() {
+        return ResourceLocation.fromNamespaceAndPath("tracadamia", "textures/skill/unique/watergun.png");
+    }
 
     public WaterGunQuirk() {
         super(Skill.SkillType.UNIQUE);
@@ -69,6 +75,7 @@ public class WaterGunQuirk extends Skill {
             default -> 0.0D;
         };
     }
+
 
     @Override
     public int getModes(ManasSkillInstance instance) {

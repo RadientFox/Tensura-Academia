@@ -51,6 +51,7 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.server.ServerStoppingEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -115,6 +116,10 @@ public class EnduranceQuirk extends Skill {
 
     private static final List<Charge> CHARGES = new ArrayList<>();
     private static final List<Debris> DEBRIS = new ArrayList<>();
+
+    public @Nullable ResourceLocation getSkillIcon() {
+        return ResourceLocation.fromNamespaceAndPath("tracadamia", "textures/skill/unique/endurance.png");
+    }
 
     public EnduranceQuirk() {
         super(Skill.SkillType.UNIQUE);

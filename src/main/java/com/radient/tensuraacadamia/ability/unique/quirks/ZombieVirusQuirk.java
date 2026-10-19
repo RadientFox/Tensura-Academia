@@ -112,6 +112,10 @@ public class ZombieVirusQuirk extends Skill {
     private static final Set<Mob> ZOMBIES = new HashSet<>();
     private static final Map<UUID, Long> ENDED = new HashMap<>();
 
+    public @Nullable ResourceLocation getSkillIcon() {
+        return ResourceLocation.fromNamespaceAndPath("tracadamia", "textures/skill/unique/zombievirus.png");
+    }
+
     public ZombieVirusQuirk() {
         super(Skill.SkillType.UNIQUE);
     }
